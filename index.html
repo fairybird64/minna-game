@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เส้นทางของใจ — มินนากับมะม่วง</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream:        #FFF8F0;
+      --cream-mid:    #F5EDE0;
+      --cream-dark:   #EDD9C0;
+      --tan:          #D4A87A;
+      --brown-light:  #C4895A;
+      --brown:        #8B5E3C;
+      --text-dark:    #3A2414;
+      --text-mid:     #6B4830;
+      --text-soft:    #9B7555;
+      --inner-bg:     #FAF0E0;
+      --inner-border: #D4B08A;
+      --hint-bg:      #F0E8FA;
+      --hint-border:  #C4A0E0;
+      --hint-text:    #5A3880;
+      --good-bg:      #EEF7EE;
+      --good-border:  #7BBF7A;
+      --good-text:    #245424;
+      --ok-bg:        #FFF9EC;
+      --ok-border:    #D4A840;
+      --ok-text:      #6A4C10;
+      --stuck-bg:     #FDF0EE;
+      --stuck-border: #D48870;
+      --stuck-text:   #6A2C1A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ── Progress ── */
+    .progress-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      height: 3px;
+      background: var(--cream-dark);
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--tan);
+      transition: width 0.6s ease;
+    }
+
+    /* ── Header ── */
+    .game-header {
+      padding: 20px 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .game-logo {
+      width: 36px;
+      height: 36px;
+      background: var(--cream-mid);
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .game-title-small {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+
+    /* ── Scene wrapper ── */
+    .scene {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 48px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Image ── */
+    .scene-image-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: var(--cream-mid);
+      overflow: hidden;
+    }
+    .scene-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .scene-image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    /* ── Content ── */
+    .scene-content {
+      padding: 22px 20px 0;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--brown);
+      background: var(--cream-mid);
+      border: 1px solid var(--cream-dark);
+      border-radius: 20px;
+      padding: 3px 11px;
+      margin-bottom: 10px;
+    }
+
+    /* Title */
+    .scene-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--cream-dark);
+      margin-bottom: 16px;
+    }
+
+    /* Story text */
+    .scene-text {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 2;
+      color: var(--text-mid);
+      margin-bottom: 16px;
+    }
+
+    /* Inner voice */
+    .inner-voice {
+      position: relative;
+      background: var(--inner-bg);
+      border-left: 3px solid var(--inner-border);
+      border-radius: 0 10px 10px 0;
+      padding: 12px 14px 12px 16px;
+      margin-bottom: 14px;
+    }
+    .inner-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown-light);
+      margin-bottom: 5px;
+    }
+    .inner-text {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--text-mid);
+      line-height: 1.75;
+    }
+
+    /* Hint */
+    .hint-box {
+      background: var(--hint-bg);
+      border: 1px solid var(--hint-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    .hint-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--hint-text);
+      margin-bottom: 5px;
+      opacity: 0.75;
+    }
+    .hint-text {
+      font-size: 13.5px;
+      color: var(--hint-text);
+      line-height: 1.75;
+    }
+
+    /* Choices */
+    .choices-section {
+      margin-top: 20px;
+    }
+    .choices-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .choice-btn {
+      background: white;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: left;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-dark);
+      cursor: pointer;
+      line-height: 1.65;
+      transition: background 0.18s, border-color 0.18s, transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .choice-btn:not(:disabled):hover {
+      background: var(--cream-mid);
+      border-color: var(--tan);
+      transform: translateY(-1px);
+    }
+    .choice-btn:not(:disabled):active {
+      transform: translateY(0);
+    }
+    .choice-btn:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    .choice-btn.picked-good  { background: var(--good-bg);  border-color: var(--good-border);  color: var(--good-text);  opacity: 1 !important; }
+    .choice-btn.picked-ok    { background: var(--ok-bg);    border-color: var(--ok-border);    color: var(--ok-text);    opacity: 1 !important; }
+    .choice-btn.picked-stuck { background: var(--stuck-bg); border-color: var(--stuck-border); color: var(--stuck-text); opacity: 1 !important; }
+
+    /* Outcome */
+    .outcome {
+      display: none;
+      margin-top: 18px;
+      padding: 16px;
+      background: white;
+      border: 1px solid var(--cream-dark);
+      border-radius: 12px;
+      animation: fadeUp 0.35s ease both;
+    }
+    .outcome.visible { display: block; }
+
+    .outcome-arrow {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 7px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .outcome-text {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.85;
+      margin-bottom: 12px;
+    }
+    .outcome-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 20px;
+      line-height: 1.5;
+    }
+    .tag-good  { background: var(--good-bg);  color: var(--good-text);  border: 1px solid var(--good-border); }
+    .tag-ok    { background: var(--ok-bg);    color: var(--ok-text);    border: 1px solid var(--ok-border); }
+    .tag-stuck { background: var(--stuck-bg); color: var(--stuck-text); border: 1px solid var(--stuck-border); }
+
+    /* Next button */
+    .next-btn {
+      display: none;
+      width: 100%;
+      margin-top: 14px;
+      padding: 15px 20px;
+      background: var(--brown-light);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .next-btn:hover { background: var(--brown); transform: translateY(-1px); }
+    .next-btn:active { transform: translateY(0); }
+    .next-btn.visible { display: block; animation: fadeUp 0.3s ease both; }
+
+    /* End screen */
+    .end-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 60px 28px 48px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .end-ornament {
+      font-size: 42px;
+      margin-bottom: 22px;
+      line-height: 1;
+    }
+    .end-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown);
+      background: var(--cream-mid);
+      border: 1px solid var(--cream-dark);
+      border-radius: 20px;
+      padding: 3px 14px;
+      margin-bottom: 14px;
+    }
+    .end-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+    .end-text {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 2;
+      max-width: 320px;
+    }
+    .end-restart {
+      margin-top: 32px;
+      padding: 13px 32px;
+      background: transparent;
+      color: var(--brown-light);
+      border: 1.5px solid var(--tan);
+      border-radius: 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .end-restart:hover {
+      background: var(--cream-mid);
+      border-color: var(--brown-light);
+    }
+
+    /* Ending card */
+    .ending-card {
+      width: 100%;
+      max-width: 360px;
+      background: white;
+      border: 1px solid var(--cream-dark);
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-top: 28px;
+      text-align: left;
+    }
+    .ending-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 14px;
+    }
+    .ending-insight-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ending-insight-list li {
+      font-size: 14.5px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      padding-left: 14px;
+      position: relative;
+    }
+    .ending-insight-list li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--tan);
+      font-weight: 700;
+    }
+    .ending-divider {
+      height: 1px;
+      background: var(--cream-dark);
+      margin: 16px 0;
+    }
+    .ending-question {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--text-dark);
+      line-height: 1.85;
+    }
+
+    /* Inner voice multi-line (B3) */
+    .inner-line {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--text-mid);
+      line-height: 1.75;
+    }
+    .inner-line + .inner-line {
+      margin-top: 5px;
+      padding-top: 5px;
+      border-top: 1px dashed var(--inner-border);
+    }
+
+    /* Insight box (B3) */
+    .insight-box {
+      background: var(--hint-bg);
+      border: 1px solid var(--hint-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .insight-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--hint-text);
+      margin-bottom: 8px;
+    }
+    .insight-body {
+      font-size: 14px;
+      color: var(--hint-text);
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+    .insight-note {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--hint-text);
+      opacity: 0.8;
+      line-height: 1.7;
+      padding-top: 8px;
+      border-top: 1px solid var(--hint-border);
+    }
+
+    /* Chooser note box (B4) */
+    .chooser-box {
+      background: var(--cream-mid);
+      border: 1px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .chooser-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 5px;
+    }
+    .chooser-text {
+      font-size: 13.5px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      font-style: italic;
+    }
+
+    /* Joyful choice type (B4 C) */
+    .choice-btn.picked-joyful { background: #FFF0F6; border-color: #D4789A; color: #7A2045; opacity: 1 !important; }
+    .tag-joyful { background: #FFF0F6; color: #7A2045; border: 1px solid #D4789A; }
+
+    /* Responsive refinements */
+    @media (min-width: 480px) {
+      #app { box-shadow: 0 0 40px rgba(100, 60, 20, 0.08); }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div id="scene-container"></div>
+</div>
+
+<script>
+const scenes = [
+  {
+    id: 'B1',
+    badge: 'B1 · Trigger',
+    title: 'แมวที่ไม่แยแส',
+    image: 'story1_b1.png',
+    text: 'มินนากลับบ้านมา อยากนั่งกอดมะม่วงเหมือนทุกวัน แต่มะม่วงลุกหนีไปหลังโซฟาแทน มินนายืนอยู่กลางห้องกับมือที่ยื่นออกไปเปล่าๆ',
+    innerVoice: 'แค่แมว... แต่ทำไมรู้สึกแปลกๆ ในอกนะ',
+    hint: null,
+    choices: [
+      {
+        text: 'นั่งลงรอดูว่ามะม่วงจะทำอะไร',
+        type: 'good',
+        outcome: 'มะม่วงค่อยๆ เดินออกมาดมมือ',
+        tag: 'การให้พื้นที่ — ไม่ไล่ตามคือสิ่งที่ดึงดูดที่สุด'
+      },
+      {
+        text: 'หยิบโทรศัพท์ทำเป็นไม่สนใจ',
+        type: 'ok',
+        outcome: 'ห้านาทีต่อมามะม่วงมานั่งข้างๆ เอง',
+        tag: 'Super-Reasonable เบาๆ'
+      },
+      {
+        text: 'เดินตามพยายามอุ้มมะม่วง',
+        type: 'stuck',
+        outcome: 'มะม่วงวิ่งหนีไปอีกมุม',
+        tag: 'ความคาดหวัง — ยิ่งบังคับยิ่งห่าง'
+      }
+    ]
+  },
+  {
+    id: 'B2',
+    badge: 'B2 · Chaos',
+    title: 'ยิ่งอยากยิ่งหนี',
+    image: 'story1_b2.png',
+    text: 'มะม่วงยังนั่งอยู่ห่างๆ มินนาเริ่มหงุดหงิดนิดๆ แต่ก็รู้ว่ากำลังหงุดหงิดกับแมว ซึ่งรู้สึกโง่ด้วย',
+    innerVoice: 'ฉันหงุดหงิดอะไรวะ มันแค่แมว... แต่ก็ยังหงุดหงิดอยู่ดี',
+    hint: 'สองเสียงในหัว "หงุดหงิด" กับ "รู้ว่าโง่ที่หงุดหงิด" — ความรู้สึกซ้อนกันเริ่มก่อตัวแล้ว',
+    choices: [
+      {
+        text: 'บอกตัวเองว่า "โอเค ฉันหงุดหงิดอยู่ และมันก็โอเค"',
+        type: 'good',
+        outcome: 'ทั้งคู่อยู่ด้วยกันโดยไม่ต้องทำอะไร',
+        tag: 'Awareness — รับรู้โดยไม่ตัดสิน'
+      },
+      {
+        text: 'ลุกไปทำอย่างอื่น',
+        type: 'ok',
+        outcome: 'กลับมาแล้วมะม่วงนั่งใกล้ขึ้นนิดหน่อย',
+        tag: 'Irrelevant เบาๆ'
+      },
+      {
+        text: 'บอกตัวเองว่า "อย่าโง่"',
+        type: 'stuck',
+        outcome: 'ยิ่งบอกยิ่งหงุดหงิดมากขึ้น',
+        tag: 'Blaming ตัวเอง'
+      }
+    ]
+  },
+  {
+    id: 'B3',
+    badge: 'B3 · FaF Moment',
+    title: 'นึกขึ้นมาได้',
+    image: 'story1_b3.png',
+    text: 'มินนานั่งเฉยๆ แล้วนึกขึ้นมาว่า ตอนเช้ารีบออกไปโรงเรียนโดยไม่ได้ลูบหัวมะม่วงเหมือนทุกวัน แล้วก็ลืมเติมน้ำในชามด้วย มะม่วงนั่งรออยู่คนเดียวทั้งวัน',
+    innerVoice: [
+      'เสียใจที่มะม่วงไม่มาหา...',
+      'แต่ฉันก็เป็นคนลืมดูแลมันก่อน',
+      'แล้วฉันก็หงุดหงิดมันอีก ทั้งที่...',
+      '...ความผิดอยู่ที่ฉัน'
+    ],
+    hint: null,
+    insight: {
+      title: 'เห็นวงจรนี้ไหม?',
+      body: 'เสียใจที่มะม่วงไม่มาหา → แต่ลืมดูแลมันก่อน → หงุดหงิดมัน → รู้สึกผิดที่หงุดหงิด',
+      note: 'ความรู้สึกซ้อนกันแบบนี้เกิดขึ้นบ่อยมาก — แค่เห็นมันก็พอแล้ว'
+    },
+    choices: [
+      {
+        text: 'ลุกไปเติมน้ำในชามมะม่วง แล้วนั่งลงข้างๆ เงียบๆ',
+        type: 'good',
+        outcome: 'มะม่วงได้ยินเสียงน้ำ เดินออกมาดื่ม แล้วนั่งข้างๆ มินนา',
+        tag: 'The Chooser — ทำสิ่งเล็กๆ ที่แก้ไขได้จริง'
+      },
+      {
+        text: 'บอกตัวเองว่าเข้าใจแล้ว แล้วนั่งต่อ',
+        type: 'ok',
+        outcome: 'ความหงุดหงิดเบาลง แม้มะม่วงยังอยู่ห่างๆ',
+        tag: 'Awareness — เห็นวงจรแล้วก็มีคุณค่า'
+      },
+      {
+        text: 'รู้สึกผิดมากจนนั่งแข็งอยู่',
+        type: 'stuck',
+        outcome: 'มะม่วงยังนั่งรออยู่ที่ชามน้ำเปล่า',
+        tag: 'ความรู้สึกซ้อนกัน — หยุดได้ด้วยการทำอะไรเล็กๆ'
+      }
+    ]
+  },
+  {
+    id: 'B4',
+    badge: 'B4 · Forward',
+    title: 'คืนดีแบบแมวๆ',
+    image: 'story1_b4.png',
+    text: 'ตอนเย็นมินนานั่งทำการบ้าน มะม่วงกระโดดขึ้นมานอนทับสมุดพอดี มินนาถอนหายใจ แต่ก็ขำในใจ',
+    innerVoice: 'มะม่วงนอนทับงานฉัน... แต่ฉันก็ดีใจที่มันมาแล้วนะ ไม่ต้องบอกว่าคืนดีกันตรงๆ ก็ได้ มันคือมะม่วงนี่',
+    hint: null,
+    chooserNote: 'มินนาเลือกได้ว่าจะรับการคืนดีแบบที่มะม่วงทำได้ — ไม่ใช่แบบที่ตัวเองอยากได้',
+    choices: [
+      {
+        text: 'ขยับมะม่วงออกเบาๆ ลูบหัวมันก่อนกลับมาทำการบ้านต่อ',
+        type: 'good',
+        outcome: 'มะม่วงนอนพิงขาแทน มินนาทำการบ้านต่อโดยมีขนส้มอุ่นๆ อยู่ข้างๆ',
+        tag: 'Congruence — ดูแลทั้งตัวเองและความสัมพันธ์ได้พร้อมกัน'
+      },
+      {
+        text: 'ปล่อยให้มะม่วงนอนทับ ย้ายไปนั่งทำที่อื่น',
+        type: 'ok',
+        outcome: 'ทั้งคู่อยู่ในห้องเดียวกันอย่างสบายใจ',
+        tag: 'ก้าวแรกของ Congruence'
+      },
+      {
+        text: 'ดีใจมากจนวางการบ้านทิ้ง กอดมะม่วงอยู่นาน',
+        type: 'joyful',
+        outcome: 'ทำการบ้านไม่เสร็จ แต่คืนนี้มีแมวส้มนอนทับหน้าอกตลอดคืน',
+        tag: 'The Chooser — เลือกความอบอุ่น บางวันก็โอเคแบบนั้น'
+      }
+    ]
+  }
+];
+
+let currentScene = 0;
+
+function updateProgress() {
+  const pct = ((currentScene + 1) / scenes.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function renderScene(index) {
+  const s = scenes[index];
+  updateProgress();
+
+  // Inner voice: string or array of lines
+  const innerBodyHTML = Array.isArray(s.innerVoice)
+    ? s.innerVoice.map((line, i) =>
+        `<div class="inner-line" style="padding-left:${i * 8}px">${line}</div>`
+      ).join('')
+    : `<div class="inner-text">${s.innerVoice}</div>`;
+
+  const hintHTML = s.hint
+    ? `<div class="hint-box">
+         <div class="hint-label">สังเกต</div>
+         <div class="hint-text">${s.hint}</div>
+       </div>`
+    : '';
+
+  const insightHTML = s.insight
+    ? `<div class="insight-box">
+         <div class="insight-title">&#x2736; ${s.insight.title}</div>
+         <div class="insight-body">${s.insight.body}</div>
+         <div class="insight-note">${s.insight.note}</div>
+       </div>`
+    : '';
+
+  const chooserHTML = s.chooserNote
+    ? `<div class="chooser-box">
+         <div class="chooser-label">The Chooser</div>
+         <div class="chooser-text">${s.chooserNote}</div>
+       </div>`
+    : '';
+
+  const choicesHTML = s.choices.map((c, i) =>
+    `<button class="choice-btn" data-index="${i}" onclick="selectChoice(${i})">${c.text}</button>`
+  ).join('');
+
+  const html = `
+    <div class="game-header">
+      <div class="game-logo">&#x1F43E;</div>
+      <div class="game-title-small">เส้นทางของใจ<br>มินนากับมะม่วง</div>
+    </div>
+    <div class="scene">
+      <div class="scene-image-wrap" style="margin-top:16px;">
+        <img class="scene-image" src="${s.image}" alt="${s.title}"
+             onerror="this.parentNode.innerHTML='<div class=\\'scene-image-placeholder\\'>[ ${s.title} ]</div>'">
+      </div>
+      <div class="scene-content">
+        <span class="badge">${s.badge}</span>
+        <h1 class="scene-title">${s.title}</h1>
+        <div class="divider"></div>
+        <p class="scene-text">${s.text}</p>
+        <div class="inner-voice">
+          <div class="inner-label">เสียงในใจ</div>
+          ${innerBodyHTML}
+        </div>
+        ${hintHTML}
+        ${insightHTML}
+        ${chooserHTML}
+        <div class="choices-section">
+          <div class="choices-label">เลือกสักทาง</div>
+          <div class="choices">${choicesHTML}</div>
+        </div>
+        <div class="outcome" id="outcome">
+          <div class="outcome-arrow">&#x25B6; ผลที่ตามมา</div>
+          <div class="outcome-text" id="outcome-text"></div>
+          <span class="outcome-tag" id="outcome-tag"></span>
+        </div>
+        <button class="next-btn" id="next-btn" onclick="nextScene()">
+          ${index < scenes.length - 1 ? 'ไปต่อ ›' : 'จบบทนี้'}
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('scene-container').innerHTML = html;
+  window.scrollTo({ top: 0 });
+}
+
+function selectChoice(index) {
+  const s = scenes[currentScene];
+  const choice = s.choices[index];
+
+  document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === index) {
+      btn.classList.add('picked-' + choice.type);
+    }
+  });
+
+  const outcomeEl   = document.getElementById('outcome');
+  const outcomeText = document.getElementById('outcome-text');
+  const outcomeTag  = document.getElementById('outcome-tag');
+  const nextBtn     = document.getElementById('next-btn');
+
+  outcomeText.textContent = choice.outcome;
+  outcomeTag.textContent  = choice.tag;
+  outcomeTag.className    = 'outcome-tag tag-' + choice.type;
+  outcomeEl.classList.add('visible');
+  nextBtn.classList.add('visible');
+
+  setTimeout(() => {
+    outcomeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 80);
+}
+
+function nextScene() {
+  currentScene++;
+  if (currentScene < scenes.length) {
+    renderScene(currentScene);
+  } else {
+    showEnd();
+  }
+}
+
+function showEnd() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('scene-container').innerHTML = `
+    <div class="game-header">
+      <div class="game-logo">&#x1F43E;</div>
+      <div class="game-title-small">เส้นทางของใจ<br>มินนากับมะม่วง</div>
+    </div>
+    <div class="end-screen">
+      <div class="end-ornament">&#x2736;</div>
+      <span class="end-badge">จบ Chapter 1</span>
+      <h2 class="end-title">จบ Chapter 1</h2>
+      <p class="end-text">
+        มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br><br>
+        ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ
+      </p>
+      <div class="ending-card">
+        <div class="ending-card-title">เรื่องนี้สอนว่า...</div>
+        <ul class="ending-insight-list">
+          <li>ความรู้สึกเล็กๆ มีความหมายเสมอ</li>
+          <li>การสังเกตคือของขวัญที่ให้ได้ทุกวัน</li>
+          <li>บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก</li>
+        </ul>
+        <div class="ending-divider"></div>
+        <p class="ending-question">วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?</p>
+      </div>
+      <button class="end-restart" onclick="restart()">เริ่มใหม่อีกครั้ง</button>
+    </div>
+  `;
+}
+
+function restart() {
+  currentScene = 0;
+  renderScene(0);
+}
+
+renderScene(0);
+</script>
+</body>
+</html>
