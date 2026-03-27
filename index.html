@@ -390,6 +390,57 @@
       border-color: var(--brown-light);
     }
 
+    /* Ending card */
+    .ending-card {
+      width: 100%;
+      max-width: 360px;
+      background: white;
+      border: 1px solid var(--cream-dark);
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-top: 28px;
+      text-align: left;
+    }
+    .ending-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 14px;
+    }
+    .ending-insight-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ending-insight-list li {
+      font-size: 14.5px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      padding-left: 14px;
+      position: relative;
+    }
+    .ending-insight-list li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--tan);
+      font-weight: 700;
+    }
+    .ending-divider {
+      height: 1px;
+      background: var(--cream-dark);
+      margin: 16px 0;
+    }
+    .ending-question {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--text-dark);
+      line-height: 1.85;
+    }
+
     /* Inner voice multi-line (B3) */
     .inner-line {
       font-size: 14px;
@@ -741,6 +792,16 @@ function showEnd() {
         มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br><br>
         ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ
       </p>
+      <div class="ending-card">
+        <div class="ending-card-title">เรื่องนี้สอนว่า...</div>
+        <ul class="ending-insight-list">
+          <li>ความรู้สึกเล็กๆ มีความหมายเสมอ</li>
+          <li>การสังเกตคือของขวัญที่ให้ได้ทุกวัน</li>
+          <li>บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก</li>
+        </ul>
+        <div class="ending-divider"></div>
+        <p class="ending-question">วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?</p>
+      </div>
       <button class="end-restart" onclick="restart()">เริ่มใหม่อีกครั้ง</button>
     </div>
   `;
