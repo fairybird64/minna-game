@@ -512,6 +512,141 @@
     .choice-btn.picked-joyful { background: #FFF0F6; border-color: #D4789A; color: #7A2045; opacity: 1 !important; }
     .tag-joyful { background: #FFF0F6; color: #7A2045; border: 1px solid #D4789A; }
 
+    /* Summary screen */
+    .summary-screen {
+      padding: 28px 20px 48px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .summary-closing {
+      text-align: center;
+      padding: 20px 0 24px;
+      border-bottom: 1px solid var(--cream-dark);
+      margin-bottom: 24px;
+    }
+    .summary-closing-ornament {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .summary-closing-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 8px;
+    }
+    .summary-closing-text {
+      font-size: 14.5px;
+      color: var(--text-mid);
+      line-height: 2;
+    }
+    .summary-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 12px;
+    }
+    .summary-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .summary-choice-row {
+      background: white;
+      border: 1px solid var(--cream-dark);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .summary-scene-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--brown);
+      background: var(--cream-mid);
+      border: 1px solid var(--cream-dark);
+      border-radius: 20px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .summary-choice-detail { flex: 1; min-width: 0; }
+    .summary-choice-text {
+      font-size: 13.5px;
+      color: var(--text-mid);
+      line-height: 1.65;
+      margin-bottom: 6px;
+    }
+    .summary-type-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 20px;
+      line-height: 1.5;
+    }
+    .summary-reflection {
+      background: var(--inner-bg);
+      border-left: 3px solid var(--inner-border);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .summary-reflection-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brown-light);
+      margin-bottom: 8px;
+    }
+    .summary-reflection-text {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.9;
+    }
+    .summary-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .summary-btn-primary {
+      width: 100%;
+      padding: 15px 20px;
+      background: var(--brown-light);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .summary-btn-primary:hover { background: var(--brown); transform: translateY(-1px); }
+    .summary-btn-primary:active { transform: translateY(0); }
+    .summary-btn-secondary {
+      width: 100%;
+      padding: 13px 20px;
+      background: transparent;
+      color: var(--text-soft);
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .summary-btn-secondary:hover { background: var(--cream-mid); border-color: var(--tan); }
+
     /* Responsive refinements */
     @media (min-width: 480px) {
       #app { box-shadow: 0 0 40px rgba(100, 60, 20, 0.08); }
@@ -656,6 +791,7 @@ const scenes = [
 ];
 
 let currentScene = 0;
+let playerChoices = [];
 
 function updateProgress() {
   const pct = ((currentScene + 1) / scenes.length) * 100;
@@ -715,6 +851,7 @@ function showHome() {
 
 function startGame() {
   currentScene = 0;
+  playerChoices = [];
   renderScene(0);
 }
 
@@ -801,6 +938,13 @@ function selectChoice(index) {
   const s = scenes[currentScene];
   const choice = s.choices[index];
 
+  playerChoices.push({
+    sceneId: s.id,
+    choiceText: choice.text,
+    type: choice.type,
+    tag: choice.tag
+  });
+
   document.querySelectorAll('.choice-btn').forEach((btn, i) => {
     btn.disabled = true;
     if (i === index) {
@@ -829,8 +973,109 @@ function nextScene() {
   if (currentScene < scenes.length) {
     renderScene(currentScene);
   } else {
-    showEnd();
+    showSummary();
   }
+}
+
+const typeLabels = {
+  good:   'เชื่อมใจ',
+  ok:     'พอไหว',
+  stuck:  'ติดขัด',
+  joyful: 'อบอุ่น'
+};
+
+function getReflection(choices) {
+  const counts = {};
+  choices.forEach(c => { counts[c.type] = (counts[c.type] || 0) + 1; });
+  const stuck   = counts.stuck   || 0;
+  const good    = counts.good    || 0;
+  const joyful  = counts.joyful  || 0;
+  const goodish = good + joyful;
+
+  if (stuck === 0) {
+    return {
+      title: 'มินนาเดินทางได้อย่างนุ่มนวลมาก',
+      text:  'ตลอดวันนี้มินนารับรู้ความรู้สึกของตัวเองและดูแลความสัมพันธ์ไปพร้อมกัน สิ่งที่มินนาทำอาจดูเล็กน้อย แต่มันสะท้อนความใส่ใจที่ลึกมาก'
+    };
+  } else if (stuck >= 3) {
+    return {
+      title: 'วันนี้หนักหน่อย และมันก็โอเคนะ',
+      text:  'บางวันเราก็ติดอยู่กับความรู้สึกนานกว่าปกติ ไม่ได้แปลว่าเราผิดพลาด แค่แปลว่าเราเป็นคนธรรมดาที่ยังเรียนรู้อยู่ เหมือนมะม่วงที่บางทีก็ต้องการพื้นที่ เราก็ต้องการแบบนั้นบ้าง'
+    };
+  } else if (goodish >= 2) {
+    return {
+      title: 'มินนาสังเกตและเลือกได้ดีมาก',
+      text:  'มินนาไม่ได้ทำทุกอย่างได้สมบูรณ์แบบ แต่สังเกตเห็นความรู้สึกและเลือกทางออกที่ดูแลทั้งตัวเองและความสัมพันธ์ได้ นั่นคือสิ่งที่สำคัญที่สุด'
+    };
+  } else {
+    return {
+      title: 'มินนากำลังเรียนรู้อยู่',
+      text:  'ทุกครั้งที่เราสังเกตเห็นว่าตัวเองทำอะไรไป ก็ถือว่าก้าวหน้าแล้ว ไม่มีทางเลือกไหนผิดหรือถูกตลอดไป มีแค่ทางที่เราเรียนรู้จากมัน'
+    };
+  }
+}
+
+function showSummary() {
+  document.getElementById('progress-fill').style.width = '100%';
+  const reflection = getReflection(playerChoices);
+
+  const choicesHTML = playerChoices.map(c => `
+    <div class="summary-choice-row">
+      <span class="summary-scene-badge">${c.sceneId}</span>
+      <div class="summary-choice-detail">
+        <div class="summary-choice-text">${c.choiceText}</div>
+        <span class="summary-type-badge tag-${c.type}">${typeLabels[c.type] || c.type}</span>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('scene-container').innerHTML = `
+    <div class="game-header">
+      <div class="game-logo">&#x1F43E;</div>
+      <div class="game-title-small">Minna Journey<br>มินนา เส้นทางของใจ</div>
+    </div>
+    <div class="summary-screen">
+      <div class="summary-closing">
+        <div class="summary-closing-ornament">&#x2736;</div>
+        <div class="summary-closing-title">จบบทที่ 1</div>
+        <p class="summary-closing-text">
+          มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br>
+          ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ
+        </p>
+      </div>
+
+      <div class="summary-section-label">สิ่งที่มินนาเลือกวันนี้</div>
+      <div class="summary-choices">${choicesHTML}</div>
+
+      <div class="summary-reflection">
+        <div class="summary-reflection-title">${reflection.title}</div>
+        <div class="summary-reflection-text">${reflection.text}</div>
+      </div>
+
+      <div class="ending-card">
+        <div class="ending-card-title">วันนี้มินนาเรียนรู้ว่า...</div>
+        <ul class="ending-insight-list">
+          <li>ความรู้สึกเล็กๆ มีความหมายเสมอ</li>
+          <li>การสังเกตคือของขวัญที่ให้ได้ทุกวัน</li>
+          <li>บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก</li>
+        </ul>
+        <div class="ending-divider"></div>
+        <p class="ending-question">วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?</p>
+      </div>
+
+      <div class="summary-buttons">
+        <button class="summary-btn-primary" onclick="replayTrack()">ดูทางอื่น</button>
+        <button class="summary-btn-secondary" onclick="showHome()">กลับหน้าหลัก</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0 });
+}
+
+function replayTrack() {
+  currentScene = 0;
+  playerChoices = [];
+  renderScene(0);
 }
 
 function showEnd() {
@@ -866,6 +1111,7 @@ function showEnd() {
 
 function restart() {
   currentScene = 0;
+  playerChoices = [];
   renderScene(0);
 }
 
