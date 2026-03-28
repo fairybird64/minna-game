@@ -647,6 +647,122 @@
     }
     .summary-btn-secondary:hover { background: var(--cream-mid); border-color: var(--tan); }
 
+    /* Feedback widget */
+    .feedback-widget {
+      background: white;
+      border: 1px solid var(--cream-dark);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+      transition: opacity 1.5s ease;
+    }
+    .feedback-widget-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 16px;
+    }
+    .feedback-q {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .feedback-emoji-row {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .fb-emoji-btn {
+      flex: 1;
+      font-size: 22px;
+      background: var(--cream);
+      border: 2px solid var(--cream-dark);
+      border-radius: 12px;
+      padding: 9px 2px;
+      cursor: pointer;
+      line-height: 1;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fb-emoji-btn:hover  { border-color: var(--tan); background: var(--cream-mid); }
+    .fb-emoji-btn.selected { border-color: var(--brown-light); background: var(--inner-bg); }
+    .fb-textarea {
+      width: 100%;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      background: var(--cream);
+      resize: none;
+      outline: none;
+      line-height: 1.7;
+      min-height: 76px;
+      transition: border-color 0.15s;
+      display: block;
+    }
+    .fb-textarea:focus { border-color: var(--tan); }
+    .fb-char-count {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-align: right;
+      margin-top: 4px;
+      margin-bottom: 18px;
+    }
+    .fb-pair-btns {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .fb-pair-btn {
+      flex: 1;
+      background: var(--cream);
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 11px 6px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-mid);
+      cursor: pointer;
+      line-height: 1.4;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fb-pair-btn:hover   { border-color: var(--tan); background: var(--cream-mid); }
+    .fb-pair-btn.selected { border-color: var(--brown-light); background: var(--inner-bg); color: var(--text-dark); }
+    .fb-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--brown-light);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+      margin-top: 2px;
+    }
+    .fb-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .fb-submit:not(:disabled):hover { background: var(--brown); transform: translateY(-1px); }
+    .feedback-thankyou {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--brown-light);
+      padding: 10px 0;
+      line-height: 1.7;
+    }
+
     /* Responsive refinements */
     @media (min-width: 480px) {
       #app { box-shadow: 0 0 40px rgba(100, 60, 20, 0.08); }
@@ -790,8 +906,12 @@ const scenes = [
   }
 ];
 
+const APPS_SCRIPT_URL = '';  // ← วาง URL ของ Apps Script Web App ที่นี่
+
 let currentScene = 0;
+let currentTrack  = 1;
 let playerChoices = [];
+let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
 
 function updateProgress() {
   const pct = ((currentScene + 1) / scenes.length) * 100;
@@ -852,6 +972,7 @@ function showHome() {
 function startGame() {
   currentScene = 0;
   playerChoices = [];
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
   renderScene(0);
 }
 
@@ -1063,6 +1184,37 @@ function showSummary() {
         <p class="ending-question">วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?</p>
       </div>
 
+      <div id="feedback-widget" class="feedback-widget">
+        <div class="feedback-widget-title">บอกความรู้สึกให้หน่อยนะ</div>
+
+        <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
+        <div class="feedback-emoji-row">
+          <button class="fb-emoji-btn" onclick="selectEmoji(1)">😔</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(2)">😐</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(3)">🙂</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(4)">😊</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(5)">😄</button>
+        </div>
+
+        <div class="feedback-q">อยากบอกอะไรกับมินนาไหม?</div>
+        <textarea class="fb-textarea" id="fb-text" placeholder="พิมพ์ได้เลยนะ..." maxlength="200" rows="3" oninput="updateFbText(this)"></textarea>
+        <div class="fb-char-count" id="fb-char-count">0 / 200</div>
+
+        <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
+        <div class="fb-pair-btns">
+          <button class="fb-pair-btn" id="fb-rec-yes" onclick="selectPair('recommend','yes')">อยากเลย 💛</button>
+          <button class="fb-pair-btn" id="fb-rec-no"  onclick="selectPair('recommend','uncertain')">ยังไม่แน่ใจ</button>
+        </div>
+
+        <div class="feedback-q">อยากกลับมาเล่นเรื่องอื่นอีกไหม?</div>
+        <div class="fb-pair-btns">
+          <button class="fb-pair-btn" id="fb-ret-yes" onclick="selectPair('returnIntent','yes')">อยากมาก 🌟</button>
+          <button class="fb-pair-btn" id="fb-ret-no"  onclick="selectPair('returnIntent','uncertain')">ค่อยดูก่อน</button>
+        </div>
+
+        <button class="fb-submit" id="fb-submit" onclick="submitFeedback()" disabled>ส่งความรู้สึก</button>
+      </div>
+
       <div class="summary-buttons">
         <button class="summary-btn-primary" onclick="replayTrack()">ดูทางอื่น</button>
         <button class="summary-btn-secondary" onclick="showHome()">กลับหน้าหลัก</button>
@@ -1072,9 +1224,64 @@ function showSummary() {
   window.scrollTo({ top: 0 });
 }
 
+function selectEmoji(n) {
+  feedbackState.rating = n;
+  document.querySelectorAll('.fb-emoji-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i + 1 === n);
+  });
+  updateSubmitBtn();
+}
+
+function selectPair(field, val) {
+  feedbackState[field] = val;
+  const prefix = field === 'recommend' ? 'fb-rec' : 'fb-ret';
+  document.getElementById(prefix + '-yes').classList.toggle('selected', val === 'yes');
+  document.getElementById(prefix + '-no').classList.toggle('selected',  val === 'uncertain');
+  updateSubmitBtn();
+}
+
+function updateFbText(el) {
+  feedbackState.freeText = el.value;
+  const count = document.getElementById('fb-char-count');
+  if (count) count.textContent = el.value.length + ' / 200';
+}
+
+function updateSubmitBtn() {
+  const btn = document.getElementById('fb-submit');
+  if (!btn) return;
+  btn.disabled = !(feedbackState.rating !== null &&
+                   feedbackState.recommend !== null &&
+                   feedbackState.returnIntent !== null);
+}
+
+function submitFeedback() {
+  const payload = {
+    timestamp:     new Date().toISOString(),
+    track:         currentTrack,
+    choicePattern: playerChoices,
+    rating:        feedbackState.rating,
+    freeText:      feedbackState.freeText || '',
+    recommend:     feedbackState.recommend,
+    returnIntent:  feedbackState.returnIntent
+  };
+  if (APPS_SCRIPT_URL) {
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+  }
+  const widget = document.getElementById('feedback-widget');
+  if (!widget) return;
+  widget.innerHTML = '<div class="feedback-thankyou">ขอบคุณนะ 🌸 มินนาจะจำไว้เสมอ</div>';
+  setTimeout(() => { widget.style.opacity = '0'; }, 1800);
+  setTimeout(() => { widget.style.display = 'none'; }, 3300);
+}
+
 function replayTrack() {
   currentScene = 0;
   playerChoices = [];
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
   renderScene(0);
 }
 
@@ -1112,6 +1319,7 @@ function showEnd() {
 function restart() {
   currentScene = 0;
   playerChoices = [];
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
   renderScene(0);
 }
 
