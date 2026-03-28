@@ -763,6 +763,48 @@
       line-height: 1.7;
     }
 
+    /* Replay panel */
+    .replay-panel {
+      padding: 28px 20px 48px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .replay-panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+    .replay-panel-sub {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .replay-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .replay-scene-btn {
+      background: white;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 12px;
+      padding: 16px 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.5;
+      transition: border-color 0.15s, background 0.15s, transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .replay-scene-btn:hover  { border-color: var(--tan); background: var(--cream-mid); transform: translateY(-1px); }
+    .replay-scene-btn:active { transform: translateY(0); }
+
     /* Responsive refinements */
     @media (min-width: 480px) {
       #app { box-shadow: 0 0 40px rgba(100, 60, 20, 0.08); }
@@ -1223,7 +1265,7 @@ function showSummary() {
       </div>
 
       <div class="summary-buttons">
-        <button class="summary-btn-primary" onclick="replayTrack()">ดูทางอื่น</button>
+        <button class="summary-btn-primary" onclick="showReplayPanel()">เลือกใหม่อีกครั้ง</button>
         <button class="summary-btn-secondary" onclick="showHome()">กลับหน้าหลัก</button>
       </div>
     </div>
@@ -1283,6 +1325,33 @@ function submitFeedback() {
   widget.innerHTML = '<div class="feedback-thankyou">ขอบคุณนะ 🌸 มินนาจะจำไว้เสมอ</div>';
   setTimeout(() => { widget.style.opacity = '0'; }, 1800);
   setTimeout(() => { widget.style.display = 'none'; }, 3300);
+}
+
+function showReplayPanel() {
+  document.getElementById('scene-container').innerHTML = `
+    <div class="game-header">
+      <div class="game-logo">&#x1F43E;</div>
+      <div class="game-title-small">Minna Journey<br>มินนา เส้นทางของใจ</div>
+    </div>
+    <div class="replay-panel">
+      <div class="replay-panel-title">เลือกใหม่</div>
+      <p class="replay-panel-sub">อยากย้อนกลับไปตรงไหน?<br>การเลือกก่อนหน้าจะถูกเก็บไว้ให้</p>
+      <div class="replay-grid">
+        <button class="replay-scene-btn" onclick="replayFrom(0)">ย้อนกลับ B1</button>
+        <button class="replay-scene-btn" onclick="replayFrom(1)">ย้อนกลับ B2</button>
+        <button class="replay-scene-btn" onclick="replayFrom(2)">ย้อนกลับ B3</button>
+        <button class="replay-scene-btn" onclick="replayFrom(3)">ย้อนกลับ B4</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0 });
+}
+
+function replayFrom(sceneIndex) {
+  playerChoices = playerChoices.slice(0, sceneIndex);
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  currentScene = sceneIndex;
+  renderScene(sceneIndex);
 }
 
 function replayTrack() {
