@@ -1106,6 +1106,13 @@ const typeLabels = {
 };
 
 function getReflection(choices) {
+  // กรณีพิเศษ: เลือกกอดมะม่วง (joyful) ใน B4
+  if (choices.length === 4 && choices[3].type === 'joyful') {
+    return {
+      title: 'การได้กอดมะม่วงทำให้ใจมินนาอุ่นขึ้นจริงๆ 🧡',
+      text:  'แต่ตีสองที่ต้องลุกมาทำการบ้าน... มินนารู้สึกยังไงกับตัวเองตอนนั้นนะ?'
+    };
+  }
   const counts = {};
   choices.forEach(c => { counts[c.type] = (counts[c.type] || 0) + 1; });
   const stuck   = counts.stuck   || 0;
