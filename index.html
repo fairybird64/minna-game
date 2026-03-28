@@ -859,6 +859,7 @@ function showEnd() {
         <p class="ending-question">วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?</p>
       </div>
       <button class="end-restart" onclick="restart()">เริ่มใหม่อีกครั้ง</button>
+      <button class="end-restart" onclick="showHome()" style="margin-top:10px; border-color:var(--cream-dark); color:var(--text-soft);">กลับไปเลือกเรื่องอื่น</button>
     </div>
   `;
 }
@@ -868,7 +869,7 @@ function restart() {
   renderScene(0);
 }
 
-renderScene(0);
+showHome();
 </script>
 </body>
 </html>
