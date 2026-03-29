@@ -951,7 +951,69 @@ const tracks = {
   }
     ]
   },
-  2: { title: 'มิตรภาพใหม่', scenes: [] }
+  2: {
+    title: 'มิตรภาพใหม่',
+    scenes: [
+      {
+        id: 'b1',
+        badge: 'B1 · จุดเริ่มต้น',
+        title: 'ใครคนนั้น',
+        image: 'story2_b1.jpg',
+        text: 'มินนายืนอยู่หน้าประตูห้องเรียน มองเห็นเด็กผู้หญิงคนหนึ่งนั่งอยู่คนเดียวริมหน้าต่าง ท้องรู้สึกแน่นขึ้นมาเล็กน้อย มือกำกระเป๋าแน่นขึ้นโดยไม่รู้ตัว',
+        innerVoice: 'เธอดูเหมือนรอใครอยู่... หรือเปล่านะ',
+        hint: null,
+        choices: [
+          { text: 'เดินเข้าไปยิ้มทัก', type: 'good', outcome: 'เธอยิ้มตอบ แววตาสว่างขึ้นเล็กน้อย', tag: 'ก้าวแรกที่กล้า — ความอบอุ่นเริ่มจากนี้' },
+          { text: 'ยืนรอดูก่อนสักครู่', type: 'ok', outcome: 'มินนายืนอยู่สักพัก ก่อนจะค่อยๆ เดินเข้าไป', tag: 'ให้เวลาตัวเอง — แต่ไม่หยุดนิ่ง' },
+          { text: 'เดินหลบไปนั่งมุมอื่น', type: 'stuck', outcome: 'มินนานั่งอยู่คนเดียว ความอยากรู้จักเธอยังอยู่ในใจ', tag: 'ความกลัว — ทำให้หยุดก้าว' }
+        ]
+      },
+      {
+        id: 'b2',
+        badge: 'B2 · ว้าวุ่นใจ',
+        title: 'ความคิดวิ่งวน',
+        image: 'story2_b2.jpg',
+        text: 'มินนายืนลังเลอยู่หน้าประตู ความคิดวิ่งวน ยิ่งคิด ยิ่งขยับไม่ออก',
+        innerVoice: 'ถ้าเธอไม่อยากคุยด้วยล่ะ... ถ้าเพื่อนเธอกำลังจะมาล่ะ...',
+        hint: null,
+        choices: [
+          { text: 'หายใจลึกๆ แล้วเดินเข้าไป', type: 'good', outcome: 'ลมหายใจทำให้ใจเบาลง มินนาก้าวได้', tag: 'Self-regulation — หยุดก่อนเพื่อเดินต่อ' },
+          { text: 'แกล้งทำเป็นหยิบของในกระเป๋า ดูท่าทีก่อน', type: 'ok', outcome: 'เสียเวลาสักครู่ แต่ใจก็ค่อยๆ เบาลง', tag: 'ชะลอ — ไม่ใช่หยุด' },
+          { text: 'บอกตัวเองว่า เดี๋ยวก็มีเพื่อนเอง ไม่ต้องทำอะไรหรอก', type: 'stuck', outcome: 'มินนาเดินผ่านโดยไม่ได้พูดอะไร ความคิดวิ่งวนอยู่นานกว่าเดิม', tag: 'Avoidance — บอกตัวเองว่าไม่เป็นไร' }
+        ]
+      },
+      {
+        id: 'b3',
+        badge: 'B3 · หยุดสังเกต',
+        title: 'เสียงในใจ',
+        image: 'story2_b3.jpg',
+        text: 'มินนาได้ยินเสียงในใจสองเสียง มินนานึกถึงตอนที่มะม่วงแรกๆ ก็ไม่ยอมให้จับ แต่สุดท้ายก็กลายเป็นเพื่อนกัน',
+        innerVoice: 'ถ้าพลาดก็อาย... แต่ถ้าไม่ลองเลย จะรู้ได้ยังไง',
+        insight: 'ความกลัวไม่ได้แปลว่าอันตราย บางทีมันแค่บอกว่า สิ่งนี้สำคัญสำหรับเรา',
+        hint: null,
+        choices: [
+          { text: 'ยิ้มให้ตัวเองในใจ แล้วก้าวเดิน', type: 'joyful', outcome: 'มินนาก้าวออกไปด้วยใจที่เบา', tag: 'Self-compassion — เป็นเพื่อนกับตัวเองก่อน' },
+          { text: 'บอกตัวเองว่า ลองดูก็ได้ ไม่เสียหายอะไร', type: 'good', outcome: 'เหตุผลเล็กๆ พาให้ก้าวได้', tag: 'Reframing — มองใหม่แล้วเดินต่อ' },
+          { text: 'คิดว่า ถ้าเธอไม่สนใจก็แค่นั้น', type: 'ok', outcome: 'มินนาลดความคาดหวังลง ใจเบาขึ้นนิดนึง', tag: 'ปล่อยวาง — เตรียมรับทุกผล' }
+        ]
+      },
+      {
+        id: 'b4',
+        badge: 'B4 · ก้าวต่อไป',
+        title: 'สวัสดี ใบบัว',
+        image: 'story2_b4.jpg',
+        text: 'มินนาเดินเข้าไปแล้วพูดว่า นั่งตรงนี้ได้ไหม? เด็กผู้หญิงคนนั้นเงยหน้ามา แล้วยิ้ม ได้เลย ฉันชื่อใบบัว มินนารู้สึกว่าท้องที่แน่นมาตลอด คลายออกในทีเดียว',
+        innerVoice: 'บางทีก้าวแรกเพียงก้าวเดียว ก็เปลี่ยนทุกอย่างได้',
+        chooserNote: 'มินนาเลือกที่จะกล้า แม้จะกลัว',
+        hint: null,
+        choices: [
+          { text: 'ยิ้มกว้างๆ แล้วแนะนำตัว', type: 'joyful', outcome: 'ใบบัวยิ้มกว้างตาม ทั้งคู่เริ่มคุยกันอย่างสบาย', tag: 'Connection — เปิดใจอย่างเต็มที่' },
+          { text: 'พยักหน้าแล้วนั่งลง ค่อยๆ คุยกัน', type: 'good', outcome: 'การสนทนาค่อยๆ ไหลออกมาเองตามธรรมชาติ', tag: 'Warmth — ดูแลตัวเองไปพร้อมกัน' },
+          { text: 'นั่งลงแต่ยังเงียบๆ อยู่ก่อน', type: 'ok', outcome: 'ทั้งคู่นั่งอยู่ด้วยกันอย่างเงียบๆ ก็ไม่ได้แย่', tag: 'Presence — แค่อยู่ตรงนี้ก็เพียงพอ' }
+        ]
+      }
+    ]
+  }
 };
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRIKhQ6LsVWcF4ksUJ5mJMmA-9GCCkbPd0yOt3Ax2yecLEhzulWuI44XmpdUzaoFjO/exec';  // ← วาง URL ของ Apps Script Web App ที่นี่
@@ -989,13 +1051,13 @@ function showHome() {
           </div>
           <div style="font-size: 18px; color: var(--tan);">›</div>
         </div>
-        <div style="background: var(--cream-mid); border: 1.5px solid var(--cream-dark); border-radius: 14px; padding: 16px; opacity: 0.6; display: flex; align-items: center; gap: 14px;">
+        <div onclick="selectTrack(2)" style="background: white; border: 1.5px solid var(--tan); border-radius: 14px; padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px;">
           <div style="font-size: 28px;">🌸</div>
           <div style="flex:1;">
-            <div style="font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;">ช่วยเหลือคนอื่นแล้วรู้สึกดี</div>
-            <div style="font-size: 13px; color: var(--text-soft);">ทำดีเพื่อใคร — เพื่อเขา หรือเพื่อเรา?</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;">มิตรภาพใหม่</div>
+            <div style="font-size: 13px; color: var(--text-soft); line-height: 1.6;">เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน</div>
           </div>
-          <div style="font-size: 10px; font-weight: 700; background: var(--cream-dark); color: var(--brown); padding: 3px 8px; border-radius: 20px;">เร็วๆ นี้</div>
+          <div style="font-size: 18px; color: var(--tan);">›</div>
         </div>
         <div style="background: var(--cream-mid); border: 1.5px solid var(--cream-dark); border-radius: 14px; padding: 16px; opacity: 0.6; display: flex; align-items: center; gap: 14px;">
           <div style="font-size: 28px;">💛</div>
@@ -1173,20 +1235,48 @@ const typeLabels = {
 };
 
 function getReflection(choices) {
-  // กรณีพิเศษ: เลือกกอดมะม่วง (joyful) ใน B4
+  const counts = {};
+  choices.forEach(c => { counts[c.type] = (counts[c.type] || 0) + 1; });
+  const stuck   = counts.stuck  || 0;
+  const goodish = (counts.good  || 0) + (counts.joyful || 0);
+
+  if (currentTrack === 2) {
+    if (choices.length === 4 && choices[3].type === 'joyful') {
+      return {
+        title: 'มินนาเปิดใจอย่างเต็มที่ 🌸',
+        text:  'การยิ้มกว้างๆ แบบนั้นต้องอาศัยความกล้าพอสมควรนะ มินนาทำให้ใบบัวรู้สึกว่าตัวเองก็มีคนอยากนั่งด้วยเช่นกัน'
+      };
+    }
+    if (stuck === 0) {
+      return {
+        title: 'มินนาก้าวผ่านความกลัวได้อย่างงดงาม',
+        text:  'ตลอดเรื่องมินนาเลือกที่จะเผชิญแทนที่จะหนี นั่นไม่ใช่เรื่องเล็กน้อย การเริ่มต้นมิตรภาพใหม่ต้องอาศัยความกล้าที่หลายคนไม่ยอมใช้'
+      };
+    } else if (stuck >= 3) {
+      return {
+        title: 'วันนี้ความกลัวดังกว่าเสียงอื่น และมันก็โอเคนะ',
+        text:  'ความกลัวการถูกปฏิเสธเป็นเรื่องปกติมาก มินนาไม่ได้อ่อนแอ แค่กำลังเรียนรู้ว่าจะอยู่กับความรู้สึกนั้นอย่างไร วันไหนพร้อม ก้าวนั้นก็จะมาเอง'
+      };
+    } else if (goodish >= 2) {
+      return {
+        title: 'มินนาเลือกที่จะกล้า แม้จะไม่แน่ใจ',
+        text:  'ไม่มีใครมั่นใจ 100% ก่อนเริ่มมิตรภาพใหม่ แต่มินนาเลือกเดินหน้า สิ่งสำคัญไม่ใช่ผลลัพธ์ แต่คือการที่มินนาเชื่อใจตัวเองพอที่จะลอง'
+      };
+    } else {
+      return {
+        title: 'มินนากำลังเรียนรู้ว่าการเชื่อมใจต้องอาศัยความกล้า',
+        text:  'บางก้าวรู้สึกหนัก บางก้าวรู้สึกง่าย ทุกครั้งที่มินนาสังเกตเห็นความรู้สึกของตัวเองก็นับว่าก้าวหน้าแล้ว'
+      };
+    }
+  }
+
+  // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
       title: 'การได้กอดมะม่วงทำให้ใจมินนาอุ่นขึ้นจริงๆ 🧡',
       text:  'แต่ตีสองที่ต้องลุกมาทำการบ้าน... มินนารู้สึกยังไงกับตัวเองตอนนั้นนะ?'
     };
   }
-  const counts = {};
-  choices.forEach(c => { counts[c.type] = (counts[c.type] || 0) + 1; });
-  const stuck   = counts.stuck   || 0;
-  const good    = counts.good    || 0;
-  const joyful  = counts.joyful  || 0;
-  const goodish = good + joyful;
-
   if (stuck === 0) {
     return {
       title: 'มินนาเดินทางได้อย่างนุ่มนวลมาก',
@@ -1387,6 +1477,19 @@ function replayTrack() {
 }
 
 function showEnd() {
+  const endContent = currentTrack === 2 ? {
+    badge: 'จบบทที่ 2',
+    title: 'จบบทที่ 2',
+    text: 'ใบบัวไม่ได้รอเพื่อนที่สมบูรณ์แบบ — เธอแค่รอคนที่กล้าเดินเข้ามา<br><br>และมินนาก็เป็นคนนั้น',
+    insights: ['ความกลัวการปฏิเสธเป็นเรื่องปกติมาก', 'ก้าวแรกไม่ต้องสมบูรณ์ แค่ต้องกล้า', 'มิตรภาพเริ่มจากการที่ใครสักคนตัดสินใจก่อน'],
+    question: 'มีใครสักคนในชีวิตที่เราอยากรู้จักมากกว่านี้ แต่ยังไม่กล้าเริ่มบ้างไหม?'
+  } : {
+    badge: 'จบบทที่ 1',
+    title: 'จบบทที่ 1',
+    text: 'มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br><br>ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ',
+    insights: ['ความรู้สึกเล็กๆ มีความหมายเสมอ', 'การสังเกตคือของขวัญที่ให้ได้ทุกวัน', 'บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก'],
+    question: 'วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?'
+  };
   document.getElementById('progress-fill').style.width = '100%';
   document.getElementById('scene-container').innerHTML = `
     <div class="game-header">
@@ -1395,21 +1498,16 @@ function showEnd() {
     </div>
     <div class="end-screen">
       <div class="end-ornament">&#x2736;</div>
-      <span class="end-badge">จบบทที่ 1</span>
-      <h2 class="end-title">จบบทที่ 1</h2>
-      <p class="end-text">
-        มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br><br>
-        ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ
-      </p>
+      <span class="end-badge">${endContent.badge}</span>
+      <h2 class="end-title">${endContent.title}</h2>
+      <p class="end-text">${endContent.text}</p>
       <div class="ending-card">
         <div class="ending-card-title">วันนี้มินนาเรียนรู้ว่า...</div>
         <ul class="ending-insight-list">
-          <li>ความรู้สึกเล็กๆ มีความหมายเสมอ</li>
-          <li>การสังเกตคือของขวัญที่ให้ได้ทุกวัน</li>
-          <li>บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก</li>
+          ${endContent.insights.map(i => `<li>${i}</li>`).join('')}
         </ul>
         <div class="ending-divider"></div>
-        <p class="ending-question">วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?</p>
+        <p class="ending-question">${endContent.question}</p>
       </div>
       <button class="end-restart" onclick="restart()">เริ่มใหม่อีกครั้ง</button>
       <button class="end-restart" onclick="showHome()" style="margin-top:10px; border-color:var(--cream-dark); color:var(--text-soft);">กลับไปเลือกเรื่องอื่น</button>
