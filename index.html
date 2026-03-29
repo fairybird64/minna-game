@@ -1456,10 +1456,7 @@ function showReplayPanel() {
       <div class="replay-panel-title">เลือกใหม่</div>
       <p class="replay-panel-sub">อยากย้อนกลับไปตรงไหน?<br>การเลือกก่อนหน้าจะถูกเก็บไว้ให้</p>
       <div class="replay-grid">
-        <button class="replay-scene-btn" onclick="replayFrom(0)">ย้อนกลับ B1</button>
-        <button class="replay-scene-btn" onclick="replayFrom(1)">ย้อนกลับ B2</button>
-        <button class="replay-scene-btn" onclick="replayFrom(2)">ย้อนกลับ B3</button>
-        <button class="replay-scene-btn" onclick="replayFrom(3)">ย้อนกลับ B4</button>
+        ${currentScenes.map((s, i) => `<button class="replay-scene-btn" onclick="replayFrom(${i})">ย้อนกลับ ${s.id.toUpperCase()} · ${s.title}</button>`).join('')}
       </div>
     </div>
   `;
