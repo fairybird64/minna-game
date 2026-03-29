@@ -818,7 +818,10 @@
 </div>
 
 <script>
-const scenes = [
+const tracks = {
+  1: {
+    title: 'มินนากับมะม่วง',
+    scenes: [
   {
     id: 'B1',
     badge: 'B1 · จุดเริ่มต้น',
@@ -946,17 +949,21 @@ const scenes = [
       }
     ]
   }
-];
+    ]
+  },
+  2: { title: 'มิตรภาพใหม่', scenes: [] }
+};
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRIKhQ6LsVWcF4ksUJ5mJMmA-9GCCkbPd0yOt3Ax2yecLEhzulWuI44XmpdUzaoFjO/exec';  // ← วาง URL ของ Apps Script Web App ที่นี่
 
 let currentScene = 0;
 let currentTrack  = 1;
 let playerChoices = [];
+let currentScenes = [];
 let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
 
 function updateProgress() {
-  const pct = ((currentScene + 1) / scenes.length) * 100;
+  const pct = ((currentScene + 1) / currentScenes.length) * 100;
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
@@ -974,7 +981,7 @@ function showHome() {
       <p style="text-align:center; font-size: 14px; color: var(--text-soft); line-height: 1.85; margin-bottom: 28px;">ติดตามมินนาและเพื่อนๆ<br>ในเรื่องราวของความรู้สึก</p>
       <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text-soft); margin-bottom: 12px;">เลือกเรื่องที่อยากเล่น</div>
       <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div onclick="startGame()" style="background: white; border: 1.5px solid var(--tan); border-radius: 14px; padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px;">
+        <div onclick="selectTrack(1)" style="background: white; border: 1.5px solid var(--tan); border-radius: 14px; padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px;">
           <div style="font-size: 28px;">🐱</div>
           <div style="flex:1;">
             <div style="font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;">มินนากับมะม่วง</div>
@@ -1011,7 +1018,25 @@ function showHome() {
   `;
 }
 
-function startGame() {
+function preloadTrackImages(trackId) {
+  const t = tracks[trackId];
+  if (!t) return;
+  t.scenes.forEach(s => {
+    if (s.image) {
+      const img = new Image();
+      img.src = s.image;
+    }
+  });
+}
+
+function selectTrack(trackId) {
+  preloadTrackImages(trackId);
+  startGame(trackId);
+}
+
+function startGame(trackId) {
+  currentTrack = trackId || 1;
+  currentScenes = tracks[currentTrack].scenes;
   currentScene = 0;
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
@@ -1019,7 +1044,7 @@ function startGame() {
 }
 
 function renderScene(index) {
-  const s = scenes[index];
+  const s = currentScenes[index];
   updateProgress();
 
   // Inner voice: string or array of lines
@@ -1087,7 +1112,7 @@ function renderScene(index) {
           <span class="outcome-tag" id="outcome-tag"></span>
         </div>
         <button class="next-btn" id="next-btn" onclick="nextScene()">
-          ${index < scenes.length - 1 ? 'ไปต่อ ›' : 'จบบทนี้'}
+          ${index < currentScenes.length - 1 ? 'ไปต่อ ›' : 'จบบทนี้'}
         </button>
       </div>
     </div>
@@ -1098,7 +1123,7 @@ function renderScene(index) {
 }
 
 function selectChoice(index) {
-  const s = scenes[currentScene];
+  const s = currentScenes[currentScene];
   const choice = s.choices[index];
 
   playerChoices.push({
@@ -1133,7 +1158,7 @@ function selectChoice(index) {
 
 function nextScene() {
   currentScene++;
-  if (currentScene < scenes.length) {
+  if (currentScene < currentScenes.length) {
     renderScene(currentScene);
   } else {
     showSummary();
