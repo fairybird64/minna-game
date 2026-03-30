@@ -821,6 +821,12 @@
 const tracks = {
   1: {
     title: 'มินนากับมะม่วง',
+    summary: {
+      closingTitle: 'จบบทที่ 1',
+      closingText:  'มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br>ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ',
+      insights:     ['ความรู้สึกเล็กๆ มีความหมายเสมอ', 'การสังเกตคือของขวัญที่ให้ได้ทุกวัน', 'บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก'],
+      question:     'วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?'
+    },
     scenes: [
   {
     id: 'B1',
@@ -953,6 +959,12 @@ const tracks = {
   },
   2: {
     title: 'มิตรภาพใหม่',
+    summary: {
+      closingTitle: 'จบบทที่ 2',
+      closingText:  'ใบบัวไม่ได้รอเพื่อนที่สมบูรณ์แบบ — เธอแค่รอคนที่กล้าเดินเข้ามา<br>และมินนาก็เป็นคนนั้น',
+      insights:     ['ความกลัวการปฏิเสธเป็นเรื่องปกติมาก', 'ก้าวแรกไม่ต้องสมบูรณ์ แค่ต้องกล้า', 'มิตรภาพเริ่มจากการที่ใครสักคนตัดสินใจก่อน'],
+      question:     'มีใครสักคนในชีวิตที่เราอยากรู้จักมากกว่านี้ แต่ยังไม่กล้าเริ่มบ้างไหม?'
+    },
     scenes: [
       {
         id: 'b1',
@@ -1307,12 +1319,7 @@ function getReflection(choices) {
 function showSummary() {
   document.getElementById('progress-fill').style.width = '100%';
   const reflection = getReflection(playerChoices);
-  const summaryInsights = currentTrack === 2
-    ? ['ความกลัวการปฏิเสธเป็นเรื่องปกติมาก', 'ก้าวแรกไม่ต้องสมบูรณ์ แค่ต้องกล้า', 'มิตรภาพเริ่มจากการที่ใครสักคนตัดสินใจก่อน']
-    : ['ความรู้สึกเล็กๆ มีความหมายเสมอ', 'การสังเกตคือของขวัญที่ให้ได้ทุกวัน', 'บางทีแค่เติมน้ำในชาม ก็คือการบอกรัก'];
-  const summaryQuestion = currentTrack === 2
-    ? 'มีใครสักคนในชีวิตที่เราอยากรู้จักมากกว่านี้ แต่ยังไม่กล้าเริ่มบ้างไหม?'
-    : 'วันนี้มีใครรอบข้างที่อาจกำลังรอบางอย่างจากเราอยู่บ้างไหม?';
+  const { closingTitle, closingText, insights, question } = tracks[currentTrack].summary;
 
   const choicesHTML = playerChoices.map(c => `
     <div class="summary-choice-row">
@@ -1332,11 +1339,8 @@ function showSummary() {
     <div class="summary-screen">
       <div class="summary-closing">
         <div class="summary-closing-ornament">&#x2736;</div>
-        <div class="summary-closing-title">จบบทที่ 1</div>
-        <p class="summary-closing-text">
-          มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br>
-          ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ
-        </p>
+        <div class="summary-closing-title">${closingTitle}</div>
+        <p class="summary-closing-text">${closingText}</p>
       </div>
 
       <div class="summary-section-label">สิ่งที่มินนาเลือกวันนี้</div>
@@ -1350,10 +1354,10 @@ function showSummary() {
       <div class="ending-card">
         <div class="ending-card-title">วันนี้มินนาเรียนรู้ว่า...</div>
         <ul class="ending-insight-list">
-          ${summaryInsights.map(i => `<li>${i}</li>`).join('')}
+          ${insights.map(i => `<li>${i}</li>`).join('')}
         </ul>
         <div class="ending-divider"></div>
-        <p class="ending-question">${summaryQuestion}</p>
+        <p class="ending-question">${question}</p>
       </div>
 
       <div id="feedback-widget" class="feedback-widget">
