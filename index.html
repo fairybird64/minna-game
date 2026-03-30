@@ -454,6 +454,57 @@
       border-top: 1px dashed var(--inner-border);
     }
 
+    /* Mirror / free-text prompt */
+    .free-prompt-section {
+      background: var(--inner-bg);
+      border: 1px solid var(--inner-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+    .free-prompt-text {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+    .free-prompt-input {
+      width: 100%;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      background: white;
+      resize: none;
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .free-prompt-input:focus { outline: none; border-color: var(--tan); }
+    .free-prompt-submit {
+      background: var(--brown-light);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .free-prompt-submit:disabled { opacity: 0.5; cursor: default; }
+    .mirror-response {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--hint-text);
+      background: var(--hint-bg);
+      border: 1px solid var(--hint-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      line-height: 1.7;
+    }
+
     /* Insight box (B3) */
     .insight-box {
       background: var(--hint-bg);
@@ -1066,6 +1117,30 @@ const tracks = {
           { text: 'คิดวนอยู่คนเดียว ยังไม่กล้าพูดอะไร', type: 'ok', outcome: 'มินนานั่งมองหยก ความคิดวนซ้ำแต่ยังไม่มีคำพูด', tag: 'สังเกต' },
           { text: 'หายใจลึกๆ สังเกตว่าตัวเองกำลังกดอะไรบางอย่างไว้', type: 'good', outcome: 'มินนารู้สึกว่าการสังเกตตัวเองนั้นก็เป็นก้าวหนึ่งแล้ว', tag: 'รับรู้' }
         ]
+      },
+      {
+        id: 'b3',
+        badge: 'B3 • หยุดสังเกต',
+        title: 'เสียงที่ค้างอยู่',
+        image: 'story3_b3.jpg',
+        text: 'เสียงในใจมินนาซ้อนกัน ระหว่างเสียงที่บอกว่าอย่าถาม กับเสียงที่เริ่มเห็นว่านี่ไม่ใช่แค่เรื่องหยก แต่คือรูปแบบของตัวมินนาเองมาตลอด',
+        innerVoice: 'เราแค่ไม่อยากให้ใครอึดอัด... หรือจริงๆ แล้วเราแค่กลัวที่เขาจะมองเรายังไง',
+        hint: null,
+        insight: {
+          title: 'เสียงที่ค้างอยู่',
+          body: 'บางทีเราไม่กล้าเป็นตัวเอง เพราะรอให้คนอื่นโอเคกับเราก่อน แต่ความโอเคกับตัวเองไม่ได้ต้องรอใคร',
+          note: 'แค่สังเกตเห็นก็เป็นจุดเริ่มต้นแล้ว'
+        },
+        freePrompt: {
+          prompt: 'เคยมีไหม ที่รอให้คนอื่นโอเคกับเราก่อน แล้วเราค่อยโอเคกับตัวเอง?',
+          placeholder: 'พิมพ์บอกมินนาได้เลย...'
+        },
+        choices: [
+          { text: 'เราไม่เหมือนหยก คงทำแบบนั้นไม่ได้หรอก', type: 'stuck', outcome: 'มินนาปิดความคิดนั้นทิ้ง แต่มันก็ยังวนกลับมา', tag: 'หลีกเลี่ยง' },
+          { text: 'บางทีเราก็โอเค บางทีก็ยังต้องรอให้คนอื่นโอเคก่อน', type: 'ok', outcome: 'มินนานั่งนิ่งกับความรู้สึกที่ยังไม่ชัด', tag: 'สังเกต' },
+          { text: 'เราเพิ่งรู้ว่าที่ผ่านมาเราคอยรอให้คนอื่นโอเคกับเราก่อนตลอด', type: 'good', outcome: 'มินนารู้สึกว่าสิ่งที่เห็นในตัวเองครั้งนี้มันสำคัญมาก', tag: 'รับรู้' },
+          { text: 'โอเคกับตัวเองได้เลย โดยไม่ต้องรอใคร', type: 'joyful', outcome: 'ใจมินนาเบาขึ้นทันที รู้สึกว่าตัวเองได้ก้าวข้ามบางอย่าง', tag: 'อบอุ่น' }
+        ]
       }
     ]
   }
@@ -1197,6 +1272,16 @@ function renderScene(index) {
     `<button class="choice-btn" data-index="${i}" onclick="selectChoice(${i})">${c.text}</button>`
   ).join('');
 
+  const freePromptHTML = s.freePrompt ? `
+    <div class="free-prompt-section">
+      <div class="free-prompt-text">${s.freePrompt.prompt}</div>
+      <textarea id="mirror-input-${s.id}" class="free-prompt-input"
+        placeholder="${s.freePrompt.placeholder}" rows="3" maxlength="300"></textarea>
+      <button id="mirror-submit-${s.id}" class="free-prompt-submit"
+        onclick="submitMirrorText('${s.id}')">ส่งให้มินนา</button>
+      <div id="mirror-response-${s.id}" class="mirror-response" style="display:none;"></div>
+    </div>` : '';
+
   const html = `
     <div class="game-header">
       <div class="game-logo">&#x1F43E;</div>
@@ -1223,6 +1308,7 @@ function renderScene(index) {
           <div class="choices-label">เลือกสักทาง</div>
           <div class="choices">${choicesHTML}</div>
         </div>
+        ${freePromptHTML}
         <div class="outcome" id="outcome">
           <div class="outcome-arrow">&#x25B6; ผลที่ตามมา</div>
           <div class="outcome-text" id="outcome-text"></div>
@@ -1518,6 +1604,26 @@ function showReplayPanel() {
     </div>
   `;
   window.scrollTo({ top: 0 });
+}
+
+const mirrorResponses = [
+  'ขอบคุณที่บอกมินนานะ 🌿',
+  'มินนารับฟังทุกคำที่เธอบอกเลย',
+  'ความรู้สึกของเธอสำคัญมาก — ขอบคุณนะ',
+  'แค่สังเกตเห็นแบบนี้ก็กล้ามากแล้ว',
+  'มินนาเก็บสิ่งที่เธอบอกไว้ในใจเลย 🌸',
+  'ขอบคุณที่ไว้ใจบอกกับเรา — นี่คือเสียงของเธอจริงๆ'
+];
+
+function submitMirrorText(sceneId) {
+  const textarea = document.getElementById('mirror-input-' + sceneId);
+  const submitBtn = document.getElementById('mirror-submit-' + sceneId);
+  const responseEl = document.getElementById('mirror-response-' + sceneId);
+  if (!textarea.value.trim()) return;
+  textarea.disabled = true;
+  submitBtn.disabled = true;
+  responseEl.textContent = mirrorResponses[Math.floor(Math.random() * mirrorResponses.length)];
+  responseEl.style.display = 'block';
 }
 
 function replayFrom(sceneIndex) {
