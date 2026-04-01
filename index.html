@@ -1330,6 +1330,51 @@ function startGame(trackId) {
   currentScene = 0;
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  showOnboarding(currentTrack);
+}
+
+function showOnboarding(trackId) {
+  const key = 'seen_intro_track_' + trackId;
+  if (localStorage.getItem(key)) {
+    renderScene(0);
+    return;
+  }
+  document.getElementById('scene-container').innerHTML = `
+    <div class="game-header">
+      <div class="game-logo">&#x1F43E;</div>
+      <div class="game-title-small">Minna Journey<br>มินนา เส้นทางของใจ</div>
+    </div>
+    <div class="scene">
+      <div class="scene-content" style="padding-top: 24px;">
+        <h1 class="scene-title" style="margin-bottom: 20px;">ก่อนเริ่ม — อ่านสักครู่นะ &#127793;</h1>
+        <div class="divider"></div>
+        <div style="margin-top: 20px; font-size: 15px; color: var(--text-dark);">
+          <p style="line-height: 1.9; margin-bottom: 18px;">แต่ละฉากมีสามทางเลือก<br>ไม่มีถูกหรือผิด</p>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--stuck-bg); border: 1px solid var(--stuck-border); border-radius: 10px; padding: 10px 12px;">
+              <span style="font-size: 18px;">&#128996;</span>
+              <span><strong style="color: var(--stuck-text);">ติดขัด</strong> — ตอนนั้นยังออกไม่ได้ก็โอเค</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--ok-bg); border: 1px solid var(--ok-border); border-radius: 10px; padding: 10px 12px;">
+              <span style="font-size: 18px;">&#128993;</span>
+              <span><strong style="color: var(--ok-text);">พอไหว</strong> — รู้สึกบางอย่างแต่ยังไม่รู้จะทำยังไง</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--good-bg); border: 1px solid var(--good-border); border-radius: 10px; padding: 10px 12px;">
+              <span style="font-size: 18px;">&#128994;</span>
+              <span><strong style="color: var(--good-text);">เชื่อมใจ</strong> — เชื่อมกับตัวเองได้ในตอนนั้น</span>
+            </div>
+          </div>
+          <p style="color: var(--text-soft); font-size: 14px; line-height: 1.8;">แต่ละแบบสะท้อนว่าเราอยู่กับตัวเองได้แค่ไหน<br>ในช่วงเวลานั้น — ไม่ใช่ตลอดไป</p>
+        </div>
+        <button class="next-btn visible" style="margin-top: 28px;" onclick="startTrackAfterOnboarding(${trackId})">เริ่มเลย →</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0 });
+}
+
+function startTrackAfterOnboarding(trackId) {
+  localStorage.setItem('seen_intro_track_' + trackId, '1');
   renderScene(0);
 }
 
