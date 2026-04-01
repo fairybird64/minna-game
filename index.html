@@ -1682,7 +1682,7 @@ function showSummary() {
       <span class="summary-scene-badge">${c.sceneId}</span>
       <div class="summary-choice-detail">
         <div class="summary-choice-text">${c.choiceText}</div>
-        <span class="summary-type-badge tag-${c.type}">${typeLabels[c.type] || c.type}</span>
+        <span class="summary-type-badge tag-${c.type}">${(c.type === 'good' || c.type === 'joyful') ? c.tag : (typeLabels[c.type] || c.type)}</span>
       </div>
     </div>
   `).join('');
