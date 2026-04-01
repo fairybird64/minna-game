@@ -872,6 +872,7 @@
 const tracks = {
   1: {
     title: 'มินนากับมะม่วง',
+    protagonist: 'มินนา',
     summary: {
       closingTitle: 'จบบทที่ 1',
       closingText:  'มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br>ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ',
@@ -1010,6 +1011,7 @@ const tracks = {
   },
   2: {
     title: 'มิตรภาพใหม่',
+    protagonist: 'มินนา',
     summary: {
       closingTitle: 'จบบทที่ 2',
       closingText:  'ใบบัวไม่ได้รอเพื่อนที่สมบูรณ์แบบ — เธอแค่รอคนที่กล้าเดินเข้ามา<br>และมินนาก็เป็นคนนั้น',
@@ -1083,6 +1085,7 @@ const tracks = {
   },
   3: {
     title: 'วันที่ดีแบบเรียบง่าย',
+    protagonist: 'มินนา',
     summary: {
       closingTitle: 'จบบทที่ 3',
       closingText:  'มินนาไม่ได้คำตอบทุกอย่างภายในวันนี้ แต่เริ่มเห็นแล้วว่าการโอเคกับตัวเอง ไม่ต้องรอให้ใครอนุญาตก่อน',
@@ -1160,6 +1163,7 @@ const tracks = {
   },
   4: {
     title: 'วันที่เพื่อนล้อ',
+    protagonist: 'โมเน่',
     summary: {
       closingTitle: 'จบบทที่ 4',
       closingText:  'วันนี้โมเน่ยังไม่กล้า แต่รู้สึกได้ครั้งแรกว่า — บางทีก็โอเคที่จะชอบในสิ่งที่ชอบ',
@@ -1220,7 +1224,7 @@ const tracks = {
         title: 'คนที่ยังอยู่ตรงนี้',
         image: 'story4_b4.jpg',
         text: 'หยกดูสมุดอยู่สักครู่ แล้วพูดเบาๆ "วาดดีนะ พี่ชอบอันนี้" โมเน่มองหยก — ผมที่ตัดแบบที่ชอบ ใส่ชุดนักเรียนเรียบร้อย ครูที่เดินผ่านมายังยิ้มให้หยก โมเน่นึกขึ้นมาเองว่า "หยกก็โดนมองเหมือนกัน แต่หยกก็ไม่ได้อายหรือหายไปไหน"',
-        innerVoice: '"หยกก็โดนมองเหมือนกัน... แต่หยกก็ยังอยู่ตรงนี้"',
+        innerVoice: '"พี่หยกก็โดนมองเหมือนกัน... แต่พี่หยกก็ยังอยู่ตรงนี้"',
         hint: null,
         choices: [
           { text: 'พยักหน้าแล้วเงียบ รอให้หยกพูดต่อ', type: 'stuck', outcome: 'โมเน่ยังไม่พร้อม แต่ก็ไม่ได้หนีไปไหน', tag: 'หลีกเลี่ยง' },
@@ -1589,7 +1593,7 @@ function showSummary() {
       </div>
 
       <div class="ending-card">
-        <div class="ending-card-title">วันนี้มินนาเรียนรู้ว่า...</div>
+        <div class="ending-card-title">วันนี้${tracks[currentTrack].protagonist}เรียนรู้ว่า...</div>
         <ul class="ending-insight-list">
           ${insights.map(i => `<li>${i}</li>`).join('')}
         </ul>
@@ -1768,7 +1772,7 @@ function showEnd() {
       <h2 class="end-title">${endContent.title}</h2>
       <p class="end-text">${endContent.text}</p>
       <div class="ending-card">
-        <div class="ending-card-title">วันนี้มินนาเรียนรู้ว่า...</div>
+        <div class="ending-card-title">วันนี้${tracks[currentTrack].protagonist}เรียนรู้ว่า...</div>
         <ul class="ending-insight-list">
           ${endContent.insights.map(i => `<li>${i}</li>`).join('')}
         </ul>
