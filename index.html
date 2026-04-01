@@ -1233,6 +1233,32 @@ const tracks = {
         ]
       }
     ]
+  },
+  5: {
+    title: 'ความสัมพันธ์ในครอบครัว',
+    protagonist: 'ครอบครัว',
+    summary: {
+      closingTitle: 'จบบทที่ 5',
+      closingText:  '',
+      insights:     [],
+      question:     ''
+    },
+    scenes: [
+      {
+        id: 'b1',
+        badge: 'B1 • จุดเริ่มต้น',
+        title: 'รอยร้าวเล็กๆ',
+        image: 'story5_b1.jpg',
+        text: 'เย็นวันธรรมดา พ่อนัทกลับบ้านมาเหนื่อย วางกระเป๋าแรงกว่าปกติ แม่นุ่นถามอะไรบางอย่าง พ่อตอบสั้น เสียงไม่ดัง แต่ห้องเงียบลงทันที มินนานั่งทำการบ้านอยู่ มือหยุดนิ่ง โมเน่แอบมองจากมุมห้อง มะพร้าวหมอบนิ่งข้างเท้าโมเน่',
+        innerVoice: 'มินนารู้สึกหน้าอกแน่นขึ้นเล็กน้อย ไม่รู้ว่าควรทำอะไร',
+        hint: null,
+        choices: [
+          { text: 'ก้มหน้าทำการบ้านต่อ ราวกับไม่มีอะไรเกิดขึ้น', type: 'stuck', outcome: 'มินนาทำต่อไป แต่ความรู้สึกนั้นยังอยู่ข้างใน', tag: 'หลีกเลี่ยง' },
+          { text: 'วางดินสอลง มองไปรอบห้อง ยังไม่รู้จะทำอะไร', type: 'ok', outcome: 'มินนาหยุด รับรู้ว่ามีอะไรบางอย่างเปลี่ยนไปในห้อง', tag: 'สังเกต' },
+          { text: 'สังเกตว่าตัวเองรู้สึกไม่สบายใจ และนั่งอยู่กับความรู้สึกนั้น', type: 'good', outcome: 'มินนาไม่รีบผลักความรู้สึกออกไป — แค่อยู่กับมันสักครู่', tag: 'รับรู้' }
+        ]
+      }
+    ]
   }
 };
 
@@ -1298,7 +1324,7 @@ function showHome() {
         <div style="background: var(--cream-mid); border: 1.5px solid var(--cream-dark); border-radius: 14px; padding: 16px; opacity: 0.6; display: flex; align-items: center; gap: 14px;">
           <div style="font-size: 28px;">&#127968;</div>
           <div style="flex:1;">
-            <div style="font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;">ความสัมพันธ์ในครอบครัวเบาๆ</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;">ความสัมพันธ์ในครอบครัว</div>
             <div style="font-size: 13px; color: var(--text-soft);">บ้านคือที่ที่ปลอดภัยเสมอไหม?</div>
           </div>
           <div style="font-size: 10px; font-weight: 700; background: var(--cream-dark); color: var(--brown); padding: 3px 8px; border-radius: 20px;">เร็วๆ นี้</div>
