@@ -1396,10 +1396,18 @@ function startGame(trackId) {
   showOnboarding(currentTrack);
 }
 
+const trackIntros = {
+  1: { emoji: '&#128049;', title: 'มินนากับมะม่วง',         protagonist: 'ติดตามมินนาในวันที่แมวไม่แยแส',             blurb: 'บางทีเราพยายามมากแค่ไหน อีกฝ่ายก็ไม่ตอบสนอง<br>ความรู้สึกในตอนนั้น — มันบอกอะไรเราอยู่?' },
+  2: { emoji: '&#127800;', title: 'มิตรภาพใหม่',             protagonist: 'ติดตามมินนาในวันที่อยากรู้จักใครสักคน',      blurb: 'อยากทัก แต่ก็กลัว<br>ความตื่นเต้นและความกังวลอยู่ด้วยกันได้ — และนั่นปกติมาก' },
+  3: { emoji: '&#127807;', title: 'วันที่ดีแบบเรียบง่าย',   protagonist: 'ติดตามมินนาในวันธรรมดาวันหนึ่ง',             blurb: 'ไม่ต้องมีอะไรพิเศษ<br>บางทีวันที่เห็นตัวเองชัดขึ้นนิดนึง ก็นับว่าดีแล้ว' },
+  4: { emoji: '&#128153;', title: 'วันที่เพื่อนล้อ',         protagonist: 'ติดตามโมเน่ในวันที่ยากวันหนึ่ง',              blurb: 'เมื่อสิ่งที่รักถูกล้อเลียน ใจเราไปอยู่ที่ไหน?<br>ไม่มีคำตอบที่ถูกหรือผิด — มีแค่ความรู้สึกของเราเอง' },
+  5: { emoji: '&#127968;', title: 'ความสัมพันธ์ในครอบครัว', protagonist: 'ติดตามมินนาและครอบครัวในวันหยุดวันหนึ่ง',     blurb: 'แต่ละคนในบ้านมีความรู้สึกของตัวเอง<br>ลองดูว่าวันนั้นทุกคนอยู่กับตัวเองยังไง' },
+};
+
 function showOnboarding(trackId) {
   const key = 'seen_intro_track_' + trackId;
   if (localStorage.getItem(key)) {
-    renderScene(0);
+    showTrackIntro(trackId);
     return;
   }
   document.getElementById('scene-container').innerHTML = `
@@ -1425,7 +1433,33 @@ function showOnboarding(trackId) {
 
 function startTrackAfterOnboarding(trackId) {
   localStorage.setItem('seen_intro_track_' + trackId, '1');
-  renderScene(0);
+  showTrackIntro(trackId);
+}
+
+function showTrackIntro(trackId) {
+  const intro = trackIntros[trackId];
+  if (!intro) { renderScene(0); return; }
+  document.getElementById('scene-container').innerHTML = `
+    <div class="game-header">
+      <div class="game-logo">&#x1F43E;</div>
+      <div class="game-title-small">Minna Journey<br>มินนา เส้นทางของใจ</div>
+    </div>
+    <div class="scene">
+      <div class="scene-content" style="padding-top: 24px;">
+        <div style="text-align:center; margin-bottom: 20px;">
+          <div style="font-size: 48px; margin-bottom: 10px;">${intro.emoji}</div>
+          <h1 class="scene-title">${intro.title}</h1>
+        </div>
+        <div class="divider"></div>
+        <div style="margin-top: 20px; font-size: 15px; color: var(--text-dark); line-height: 1.9;">
+          <p style="font-style:italic; color:var(--text-soft); margin-bottom: 18px;">${intro.protagonist}</p>
+          <p>${intro.blurb}</p>
+        </div>
+        <button class="next-btn visible" style="margin-top: 28px;" onclick="renderScene(0)">เริ่มเลย →</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0 });
 }
 
 function renderScene(index) {
