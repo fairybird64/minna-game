@@ -1736,6 +1736,18 @@ function getReflection(choices) {
     }
   }
 
+  if (currentTrack === 6) {
+    if (stuck === 0) {
+      return { title: 'โมเน่รับมือภารกิจวันนี้ได้ดีมาก', text: 'งานที่ไม่ได้อยากทำ แต่ก็เลือกทำด้วยใจที่ยืดหยุ่น — นั่นเป็นสิ่งที่หลายคนทำไม่ได้' };
+    } else if (stuck >= 3) {
+      return { title: 'วันนี้หนักสำหรับโมเน่ และมันก็โอเคนะ', text: 'ความเหนื่อยและความหงุดหงิดเป็นส่วนหนึ่งของการทำสิ่งที่ไม่อยากทำ แค่รู้สึกแบบนั้นได้ ก็ถือว่าก้าวหน้าแล้ว' };
+    } else if (goodish >= 2) {
+      return { title: 'โมเน่อยู่กับงานได้ และยังหัวเราะได้ด้วย', text: 'ทำสิ่งที่ไม่ได้อยากทำแล้วยังรู้สึกเบาได้บ้าง นั่นคือสิ่งที่น่าภูมิใจอย่างเงียบๆ' };
+    } else {
+      return { title: 'โมเน่กำลังเรียนรู้อยู่', text: 'ทุกครั้งที่เราสังเกตเห็นว่าตัวเองทำอะไรไป ก็ถือว่าก้าวหน้าแล้ว ไม่มีทางเลือกไหนผิดหรือถูกตลอดไป มีแค่ทางที่เราเรียนรู้จากมัน' };
+    }
+  }
+
   // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
@@ -1793,7 +1805,7 @@ function showSummary() {
         <p class="summary-closing-text">${closingText}</p>
       </div>
 
-      <div class="summary-section-label">สิ่งที่มินนาเลือกวันนี้</div>
+      <div class="summary-section-label">สิ่งที่${tracks[currentTrack].protagonist}เลือกวันนี้</div>
       <div class="summary-choices">${choicesHTML}</div>
 
       <div class="summary-reflection">
@@ -1822,7 +1834,7 @@ function showSummary() {
           <button class="fb-emoji-btn" onclick="selectEmoji(5)">&#128516;</button>
         </div>
 
-        <div class="feedback-q">อยากบอกอะไรกับมินนาไหม?</div>
+        <div class="feedback-q">อยากบอกอะไรกับ${tracks[currentTrack].protagonist}ไหม?</div>
         <textarea class="fb-textarea" id="fb-text" placeholder="พิมพ์ได้เลยนะ..." maxlength="200" rows="3" oninput="updateFbText(this)"></textarea>
         <div class="fb-char-count" id="fb-char-count">0 / 200</div>
 
