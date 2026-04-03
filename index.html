@@ -1364,7 +1364,7 @@ const tracks = {
     protagonist: 'โมเน่',
     summary: {
       closingTitle: 'จบบทที่ 6',
-      closingText:  '',
+      closingText:  'วันนี้โมเน่ทำงานบ้านครบทุกอย่าง — แม้จะหงุดหงิด แม้จะเบื่อ แม้มะพร้าวจะวิ่งหนี ความรู้สึกไม่อยากทำนั้นเกิดขึ้นจริง แต่โมเน่ก็ยังทำได้ เพราะความรับผิดชอบและความใส่ใจ — และนั่นเป็นเรื่องน่าภูมิใจมากๆ',
       insights:     [],
       question:     ''
     },
@@ -1860,7 +1860,7 @@ function showSummary() {
       <span class="summary-scene-badge">${c.sceneId}</span>
       <div class="summary-choice-detail">
         <div class="summary-choice-text">${c.choiceText}</div>
-        <span class="summary-type-badge tag-${c.type}"${c.desc ? ` style="cursor:pointer" data-label="${c.tag.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-desc="${c.desc.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="openBadgeModal(this.dataset.label,this.dataset.desc)"` : ''}>${(c.type === 'good' || c.type === 'joyful') ? c.tag : (typeLabels[c.type] || c.type)}</span>
+        <span class="summary-type-badge tag-${c.type}"${c.desc ? ` style="cursor:pointer" data-label="${c.tag.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-desc="${c.desc.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="openBadgeModal(this.dataset.label,this.dataset.desc)"` : ''}>${c.tag}</span>
       </div>
     </div>
   `).join('');
