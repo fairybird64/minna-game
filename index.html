@@ -860,12 +860,64 @@
     @media (min-width: 480px) {
       #app { box-shadow: 0 0 40px rgba(100, 60, 20, 0.08); }
     }
+
+    /* Badge modal */
+    .badge-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(58, 36, 20, 0.45);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .badge-modal-card {
+      background: var(--cream);
+      border-radius: 16px;
+      padding: 24px 20px 20px;
+      max-width: 340px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(58, 36, 20, 0.18);
+    }
+    .badge-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: var(--text-soft);
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 6px;
+    }
+    .badge-modal-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      padding-right: 28px;
+    }
+    .badge-modal-desc {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.85;
+    }
   </style>
 </head>
 <body>
 <div id="app">
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   <div id="scene-container"></div>
+  <div id="badge-modal" class="badge-modal-overlay" style="display:none" onclick="closeBadgeModal()">
+    <div class="badge-modal-card" onclick="event.stopPropagation()">
+      <button class="badge-modal-close" onclick="closeBadgeModal()">✕</button>
+      <div class="badge-modal-label" id="badge-modal-label"></div>
+      <div class="badge-modal-desc" id="badge-modal-desc"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1326,9 +1378,9 @@ const tracks = {
         innerVoice: 'วันหยุด... แต่ก็มีงานรอแล้ว',
         hint: null,
         choices: [
-          { text: '"ทำไมต้องผมด้วย" — รู้สึกไม่แฟร์ วันหยุดทำไมต้องมาทำงานบ้าน', type: 'stuck', outcome: 'โมเน่บ่นในใจ ความรู้สึกไม่แฟร์วนอยู่ข้างใน', tag: 'หลีกเลี่ยง' },
-          { text: '"เดี๋ยวก่อนนะครับ" — ขอเล่นมือถือก่อนแป๊บนึง แล้วค่อยทำ', type: 'ok', outcome: 'โมเน่ต่อรองเวลาให้ตัวเอง แต่ยังรู้ว่าจะทำ', tag: 'สังเกต' },
-          { text: '"โอเคครับ ทำเลย" — ไม่ได้อยากทำ แต่ก็โอเค แม่ขอก็ช่วยได้', type: 'good', outcome: 'โมเน่เลือกช่วย — โดยไม่ต้องรู้สึกดีก่อนก็ได้', tag: 'ยืดหยุ่น — ช่วยได้แม้ไม่อยาก' }
+          { text: '"ทำไมต้องผมด้วย" — รู้สึกไม่แฟร์ วันหยุดทำไมต้องมาทำงานบ้าน', type: 'stuck', outcome: 'โมเน่บ่นในใจ ความรู้สึกไม่แฟร์วนอยู่ข้างใน', tag: 'ต่อต้าน', desc: 'โมเน่รู้สึกหงุดหงิดและไม่ยุติธรรม — ความรู้สึกนั้นมีได้ แต่มันก็ทำให้โมเน่ต่อต้านแม่นุ่นไปด้วย' },
+          { text: '"เดี๋ยวก่อนนะครับ" — ขอเล่นมือถือก่อนแป๊บนึง แล้วค่อยทำ', type: 'ok', outcome: 'โมเน่ต่อรองเวลาให้ตัวเอง แต่ยังรู้ว่าจะทำ', tag: 'ผัดผ่อน', desc: '"เดี๋ยว" ฟังดูยังไม่ปฏิเสธ — แต่จริงๆ คือการเลื่อนสิ่งที่ไม่อยากทำออกไป ซึ่งระหว่างที่เล่นอยู่ งานก็ยังไม่ได้ทำอยู่ดี' },
+          { text: '"โอเคครับ ทำเลย" — ไม่ได้อยากทำ แต่ก็โอเค แม่ขอก็ช่วยได้', type: 'good', outcome: 'โมเน่เลือกช่วย — โดยไม่ต้องรู้สึกดีก่อนก็ได้', tag: 'รับได้', desc: 'แม้ไม่ค่อยอยากทำ โมเน่ก็เลือกช่วยแม่นุ่น — นั่นคือการตัดสินใจเพื่อคนอื่น' }
         ]
       },
       {
@@ -1340,9 +1392,9 @@ const tracks = {
         innerVoice: 'งานก็แค่นี้... แต่ทำไมรู้สึกนานจัง',
         hint: null,
         choices: [
-          { text: '"อยากเลิกทำแล้ว" — รู้สึกเหนื่อย ไม่อยากทำต่อแล้ว', type: 'stuck', outcome: 'โมเน่วางของแล้วนั่งเฉย ความอยากหยุดดังกว่าอย่างอื่น', tag: 'หลีกเลี่ยง' },
-          { text: '"เบื่อจังเลย แต่ก็ทำต่อ" — ไม่ค่อยสนุก แต่ก็หยุดไม่ได้ ทำไปก่อนแล้วกัน', type: 'ok', outcome: 'โมเน่ทำต่อ แม้ไม่สนุก — รู้ว่ามันต้องเสร็จ', tag: 'สังเกต' },
-          { text: '"ทำให้เสร็จๆ ไปดีกว่า" — ไม่ต้องคิดมาก ทำทีละอย่าง เดี๋ยวก็เสร็จเอง', type: 'good', outcome: 'โมเน่โฟกัสกับงานข้างหน้า ทีละชิ้น ทีละอย่าง', tag: 'มุ่งมั่น — ทำทีละก้าว' }
+          { text: '"อยากเลิกทำแล้ว" — รู้สึกเหนื่อย ไม่อยากทำต่อแล้ว', type: 'stuck', outcome: 'โมเน่วางของแล้วนั่งเฉย ความอยากหยุดดังกว่าอย่างอื่น', tag: 'อยากเลิก', desc: 'เบื่อและอยากกลับไปเล่นมือถือ ทำให้อยากเลิกทำก่อนที่งานจะเสร็จ' },
+          { text: '"เบื่อจังเลย แต่ก็ทำต่อ" — ไม่ค่อยสนุก แต่ก็หยุดไม่ได้ ทำไปก่อนแล้วกัน', type: 'ok', outcome: 'โมเน่ทำต่อ แม้ไม่สนุก — รู้ว่ามันต้องเสร็จ', tag: 'ขอไปที', desc: 'ยังทำอยู่ แต่แบบลวกๆ — พับผ้าแบบขยุ้ม กวาดแบบลากๆ ขอแค่ให้ดูเหมือนเสร็จ' },
+          { text: '"ทำให้เสร็จๆ ไปดีกว่า" — ไม่ต้องคิดมาก ทำทีละอย่าง เดี๋ยวก็เสร็จเอง', type: 'good', outcome: 'โมเน่โฟกัสกับงานข้างหน้า ทีละชิ้น ทีละอย่าง', tag: 'มุ่งมั่น — ทำทีละก้าว', desc: 'โมเน่โฟกัสที่งานข้างหน้า ทีละชิ้น ทีละอย่าง อย่างตั้งใจและรับผิดชอบ' }
         ]
       },
       {
@@ -1354,9 +1406,9 @@ const tracks = {
         innerVoice: 'เปียกหมดเลย... โมเน่จะทำยังไงดี',
         hint: null,
         choices: [
-          { text: '"หงุดหงิดมาก อยากเลิกเลย" — เหนื่อยแล้ว ทำไมต้องยากขนาดนี้', type: 'stuck', outcome: 'โมเน่หยุดนิ่ง ความหงุดหงิดท่วมมากกว่าอย่างอื่น', tag: 'หลีกเลี่ยง' },
-          { text: '"หยุดก่อน ใจเย็นๆ" — หายใจลึกๆ แล้วค่อยๆ จัดการใหม่ทีละขั้น', type: 'ok', outcome: 'โมเน่รีเซตตัวเอง แล้วเดินตามมะพร้าวอีกรอบ', tag: 'สังเกต' },
-          { text: '"หัวเราะแล้วสู้ต่อ" — ขำตัวเองนิดนึง แล้วก็จับมะพร้าวให้อยู่แล้วอาบต่อ', type: 'good', outcome: 'โมเน่ขำ แล้วก็กลับมาจัดการต่อ — เบาขึ้นนิดนึง', tag: 'เบาใจ — ขำได้แม้ยุ่ง' }
+          { text: '"หงุดหงิดมาก อยากเลิกเลย" — เหนื่อยแล้ว ทำไมต้องยากขนาดนี้', type: 'stuck', outcome: 'โมเน่หยุดนิ่ง ความหงุดหงิดท่วมมากกว่าอย่างอื่น', tag: 'โกรธ', desc: 'ความหงุดหงิดที่สะสมมาตั้งแต่ต้น — พอมะพร้าววิ่งหนี มันก็ระเบิดออกมาเลย อยากเลิกทำทุกอย่างทันที' },
+          { text: '"หยุดก่อน ใจเย็นๆ" — หายใจลึกๆ แล้วค่อยๆ จัดการใหม่ทีละขั้น', type: 'ok', outcome: 'โมเน่รีเซตตัวเอง แล้วเดินตามมะพร้าวอีกรอบ', tag: 'หยุด ตั้งสติ', desc: 'โมเน่รู้ว่าถ้าฝืนทำตอนนี้จะยิ่งแย่ — หยุดหายใจลึกๆก่อน แล้วค่อยเริ่มใหม่' },
+          { text: '"หัวเราะแล้วสู้ต่อ" — ขำตัวเองนิดนึง แล้วก็จับมะพร้าวให้อยู่แล้วอาบต่อ', type: 'good', outcome: 'โมเน่ขำ แล้วก็กลับมาจัดการต่อ — เบาขึ้นนิดนึง', tag: 'ยืดหยุ่น', desc: 'โมเน่เปลี่ยนเรื่องเครียดให้เป็นเรื่องขำได้ — ใจนิ่งพอที่จะแก้ไขปัญหาต่อ' }
         ]
       },
       {
@@ -1368,9 +1420,9 @@ const tracks = {
         innerVoice: 'ทำเสร็จแล้ว... โมเน่รู้สึกยังไงนะ',
         hint: null,
         choices: [
-          { text: '"เหนื่อยมาก" — ทำเสร็จแล้ว ตอนนี้อยากพักยาวๆ — ยังไม่ได้รู้สึกอะไรกับคำขอบคุณนั้น', type: 'stuck', outcome: 'โมเน่นั่งนิ่ง ความเหนื่อยยังเต็มอยู่', tag: 'หมดแรง' },
-          { text: '"โอเค แค่ทำเสร็จก็พอ" — ไม่ได้รู้สึกอะไรมาก แต่ก็โล่งที่เสร็จแล้ว', type: 'ok', outcome: 'โมเน่พยักหน้า รู้สึกโล่งเบาๆ', tag: 'โล่ง' },
-          { text: '"รู้สึกดี ภูมิใจตัวเองนิดนึง" — เหนื่อยแต่อิ่มใจ — ทำเสร็จแล้ว และมันดีกว่าที่คิด', type: 'good', outcome: 'โมเน่ยิ้มเบาๆ — อิ่มใจแบบที่ไม่ได้คาดไว้', tag: 'อิ่มใจ — ภูมิใจเงียบๆ' }
+          { text: '"เหนื่อยมาก" — ทำเสร็จแล้ว ตอนนี้อยากพักยาวๆ — ยังไม่ได้รู้สึกอะไรกับคำขอบคุณนั้น', type: 'stuck', outcome: 'โมเน่นั่งนิ่ง ความเหนื่อยยังเต็มอยู่', tag: 'หมดแรง', desc: 'บางทีคำขอบคุณมาถึงตอนที่เราไม่มีแรงรับแล้ว — และนั่นก็โอเค' },
+          { text: '"โอเค แค่ทำเสร็จก็พอ" — ไม่ได้รู้สึกอะไรมาก แต่ก็โล่งที่เสร็จแล้ว', type: 'ok', outcome: 'โมเน่พยักหน้า รู้สึกโล่งเบาๆ', tag: 'โล่ง', desc: 'ทำเสร็จแล้ว คำขอบคุณทำให้รู้สึกว่ามันก็ไม่แย่นะวันนี้' },
+          { text: '"รู้สึกดี ภูมิใจตัวเองนิดนึง" — เหนื่อยแต่อิ่มใจ — ทำเสร็จแล้ว และมันดีกว่าที่คิด', type: 'good', outcome: 'โมเน่ยิ้มเบาๆ — อิ่มใจแบบที่ไม่ได้คาดไว้', tag: 'อิ่มใจ — ภูมิใจเงียบๆ', desc: 'โมเน่รับรู้ว่าตัวเองทำได้ — ความภูมิใจเงียบๆ นี้มาจากข้างใน ที่รู้ว่าตัวเองทำด้วยความรับผิดชอบและใส่ใจ' }
         ]
       }
     ]
@@ -1630,7 +1682,8 @@ function selectChoice(index) {
     sceneId: s.id,
     choiceText: choice.text,
     type: choice.type,
-    tag: choice.tag
+    tag: choice.tag,
+    desc: choice.desc || null
   });
 
   document.querySelectorAll('.choice-btn').forEach((btn, i) => {
@@ -1648,6 +1701,15 @@ function selectChoice(index) {
   outcomeText.textContent = choice.outcome;
   outcomeTag.textContent  = choice.tag;
   outcomeTag.className    = 'outcome-tag tag-' + choice.type;
+  if (choice.desc) {
+    outcomeTag.style.cursor = 'pointer';
+    outcomeTag.title = 'แตะเพื่ออ่านเพิ่มเติม';
+    outcomeTag.onclick = () => openBadgeModal(choice.tag, choice.desc);
+  } else {
+    outcomeTag.style.cursor = '';
+    outcomeTag.title = '';
+    outcomeTag.onclick = null;
+  }
   outcomeEl.classList.add('visible');
   nextBtn.classList.add('visible');
 
@@ -1663,6 +1725,16 @@ function nextScene() {
   } else {
     showSummary();
   }
+}
+
+function openBadgeModal(label, desc) {
+  document.getElementById('badge-modal-label').textContent = label;
+  document.getElementById('badge-modal-desc').textContent  = desc;
+  document.getElementById('badge-modal').style.display = 'flex';
+}
+
+function closeBadgeModal() {
+  document.getElementById('badge-modal').style.display = 'none';
 }
 
 const typeLabels = {
@@ -1788,7 +1860,7 @@ function showSummary() {
       <span class="summary-scene-badge">${c.sceneId}</span>
       <div class="summary-choice-detail">
         <div class="summary-choice-text">${c.choiceText}</div>
-        <span class="summary-type-badge tag-${c.type}">${(c.type === 'good' || c.type === 'joyful') ? c.tag : (typeLabels[c.type] || c.type)}</span>
+        <span class="summary-type-badge tag-${c.type}"${c.desc ? ` style="cursor:pointer" data-label="${c.tag.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-desc="${c.desc.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="openBadgeModal(this.dataset.label,this.dataset.desc)"` : ''}>${(c.type === 'good' || c.type === 'joyful') ? c.tag : (typeLabels[c.type] || c.type)}</span>
       </div>
     </div>
   `).join('');
