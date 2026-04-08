@@ -2304,35 +2304,8 @@ function showSummary() {
         <p class="ending-question">${question}</p>
       </div>
 
-      <div id="feedback-widget" class="feedback-widget" style="display:none; opacity:0;">
-        <div class="feedback-widget-title">บอกความรู้สึกให้หน่อยนะ</div>
-
-        <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
-        <div class="feedback-emoji-row">
-          <button class="fb-emoji-btn" onclick="selectEmoji(1)">&#128532;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(2)">&#128528;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(3)">&#128578;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(4)">&#128522;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(5)">&#128516;</button>
-        </div>
-
-        <div class="feedback-q">อยากบอกอะไรกับ${tracks[currentTrack].protagonist}ไหม?</div>
-        <textarea class="fb-textarea" id="fb-text" placeholder="พิมพ์ได้เลยนะ..." maxlength="200" rows="3" oninput="updateFbText(this)"></textarea>
-        <div class="fb-char-count" id="fb-char-count">0 / 200</div>
-
-        <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
-        <div class="fb-pair-btns">
-          <button class="fb-pair-btn" id="fb-rec-yes" onclick="selectPair('recommend','yes')">อยากเลย &#128155;</button>
-          <button class="fb-pair-btn" id="fb-rec-no"  onclick="selectPair('recommend','uncertain')">ยังไม่แน่ใจ</button>
-        </div>
-
-        <div class="feedback-q">อยากกลับมาเล่นเรื่องอื่นอีกไหม?</div>
-        <div class="fb-pair-btns">
-          <button class="fb-pair-btn" id="fb-ret-yes" onclick="selectPair('returnIntent','yes')">อยากมาก &#127775;</button>
-          <button class="fb-pair-btn" id="fb-ret-no"  onclick="selectPair('returnIntent','uncertain')">ขอดูก่อน</button>
-        </div>
-
-        <button class="fb-submit" id="fb-submit" onclick="submitFeedback()" disabled>ส่งความรู้สึก</button>
+      <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px; animation:fadeUp 0.3s ease both;">
+        <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ห้องของฉัน</button>
       </div>
 
       <div class="summary-buttons">
@@ -2402,7 +2375,7 @@ function submitFeedback() {
       body: JSON.stringify(payload)
     }).catch(() => {});
   }
-  const widget = document.getElementById('feedback-widget');
+  const widget = document.getElementById('feedback-widget') || document.getElementById('room-feedback-widget');
   if (!widget) return;
   widget.innerHTML = '<div class="feedback-thankyou">ขอบคุณนะ &#127800; มินนาจะจำไว้เสมอ</div>';
   setTimeout(() => { widget.style.opacity = '0'; }, 1800);
@@ -2606,6 +2579,44 @@ function showBadgeRoom() {
         </div>
       </div>
 
+      <!-- Feedback form (hidden until requested) -->
+      <div id="room-feedback-widget" class="feedback-widget" style="display:none; opacity:0; margin:16px 16px 0;">
+        <div class="feedback-widget-title">บอกความรู้สึกให้หน่อยนะ</div>
+
+        <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
+        <div class="feedback-emoji-row">
+          <button class="fb-emoji-btn" onclick="selectEmoji(1)">&#128532;</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(2)">&#128528;</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(3)">&#128578;</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(4)">&#128522;</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(5)">&#128516;</button>
+        </div>
+
+        <div class="feedback-q">อยากบอกอะไรกับ${tracks[currentTrack].protagonist}ไหม?</div>
+        <textarea class="fb-textarea" id="fb-text" placeholder="พิมพ์ได้เลยนะ..." maxlength="200" rows="3" oninput="updateFbText(this)"></textarea>
+        <div class="fb-char-count" id="fb-char-count">0 / 200</div>
+
+        <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
+        <div class="fb-pair-btns">
+          <button class="fb-pair-btn" id="fb-rec-yes" onclick="selectPair('recommend','yes')">อยากเลย &#128155;</button>
+          <button class="fb-pair-btn" id="fb-rec-no"  onclick="selectPair('recommend','uncertain')">ยังไม่แน่ใจ</button>
+        </div>
+
+        <div class="feedback-q">อยากกลับมาเล่นเรื่องอื่นอีกไหม?</div>
+        <div class="fb-pair-btns">
+          <button class="fb-pair-btn" id="fb-ret-yes" onclick="selectPair('returnIntent','yes')">อยากมาก &#127775;</button>
+          <button class="fb-pair-btn" id="fb-ret-no"  onclick="selectPair('returnIntent','uncertain')">ขอดูก่อน</button>
+        </div>
+
+        <button class="fb-submit" id="fb-submit" onclick="submitFeedback()" disabled>ส่งความรู้สึก</button>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="margin:16px 16px 0; display:flex; flex-direction:column; gap:10px;">
+        <button id="room-feedback-btn" class="summary-btn-secondary" onclick="showRoomFeedback()">&#128172; บอกความรู้สึก</button>
+        <button class="summary-btn-secondary" onclick="showHome()">กลับหน้าหลัก</button>
+      </div>
+
       <div style="height:48px;"></div>
     </div>
 
@@ -2654,6 +2665,18 @@ function openRoomBadgePopup(trackId) {
 function closeRoomBadgePopup() {
   const popup = document.getElementById('room-badge-popup');
   if (popup) popup.style.display = 'none';
+}
+
+function showRoomFeedback() {
+  const btn = document.getElementById('room-feedback-btn');
+  if (btn) btn.style.display = 'none';
+  const widget = document.getElementById('room-feedback-widget');
+  if (!widget) return;
+  widget.style.display = 'block';
+  void widget.offsetWidth;
+  widget.style.transition = 'opacity 400ms ease-in';
+  widget.style.opacity = '1';
+  setTimeout(() => widget.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 }
 
 // ── Badge system ──
@@ -2788,13 +2811,13 @@ function triggerBadgeAnimation(badgeState) {
       setTimeout(() => {
         counterEl.style.transform  = 'scale(1)';
         counterEl.style.transition = 'transform 200ms ease-in';
-        // Reveal feedback widget after animation fully settles
-        const fw = document.getElementById('feedback-widget');
-        if (fw) {
-          fw.style.display = 'block';
-          void fw.offsetWidth; // force reflow before opacity transition
-          fw.style.transition = 'opacity 400ms ease-in';
-          fw.style.opacity = '1';
+        // Reveal "ห้องของฉัน" button after animation fully settles
+        const pas = document.getElementById('post-animation-section');
+        if (pas) {
+          pas.style.display = 'block';
+          void pas.offsetWidth;
+          pas.style.transition = 'opacity 400ms ease-in';
+          pas.style.opacity = '1';
         }
       }, 150);
     }, 520);
