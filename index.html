@@ -923,6 +923,10 @@
       border-radius: 8px;
       transition: transform 150ms ease;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .room-badge-item:hover { transform: scale(1.15); }
     .color-swatch {
@@ -2526,11 +2530,17 @@ function showBadgeRoom() {
   ).join('');
 
   const earnedIds = Object.keys(earned);
+  const BADGE_HAS_IMG = new Set([1,2,3,4,5,6]);
   const badgesHTML = earnedIds.length === 0
     ? `<div style="font-size:12px;color:#9B7555;text-align:center;padding:8px 0;">ยังไม่มี badge — เล่นจบ track แรกก็ได้รับเลย</div>`
-    : earnedIds.map(id =>
-        `<div class="room-badge-item" onclick="openRoomBadgePopup(${id})" title="${tracks[id] ? tracks[id].title : ''}">&#127885;</div>`
-      ).join('');
+    : earnedIds.map(id => {
+        const nId = Number(id);
+        const state = earned[id] || 'else';
+        const inner = BADGE_HAS_IMG.has(nId)
+          ? `<img src="assets/badges/badge_t${id}_${state}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:6px;display:block;" alt="">`
+          : '&#127885;';
+        return `<div class="room-badge-item" onclick="openRoomBadgePopup(${id})" title="${tracks[id] ? tracks[id].title : ''}">${inner}</div>`;
+      }).join('');
 
   document.getElementById('scene-container').innerHTML = `
     <div style="min-height:100vh; background:${s.wall}; transition:background 300ms;">
@@ -2602,7 +2612,7 @@ function showBadgeRoom() {
     <!-- Badge popup -->
     <div id="room-badge-popup" onclick="closeRoomBadgePopup()">
       <div style="background:white; border-radius:18px; padding:24px 22px; margin:24px; max-width:320px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.18);" onclick="event.stopPropagation()">
-        <div style="font-size:44px; text-align:center; margin-bottom:10px;">&#127885;</div>
+        <div id="room-badge-img" style="text-align:center; margin-bottom:10px;"></div>
         <div id="room-badge-title" style="font-size:16px; font-weight:700; text-align:center; color:#3A2414; margin-bottom:4px;"></div>
         <div id="room-badge-sub" style="font-size:13px; text-align:center; color:#9B7555; margin-bottom:14px;"></div>
         <div id="room-badge-note" style="font-size:13px; color:#6B4830; line-height:1.8; background:#FFF8F0; border-radius:10px; padding:12px 14px;"></div>
@@ -2627,6 +2637,13 @@ function openRoomBadgePopup(trackId) {
   const state = earned[trackId] || 'else';
   const data = badgeData[trackId];
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
+  const imgEl = document.getElementById('room-badge-img');
+  if (imgEl) {
+    const hasImg = [1,2,3,4,5,6].includes(Number(trackId));
+    imgEl.innerHTML = hasImg
+      ? `<img src="assets/badges/badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
+      : `<span style="font-size:44px;">&#127885;</span>`;
+  }
   document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
   document.getElementById('room-badge-sub').textContent = info.protagonist;
   document.getElementById('room-badge-note').textContent = resourceText;
@@ -2646,10 +2663,50 @@ const badgeData = {
     else:  'เธอไม่ได้หนีออกไป — การอยู่ตรงนั้นคือความกล้าแบบหนึ่ง',
     good:  'เธอเปิดประตูให้ใครสักคนเข้ามา — แม้จะยังไม่รู้ว่าจะได้อะไรกลับมา'
   },
+  2: {
+    stuck: 'เธอได้ยินเสียงข้างในตัวเอง — แม้จะยังไม่รู้ว่ามันบอกอะไร',
+    else:  'ในความเงียบมีบางอย่างรอให้เธอฟัง — และเธอก็เริ่มฟังแล้ว',
+    good:  'เธอได้ยินเสียงของตัวเองชัดขึ้น — นั่นคือจุดเริ่มต้นของการรู้จักตัวเอง'
+  },
+  3: {
+    stuck: 'แม้วันนั้นจะหนัก — เธอก็ยังอยู่กับมันได้จนผ่านไป',
+    else:  'วันเรียบๆ ก็มีคุณค่า — เธอเริ่มเห็นมันแล้ว',
+    good:  'เธอรู้จักหาความสุขในสิ่งเล็กๆ — และนั่นคือทักษะที่ทรงพลังมาก'
+  },
+  4: {
+    stuck: 'ความโกรธที่รู้สึกอยู่นั้นจริง — และเธอก็ผ่านวันนั้นมาได้',
+    else:  'เธอไม่ได้หายไป — ยังอยู่ตรงนี้แม้จะหนัก',
+    good:  'ความโกรธคือเกราะที่ปกป้องความสั่นไหวข้างใน — เธอเริ่มรู้จักมันแล้ว'
+  },
+  5: {
+    stuck: 'ความสัมพันธ์ในครอบครัวซับซ้อนได้ — และเธอก็รู้สึกถึงมันได้อย่างซื่อสัตย์',
+    else:  'เธอเห็นทั้งสองด้าน — นั่นต้องใช้ความกล้ามาก',
+    good:  'เธอเลือกที่จะเข้าใจ — แม้จะยังไม่ง่ายนัก'
+  },
   6: {
     stuck: 'ทำคนเดียวทั้งวันโดยไม่มีใครเห็น — นั่นต้องใช้ความกล้ามากกว่าที่คิด',
     else:  'ความรู้สึกไม่แฟร์นั้นจริง — แต่เธอก็ยังเลือกทำต่อได้',
     good:  'ทุกสิ่งที่ทำด้วยความใส่ใจ — คือหลักฐานว่าความกล้าเงียบๆ ของเธอมีอยู่จริง'
+  },
+  7: {
+    stuck: 'ก้าวแรกไม่ต้องสมบูรณ์แบบ — การมาก็คือความกล้าแบบหนึ่งแล้ว',
+    else:  'เธอสังเกตเห็นคนรอบข้าง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
+    good:  'แสงที่งดงามที่สุด — คือแสงที่ส่องออกมาจากตัวตนที่เธอเลือกจะเป็นอย่างซื่อสัตย์'
+  },
+  8: {
+    stuck: 'ยังสั่นอยู่แต่ก็พูดออกไปแล้ว — ความกล้าที่แท้จริงคือแบบนี้',
+    else:  'ความผิดพลาดไม่ได้จบที่ตรงนั้น — มันพาเธอไปหาบางอย่างที่ดีกว่า',
+    good:  'ความผิดพลาดไม่ใช่ตราบาป — มันคือผ้าห่มที่โอบกอดและบอกว่าเธอก็เป็นเพียงมนุษย์คนหนึ่ง'
+  },
+  9: {
+    stuck: 'ความกังวลที่รู้สึกอยู่นั้นจริง — และเธอก็อยู่กับมันได้โดยไม่ต้องแก้ทุกอย่าง',
+    else:  'เธอไม่ได้ต้องรู้ทุกอย่าง — แค่อยู่กับปัจจุบันก็พอ',
+    good:  'เธอเรียนรู้ที่จะปล่อย — และนั่นยากกว่าการควบคุมมาก'
+  },
+  10: {
+    stuck: 'การเติบโตไม่ต้องรีบ — แค่ยังเดินอยู่ก็พอ',
+    else:  'เธอเห็นคนอื่น เห็นตัวเอง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
+    good:  'มิตรภาพไม่ใช่การทำให้เหมือนกัน — แต่คือการยอมรับในความต่างอย่างให้เกียรติ'
   }
 };
 
