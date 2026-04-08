@@ -2255,7 +2255,7 @@ function showSummary() {
         <p class="ending-question">${question}</p>
       </div>
 
-      <div id="feedback-widget" class="feedback-widget">
+      <div id="feedback-widget" class="feedback-widget" style="display:none; opacity:0;">
         <div class="feedback-widget-title">บอกความรู้สึกให้หน่อยนะ</div>
 
         <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
@@ -2518,6 +2518,14 @@ function triggerBadgeAnimation() {
       setTimeout(() => {
         counterEl.style.transform  = 'scale(1)';
         counterEl.style.transition = 'transform 200ms ease-in';
+        // Reveal feedback widget after animation fully settles
+        const fw = document.getElementById('feedback-widget');
+        if (fw) {
+          fw.style.display = 'block';
+          void fw.offsetWidth; // force reflow before opacity transition
+          fw.style.transition = 'opacity 400ms ease-in';
+          fw.style.opacity = '1';
+        }
       }, 150);
     }, 520);
   }, 620);
