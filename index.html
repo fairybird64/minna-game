@@ -905,6 +905,15 @@
       color: var(--text-mid);
       line-height: 1.85;
     }
+
+    /* ── Scene transition ── */
+    @keyframes sceneFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .scene-fade-in {
+      animation: sceneFadeIn 400ms ease-in-out;
+    }
   </style>
 </head>
 <body>
@@ -1923,7 +1932,7 @@ function renderScene(index) {
       <div class="game-logo">&#x1F43E;</div>
       <div class="game-title-small">Minna Journey<br>มินนา เส้นทางของใจ</div>
     </div>
-    <div class="scene">
+    <div class="scene scene-fade-in">
       <div class="scene-image-wrap" style="margin-top:16px;">
         <img class="scene-image" src="${s.image}" alt="${s.title}"
              onerror="this.parentNode.innerHTML='<div class=\\'scene-image-placeholder\\'>[ ${s.title} ]</div>'">
