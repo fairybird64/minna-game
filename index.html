@@ -906,6 +906,46 @@
       line-height: 1.85;
     }
 
+    /* ── Badge Room ── */
+    .room-scene {
+      position: relative;
+      height: 320px;
+      margin: 12px 16px 0;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: background 300ms ease;
+    }
+    .room-furniture { position: absolute; transition: background 300ms ease; }
+    .room-badge-item {
+      font-size: 28px;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 8px;
+      transition: transform 150ms ease;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+    .room-badge-item:hover { transform: scale(1.15); }
+    .color-swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2.5px solid transparent;
+      flex-shrink: 0;
+      transition: border-color 150ms;
+    }
+    .color-swatch.active { border-color: #3A2414; }
+
+    /* ── Badge Room popup ── */
+    #room-badge-popup {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* ── Scene transition ── */
     @keyframes sceneFadeIn {
       from { opacity: 0; }
@@ -1807,6 +1847,11 @@ function showHome() {
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         ${trackCardsHTML}
       </div>
+      <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
+        <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
+          &#127968; ห้องของฉัน
+        </button>
+      </div>
     </div>
   `;
 }
@@ -2445,6 +2490,138 @@ function restart() {
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
   renderScene(0);
+}
+
+// ── Badge Room ──
+const ROOM_DEFAULTS = { wall: '#FFD6D6', bed: '#FFAABB', curtain: '#FF9AAA' };
+const ROOM_PALETTES = {
+  wall:    ['#FFD6D6','#D6E8FF','#D6F5D6','#FFF5D6','#EDD6FF'],
+  bed:     ['#FFAABB','#AAC8FF','#AAEEBB','#FFEEAA','#DDAAFF'],
+  curtain: ['#FF9AAA','#99BBFF','#99DDAA','#FFDD88','#CC99FF'],
+};
+
+function getRoomSettings() {
+  return Object.assign({}, ROOM_DEFAULTS, JSON.parse(localStorage.getItem('minnaRoomSettings') || '{}'));
+}
+
+function showBadgeRoom() {
+  const s = getRoomSettings();
+  const earned = getEarnedBadges();
+  const total  = Object.keys(tracks).length;
+
+  const swatchRow = (key) => ROOM_PALETTES[key].map(c =>
+    `<div class="color-swatch${s[key] === c ? ' active' : ''}"
+          style="background:${c};"
+          onclick="setRoomColor('${key}','${c}')"></div>`
+  ).join('');
+
+  const badgesHTML = earned.length === 0
+    ? `<div style="font-size:12px;color:#9B7555;text-align:center;padding:8px 0;">ยังไม่มี badge — เล่นจบ track แรกก็ได้รับเลย</div>`
+    : earned.map(id =>
+        `<div class="room-badge-item" onclick="openRoomBadgePopup(${id})" title="${tracks[id] ? tracks[id].title : ''}">&#127885;</div>`
+      ).join('');
+
+  document.getElementById('scene-container').innerHTML = `
+    <div style="min-height:100vh; background:${s.wall}; transition:background 300ms;">
+
+      <!-- Header -->
+      <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
+        <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
+        <span style="font-size:15px; font-weight:700; color:#3A2414;">ห้องของฉัน</span>
+        <span style="margin-left:auto; font-size:12px; color:#9B7555;">&#127885; ${earned.length}/${total}</span>
+      </div>
+
+      <!-- Room scene -->
+      <div class="room-scene" style="background:${s.wall};">
+
+        <!-- Curtain rod -->
+        <div class="room-furniture" style="top:0;left:12px;width:92px;height:7px;background:#8B5E3C;border-radius:0 0 4px 4px;"></div>
+        <!-- Curtain panel 1 -->
+        <div class="room-furniture" style="top:0;left:16px;width:50px;height:155px;background:${s.curtain};border-radius:0 0 26px 26px;opacity:0.92;"></div>
+        <!-- Curtain panel 2 -->
+        <div class="room-furniture" style="top:0;left:52px;width:42px;height:132px;background:${s.curtain};border-radius:0 0 22px 22px;opacity:0.72;"></div>
+
+        <!-- Shelf left bracket -->
+        <div class="room-furniture" style="top:136px;left:18%;width:5px;height:38px;background:#8B5E3C;border-radius:2px;"></div>
+        <!-- Shelf right bracket -->
+        <div class="room-furniture" style="top:136px;right:18%;width:5px;height:38px;background:#8B5E3C;border-radius:2px;"></div>
+        <!-- Shelf top surface -->
+        <div class="room-furniture" style="top:170px;left:16%;width:68%;height:12px;background:#8B5E3C;border-radius:4px;box-shadow:0 4px 0 #6B4530;"></div>
+
+        <!-- Badges on shelf -->
+        <div style="position:absolute;top:132px;left:17%;width:66%;display:flex;gap:6px;align-items:flex-end;justify-content:center;flex-wrap:wrap;">
+          ${badgesHTML}
+        </div>
+
+        <!-- Bed headboard -->
+        <div class="room-furniture" style="bottom:62px;right:20px;width:132px;height:14px;background:#8B5E3C;border-radius:8px 8px 2px 2px;"></div>
+        <!-- Bed mattress -->
+        <div class="room-furniture" style="bottom:0;right:20px;width:132px;height:64px;background:${s.bed};border-radius:4px 4px 3px 3px;box-shadow:inset 0 3px 0 rgba(255,255,255,0.35);"></div>
+        <!-- Pillow -->
+        <div class="room-furniture" style="bottom:42px;right:32px;width:40px;height:20px;background:rgba(255,255,255,0.85);border-radius:7px;"></div>
+        <!-- Bed foot-legs -->
+        <div class="room-furniture" style="bottom:0;right:24px;width:8px;height:7px;background:#6B4530;border-radius:0 0 3px 3px;"></div>
+        <div class="room-furniture" style="bottom:0;right:136px;width:8px;height:7px;background:#6B4530;border-radius:0 0 3px 3px;"></div>
+
+        <!-- Floor strip -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:7px;background:rgba(0,0,0,0.07);"></div>
+      </div>
+
+      <!-- Customization bar -->
+      <div style="margin:14px 16px 0; background:rgba(255,255,255,0.72); border-radius:14px; padding:16px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:#9B7555; margin-bottom:14px;">ตกแต่งห้อง</div>
+
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:#6B4830; margin-bottom:7px;">สีผนัง</div>
+          <div style="display:flex; gap:8px;">${swatchRow('wall')}</div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:#6B4830; margin-bottom:7px;">สีผ้าปูที่นอน</div>
+          <div style="display:flex; gap:8px;">${swatchRow('bed')}</div>
+        </div>
+        <div>
+          <div style="font-size:12px; color:#6B4830; margin-bottom:7px;">สีผ้าม่าน</div>
+          <div style="display:flex; gap:8px;">${swatchRow('curtain')}</div>
+        </div>
+      </div>
+
+      <div style="height:48px;"></div>
+    </div>
+
+    <!-- Badge popup -->
+    <div id="room-badge-popup" onclick="closeRoomBadgePopup()">
+      <div style="background:white; border-radius:18px; padding:24px 22px; margin:24px; max-width:320px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.18);" onclick="event.stopPropagation()">
+        <div style="font-size:44px; text-align:center; margin-bottom:10px;">&#127885;</div>
+        <div id="room-badge-title" style="font-size:16px; font-weight:700; text-align:center; color:#3A2414; margin-bottom:4px;"></div>
+        <div id="room-badge-sub" style="font-size:13px; text-align:center; color:#9B7555; margin-bottom:14px;"></div>
+        <div id="room-badge-note" style="font-size:13px; color:#6B4830; line-height:1.8; background:#FFF8F0; border-radius:10px; padding:12px 14px;"></div>
+        <button onclick="closeRoomBadgePopup()" style="margin-top:16px; width:100%; padding:11px; background:#3A2414; color:white; border:none; border-radius:10px; font-size:14px; font-family:inherit; cursor:pointer;">ปิด</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0 });
+}
+
+function setRoomColor(key, color) {
+  const s = getRoomSettings();
+  s[key] = color;
+  localStorage.setItem('minnaRoomSettings', JSON.stringify(s));
+  showBadgeRoom();
+}
+
+function openRoomBadgePopup(trackId) {
+  const info = tracks[trackId];
+  if (!info) return;
+  document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
+  document.getElementById('room-badge-sub').textContent = info.protagonist;
+  document.getElementById('room-badge-note').textContent = (info.summary && info.summary.closingText) || '';
+  const popup = document.getElementById('room-badge-popup');
+  popup.style.display = 'flex';
+}
+
+function closeRoomBadgePopup() {
+  const popup = document.getElementById('room-badge-popup');
+  if (popup) popup.style.display = 'none';
 }
 
 // ── Badge system ──
