@@ -971,22 +971,25 @@
       right: 12px;
       display: none;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       background: var(--cream-mid);
       border: 1.5px solid var(--tan);
       border-radius: 20px;
-      padding: 4px 10px 4px 8px;
-      font-size: 13px;
+      padding: 7px 14px 7px 10px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--text-dark);
       z-index: 200;
-      pointer-events: none;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+      transition: background 0.15s, transform 0.12s;
     }
+    #badge-counter:hover { background: var(--cream-dark); transform: scale(1.05); }
+    #badge-counter:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
-<div id="badge-counter">&#127885; <span id="badge-counter-count">0</span></div>
+<div id="badge-counter" onclick="showBadgeRoom()" title="ห้องของฉัน">&#127885; <span id="badge-counter-count">0</span></div>
 <div id="app">
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   <div id="scene-container"></div>
@@ -2304,7 +2307,7 @@ function showSummary() {
         <p class="ending-question">${question}</p>
       </div>
 
-      <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px; animation:fadeUp 0.3s ease both;">
+      <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
         <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ห้องของฉัน</button>
       </div>
 
