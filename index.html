@@ -2338,7 +2338,17 @@ function showSummary() {
     </div>
   `;
   window.scrollTo({ top: 0 });
-  triggerBadgeAnimation();
+
+  const typeCounts = {};
+  playerChoices.forEach(c => { typeCounts[c.type] = (typeCounts[c.type] || 0) + 1; });
+  const stuckCount   = typeCounts.stuck || 0;
+  const goodishCount = (typeCounts.good || 0) + (typeCounts.joyful || 0);
+  let badgeState;
+  if (stuckCount >= 3)        badgeState = 'stuck';
+  else if (goodishCount >= 3) badgeState = 'good';
+  else                        badgeState = 'else';
+
+  triggerBadgeAnimation(badgeState);
 }
 
 function selectEmoji(n) {
@@ -2515,9 +2525,10 @@ function showBadgeRoom() {
           onclick="setRoomColor('${key}','${c}')"></div>`
   ).join('');
 
-  const badgesHTML = earned.length === 0
+  const earnedIds = Object.keys(earned);
+  const badgesHTML = earnedIds.length === 0
     ? `<div style="font-size:12px;color:#9B7555;text-align:center;padding:8px 0;">ยังไม่มี badge — เล่นจบ track แรกก็ได้รับเลย</div>`
-    : earned.map(id =>
+    : earnedIds.map(id =>
         `<div class="room-badge-item" onclick="openRoomBadgePopup(${id})" title="${tracks[id] ? tracks[id].title : ''}">&#127885;</div>`
       ).join('');
 
@@ -2528,7 +2539,7 @@ function showBadgeRoom() {
       <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
         <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
         <span style="font-size:15px; font-weight:700; color:#3A2414;">ห้องของฉัน</span>
-        <span style="margin-left:auto; font-size:12px; color:#9B7555;">&#127885; ${earned.length}/${total}</span>
+        <span style="margin-left:auto; font-size:12px; color:#9B7555;">&#127885; ${earnedIds.length}/${total}</span>
       </div>
 
       <!-- Room scene -->
@@ -2612,9 +2623,13 @@ function setRoomColor(key, color) {
 function openRoomBadgePopup(trackId) {
   const info = tracks[trackId];
   if (!info) return;
+  const earned = getEarnedBadges();
+  const state = earned[trackId] || 'else';
+  const data = badgeData[trackId];
+  const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
   document.getElementById('room-badge-sub').textContent = info.protagonist;
-  document.getElementById('room-badge-note').textContent = (info.summary && info.summary.closingText) || '';
+  document.getElementById('room-badge-note').textContent = resourceText;
   const popup = document.getElementById('room-badge-popup');
   popup.style.display = 'flex';
 }
@@ -2625,26 +2640,47 @@ function closeRoomBadgePopup() {
 }
 
 // ── Badge system ──
+const badgeData = {
+  1: {
+    stuck: 'เธออยู่กับความรู้สึกของตัวเอง — บางวันแค่นั้นก็หนักพอแล้ว',
+    else:  'เธอไม่ได้หนีออกไป — การอยู่ตรงนั้นคือความกล้าแบบหนึ่ง',
+    good:  'เธอเปิดประตูให้ใครสักคนเข้ามา — แม้จะยังไม่รู้ว่าจะได้อะไรกลับมา'
+  },
+  6: {
+    stuck: 'ทำคนเดียวทั้งวันโดยไม่มีใครเห็น — นั่นต้องใช้ความกล้ามากกว่าที่คิด',
+    else:  'ความรู้สึกไม่แฟร์นั้นจริง — แต่เธอก็ยังเลือกทำต่อได้',
+    good:  'ทุกสิ่งที่ทำด้วยความใส่ใจ — คือหลักฐานว่าความกล้าเงียบๆ ของเธอมีอยู่จริง'
+  }
+};
+
 function getEarnedBadges() {
-  return JSON.parse(localStorage.getItem('minnaEarnedBadges') || '[]');
+  const data = JSON.parse(localStorage.getItem('minnaEarnedBadges') || '{}');
+  // Migrate old array format to object
+  if (Array.isArray(data)) {
+    const obj = {};
+    data.forEach(id => { obj[id] = 'else'; });
+    localStorage.setItem('minnaEarnedBadges', JSON.stringify(obj));
+    return obj;
+  }
+  return data;
 }
 function hasEarnedBadge(trackId) {
-  return getEarnedBadges().includes(trackId);
+  return getEarnedBadges()[trackId] !== undefined;
 }
-function markBadgeEarned(trackId) {
+function markBadgeEarned(trackId, badgeState) {
   const earned = getEarnedBadges();
-  if (!earned.includes(trackId)) earned.push(trackId);
+  if (earned[trackId] === undefined) earned[trackId] = badgeState;
   localStorage.setItem('minnaEarnedBadges', JSON.stringify(earned));
-  return earned.length;
+  return Object.keys(earned).length;
 }
 function updateBadgeCounterUI() {
-  const count = getEarnedBadges().length;
+  const count = Object.keys(getEarnedBadges()).length;
   const el = document.getElementById('badge-counter');
   if (!el) return;
   document.getElementById('badge-counter-count').textContent = count;
   el.style.display = count > 0 ? 'flex' : 'none';
 }
-function triggerBadgeAnimation() {
+function triggerBadgeAnimation(badgeState) {
   const isNew = !hasEarnedBadge(currentTrack);
   const SIZE  = 52;
   const vw    = window.innerWidth;
@@ -2688,7 +2724,7 @@ function triggerBadgeAnimation() {
     // After flight: update count + bump counter
     setTimeout(() => {
       flyEl.remove();
-      if (isNew) markBadgeEarned(currentTrack);
+      if (isNew) markBadgeEarned(currentTrack, badgeState);
       updateBadgeCounterUI();
       counterEl.style.transition = 'transform 150ms ease-out';
       counterEl.style.transform  = 'scale(1.3)';
