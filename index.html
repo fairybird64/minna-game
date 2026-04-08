@@ -905,9 +905,88 @@
       color: var(--text-mid);
       line-height: 1.85;
     }
+
+    /* ── Badge Room ── */
+    .room-scene {
+      position: relative;
+      height: 320px;
+      margin: 12px 16px 0;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: background 300ms ease;
+    }
+    .room-furniture { position: absolute; transition: background 300ms ease; }
+    .room-badge-item {
+      font-size: 28px;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 8px;
+      transition: transform 150ms ease;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .room-badge-item:hover { transform: scale(1.15); }
+    .color-swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2.5px solid transparent;
+      flex-shrink: 0;
+      transition: border-color 150ms;
+    }
+    .color-swatch.active { border-color: #3A2414; }
+
+    /* ── Badge Room popup ── */
+    #room-badge-popup {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Scene transition ── */
+    @keyframes sceneFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .scene-fade-in {
+      animation: sceneFadeIn 400ms ease-in-out;
+    }
+
+    /* ── Badge fly animation ── */
+    @keyframes badgePulse {
+      0%   { transform: scale(1);   box-shadow: 0 0 0px 0px  rgba(212,168,122,0);    }
+      50%  { transform: scale(1.2); box-shadow: 0 0 22px 10px rgba(212,168,122,0.5); }
+      100% { transform: scale(1);   box-shadow: 0 0 0px 0px  rgba(212,168,122,0);    }
+    }
+    #badge-counter {
+      position: fixed;
+      top: 10px;
+      right: 12px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: var(--cream-mid);
+      border: 1.5px solid var(--tan);
+      border-radius: 20px;
+      padding: 4px 10px 4px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+      z-index: 200;
+      pointer-events: none;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
   </style>
 </head>
 <body>
+<div id="badge-counter">&#127885; <span id="badge-counter-count">0</span></div>
 <div id="app">
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   <div id="scene-container"></div>
@@ -1734,6 +1813,7 @@ function updateProgress() {
 
 function showHome() {
   document.getElementById('progress-fill').style.width = '0%';
+  updateBadgeCounterUI();
   const activeTracks = [
     { id: 1, emoji: '&#128049;', title: 'มินนากับมะม่วง',          tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
     { id: 2, emoji: '&#127800;', title: 'มิตรภาพใหม่',              tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
@@ -1770,6 +1850,11 @@ function showHome() {
       <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-soft); margin-bottom:12px;">เลือกเรื่องที่อยากเล่น</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         ${trackCardsHTML}
+      </div>
+      <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
+        <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
+          &#127968; ห้องของฉัน
+        </button>
       </div>
     </div>
   `;
@@ -1923,7 +2008,7 @@ function renderScene(index) {
       <div class="game-logo">&#x1F43E;</div>
       <div class="game-title-small">Minna Journey<br>มินนา เส้นทางของใจ</div>
     </div>
-    <div class="scene">
+    <div class="scene scene-fade-in">
       <div class="scene-image-wrap" style="margin-top:16px;">
         <img class="scene-image" src="${s.image}" alt="${s.title}"
              onerror="this.parentNode.innerHTML='<div class=\\'scene-image-placeholder\\'>[ ${s.title} ]</div>'">
@@ -2219,7 +2304,7 @@ function showSummary() {
         <p class="ending-question">${question}</p>
       </div>
 
-      <div id="feedback-widget" class="feedback-widget">
+      <div id="feedback-widget" class="feedback-widget" style="display:none; opacity:0;">
         <div class="feedback-widget-title">บอกความรู้สึกให้หน่อยนะ</div>
 
         <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
@@ -2257,6 +2342,17 @@ function showSummary() {
     </div>
   `;
   window.scrollTo({ top: 0 });
+
+  const typeCounts = {};
+  playerChoices.forEach(c => { typeCounts[c.type] = (typeCounts[c.type] || 0) + 1; });
+  const stuckCount   = typeCounts.stuck || 0;
+  const goodishCount = (typeCounts.good || 0) + (typeCounts.joyful || 0);
+  let badgeState;
+  if (stuckCount >= 3)        badgeState = 'stuck';
+  else if (goodishCount >= 3) badgeState = 'good';
+  else                        badgeState = 'else';
+
+  triggerBadgeAnimation(badgeState);
 }
 
 function selectEmoji(n) {
@@ -2408,6 +2504,301 @@ function restart() {
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
   renderScene(0);
+}
+
+// ── Badge Room ──
+const ROOM_DEFAULTS = { wall: '#FFD6D6', bed: '#FFAABB', curtain: '#FF9AAA' };
+const ROOM_PALETTES = {
+  wall:    ['#FFD6D6','#D6E8FF','#D6F5D6','#FFF5D6','#EDD6FF'],
+  bed:     ['#FFAABB','#AAC8FF','#AAEEBB','#FFEEAA','#DDAAFF'],
+  curtain: ['#FF9AAA','#99BBFF','#99DDAA','#FFDD88','#CC99FF'],
+};
+
+function getRoomSettings() {
+  return Object.assign({}, ROOM_DEFAULTS, JSON.parse(localStorage.getItem('minnaRoomSettings') || '{}'));
+}
+
+function showBadgeRoom() {
+  const s = getRoomSettings();
+  const earned = getEarnedBadges();
+  const total  = Object.keys(tracks).length;
+
+  const swatchRow = (key) => ROOM_PALETTES[key].map(c =>
+    `<div class="color-swatch${s[key] === c ? ' active' : ''}"
+          style="background:${c};"
+          onclick="setRoomColor('${key}','${c}')"></div>`
+  ).join('');
+
+  const earnedIds = Object.keys(earned);
+  const BADGE_HAS_IMG = new Set([1,2,3,4,5,6,7,8,9,10]);
+  const badgesHTML = earnedIds.length === 0
+    ? `<div style="font-size:12px;color:#9B7555;text-align:center;padding:8px 0;">ยังไม่มี badge — เล่นจบ track แรกก็ได้รับเลย</div>`
+    : earnedIds.map(id => {
+        const nId = Number(id);
+        const state = earned[id] || 'else';
+        const inner = BADGE_HAS_IMG.has(nId)
+          ? `<img src="assets/badges/badge_t${id}_${state}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:6px;display:block;" alt="">`
+          : '&#127885;';
+        return `<div class="room-badge-item" onclick="openRoomBadgePopup(${id})" title="${tracks[id] ? tracks[id].title : ''}">${inner}</div>`;
+      }).join('');
+
+  document.getElementById('scene-container').innerHTML = `
+    <div style="min-height:100vh; background:${s.wall}; transition:background 300ms;">
+
+      <!-- Header -->
+      <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
+        <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
+        <span style="font-size:15px; font-weight:700; color:#3A2414;">ห้องของฉัน</span>
+        <span style="margin-left:auto; font-size:12px; color:#9B7555;">&#127885; ${earnedIds.length}/${total}</span>
+      </div>
+
+      <!-- Room scene -->
+      <div class="room-scene" style="background:${s.wall};">
+
+        <!-- Curtain rod -->
+        <div class="room-furniture" style="top:0;left:12px;width:92px;height:7px;background:#8B5E3C;border-radius:0 0 4px 4px;"></div>
+        <!-- Curtain panel 1 -->
+        <div class="room-furniture" style="top:0;left:16px;width:50px;height:155px;background:${s.curtain};border-radius:0 0 26px 26px;opacity:0.92;"></div>
+        <!-- Curtain panel 2 -->
+        <div class="room-furniture" style="top:0;left:52px;width:42px;height:132px;background:${s.curtain};border-radius:0 0 22px 22px;opacity:0.72;"></div>
+
+        <!-- Shelf left bracket -->
+        <div class="room-furniture" style="top:136px;left:18%;width:5px;height:38px;background:#8B5E3C;border-radius:2px;"></div>
+        <!-- Shelf right bracket -->
+        <div class="room-furniture" style="top:136px;right:18%;width:5px;height:38px;background:#8B5E3C;border-radius:2px;"></div>
+        <!-- Shelf top surface -->
+        <div class="room-furniture" style="top:170px;left:16%;width:68%;height:12px;background:#8B5E3C;border-radius:4px;box-shadow:0 4px 0 #6B4530;"></div>
+
+        <!-- Badges on shelf -->
+        <div style="position:absolute;top:132px;left:17%;width:66%;display:flex;gap:6px;align-items:flex-end;justify-content:center;flex-wrap:wrap;">
+          ${badgesHTML}
+        </div>
+
+        <!-- Bed headboard -->
+        <div class="room-furniture" style="bottom:62px;right:20px;width:132px;height:14px;background:#8B5E3C;border-radius:8px 8px 2px 2px;"></div>
+        <!-- Bed mattress -->
+        <div class="room-furniture" style="bottom:0;right:20px;width:132px;height:64px;background:${s.bed};border-radius:4px 4px 3px 3px;box-shadow:inset 0 3px 0 rgba(255,255,255,0.35);"></div>
+        <!-- Pillow -->
+        <div class="room-furniture" style="bottom:42px;right:32px;width:40px;height:20px;background:rgba(255,255,255,0.85);border-radius:7px;"></div>
+        <!-- Bed foot-legs -->
+        <div class="room-furniture" style="bottom:0;right:24px;width:8px;height:7px;background:#6B4530;border-radius:0 0 3px 3px;"></div>
+        <div class="room-furniture" style="bottom:0;right:136px;width:8px;height:7px;background:#6B4530;border-radius:0 0 3px 3px;"></div>
+
+        <!-- Floor strip -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:7px;background:rgba(0,0,0,0.07);"></div>
+      </div>
+
+      <!-- Customization bar -->
+      <div style="margin:14px 16px 0; background:rgba(255,255,255,0.72); border-radius:14px; padding:16px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:#9B7555; margin-bottom:14px;">ตกแต่งห้อง</div>
+
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:#6B4830; margin-bottom:7px;">สีผนัง</div>
+          <div style="display:flex; gap:8px;">${swatchRow('wall')}</div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:#6B4830; margin-bottom:7px;">สีผ้าปูที่นอน</div>
+          <div style="display:flex; gap:8px;">${swatchRow('bed')}</div>
+        </div>
+        <div>
+          <div style="font-size:12px; color:#6B4830; margin-bottom:7px;">สีผ้าม่าน</div>
+          <div style="display:flex; gap:8px;">${swatchRow('curtain')}</div>
+        </div>
+      </div>
+
+      <div style="height:48px;"></div>
+    </div>
+
+    <!-- Badge popup -->
+    <div id="room-badge-popup" onclick="closeRoomBadgePopup()">
+      <div style="background:white; border-radius:18px; padding:24px 22px; margin:24px; max-width:320px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.18);" onclick="event.stopPropagation()">
+        <div id="room-badge-img" style="text-align:center; margin-bottom:10px;"></div>
+        <div id="room-badge-title" style="font-size:16px; font-weight:700; text-align:center; color:#3A2414; margin-bottom:4px;"></div>
+        <div id="room-badge-sub" style="font-size:13px; text-align:center; color:#9B7555; margin-bottom:14px;"></div>
+        <div id="room-badge-note" style="font-size:13px; color:#6B4830; line-height:1.8; background:#FFF8F0; border-radius:10px; padding:12px 14px;"></div>
+        <button onclick="closeRoomBadgePopup()" style="margin-top:16px; width:100%; padding:11px; background:#3A2414; color:white; border:none; border-radius:10px; font-size:14px; font-family:inherit; cursor:pointer;">ปิด</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0 });
+}
+
+function setRoomColor(key, color) {
+  const s = getRoomSettings();
+  s[key] = color;
+  localStorage.setItem('minnaRoomSettings', JSON.stringify(s));
+  showBadgeRoom();
+}
+
+function openRoomBadgePopup(trackId) {
+  const info = tracks[trackId];
+  if (!info) return;
+  const earned = getEarnedBadges();
+  const state = earned[trackId] || 'else';
+  const data = badgeData[trackId];
+  const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
+  const imgEl = document.getElementById('room-badge-img');
+  if (imgEl) {
+    const hasImg = [1,2,3,4,5,6,7,8,9,10].includes(Number(trackId));
+    imgEl.innerHTML = hasImg
+      ? `<img src="assets/badges/badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
+      : `<span style="font-size:44px;">&#127885;</span>`;
+  }
+  document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
+  document.getElementById('room-badge-sub').textContent = info.protagonist;
+  document.getElementById('room-badge-note').textContent = resourceText;
+  const popup = document.getElementById('room-badge-popup');
+  popup.style.display = 'flex';
+}
+
+function closeRoomBadgePopup() {
+  const popup = document.getElementById('room-badge-popup');
+  if (popup) popup.style.display = 'none';
+}
+
+// ── Badge system ──
+const badgeData = {
+  1: {
+    stuck: 'เธออยู่กับความรู้สึกของตัวเอง — บางวันแค่นั้นก็หนักพอแล้ว',
+    else:  'เธอไม่ได้หนีออกไป — การอยู่ตรงนั้นคือความกล้าแบบหนึ่ง',
+    good:  'เธอเปิดประตูให้ใครสักคนเข้ามา — แม้จะยังไม่รู้ว่าจะได้อะไรกลับมา'
+  },
+  2: {
+    stuck: 'เธอได้ยินเสียงข้างในตัวเอง — แม้จะยังไม่รู้ว่ามันบอกอะไร',
+    else:  'ในความเงียบมีบางอย่างรอให้เธอฟัง — และเธอก็เริ่มฟังแล้ว',
+    good:  'เธอได้ยินเสียงของตัวเองชัดขึ้น — นั่นคือจุดเริ่มต้นของการรู้จักตัวเอง'
+  },
+  3: {
+    stuck: 'แม้วันนั้นจะหนัก — เธอก็ยังอยู่กับมันได้จนผ่านไป',
+    else:  'วันเรียบๆ ก็มีคุณค่า — เธอเริ่มเห็นมันแล้ว',
+    good:  'เธอรู้จักหาความสุขในสิ่งเล็กๆ — และนั่นคือทักษะที่ทรงพลังมาก'
+  },
+  4: {
+    stuck: 'ความโกรธที่รู้สึกอยู่นั้นจริง — และเธอก็ผ่านวันนั้นมาได้',
+    else:  'เธอไม่ได้หายไป — ยังอยู่ตรงนี้แม้จะหนัก',
+    good:  'ความโกรธคือเกราะที่ปกป้องความสั่นไหวข้างใน — เธอเริ่มรู้จักมันแล้ว'
+  },
+  5: {
+    stuck: 'ความสัมพันธ์ในครอบครัวซับซ้อนได้ — และเธอก็รู้สึกถึงมันได้อย่างซื่อสัตย์',
+    else:  'เธอเห็นทั้งสองด้าน — นั่นต้องใช้ความกล้ามาก',
+    good:  'เธอเลือกที่จะเข้าใจ — แม้จะยังไม่ง่ายนัก'
+  },
+  6: {
+    stuck: 'ทำคนเดียวทั้งวันโดยไม่มีใครเห็น — นั่นต้องใช้ความกล้ามากกว่าที่คิด',
+    else:  'ความรู้สึกไม่แฟร์นั้นจริง — แต่เธอก็ยังเลือกทำต่อได้',
+    good:  'ทุกสิ่งที่ทำด้วยความใส่ใจ — คือหลักฐานว่าความกล้าเงียบๆ ของเธอมีอยู่จริง'
+  },
+  7: {
+    stuck: 'ก้าวแรกไม่ต้องสมบูรณ์แบบ — การมาก็คือความกล้าแบบหนึ่งแล้ว',
+    else:  'เธอสังเกตเห็นคนรอบข้าง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
+    good:  'แสงที่งดงามที่สุด — คือแสงที่ส่องออกมาจากตัวตนที่เธอเลือกจะเป็นอย่างซื่อสัตย์'
+  },
+  8: {
+    stuck: 'ยังสั่นอยู่แต่ก็พูดออกไปแล้ว — ความกล้าที่แท้จริงคือแบบนี้',
+    else:  'ความผิดพลาดไม่ได้จบที่ตรงนั้น — มันพาเธอไปหาบางอย่างที่ดีกว่า',
+    good:  'ความผิดพลาดไม่ใช่ตราบาป — มันคือผ้าห่มที่โอบกอดและบอกว่าเธอก็เป็นเพียงมนุษย์คนหนึ่ง'
+  },
+  9: {
+    stuck: 'ความกังวลที่รู้สึกอยู่นั้นจริง — และเธอก็อยู่กับมันได้โดยไม่ต้องแก้ทุกอย่าง',
+    else:  'เธอไม่ได้ต้องรู้ทุกอย่าง — แค่อยู่กับปัจจุบันก็พอ',
+    good:  'เธอเรียนรู้ที่จะปล่อย — และนั่นยากกว่าการควบคุมมาก'
+  },
+  10: {
+    stuck: 'การเติบโตไม่ต้องรีบ — แค่ยังเดินอยู่ก็พอ',
+    else:  'เธอเห็นคนอื่น เห็นตัวเอง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
+    good:  'มิตรภาพไม่ใช่การทำให้เหมือนกัน — แต่คือการยอมรับในความต่างอย่างให้เกียรติ'
+  }
+};
+
+function getEarnedBadges() {
+  const data = JSON.parse(localStorage.getItem('minnaEarnedBadges') || '{}');
+  // Migrate old array format to object
+  if (Array.isArray(data)) {
+    const obj = {};
+    data.forEach(id => { obj[id] = 'else'; });
+    localStorage.setItem('minnaEarnedBadges', JSON.stringify(obj));
+    return obj;
+  }
+  return data;
+}
+function hasEarnedBadge(trackId) {
+  return getEarnedBadges()[trackId] !== undefined;
+}
+function markBadgeEarned(trackId, badgeState) {
+  const earned = getEarnedBadges();
+  if (earned[trackId] === undefined) earned[trackId] = badgeState;
+  localStorage.setItem('minnaEarnedBadges', JSON.stringify(earned));
+  return Object.keys(earned).length;
+}
+function updateBadgeCounterUI() {
+  const count = Object.keys(getEarnedBadges()).length;
+  const el = document.getElementById('badge-counter');
+  if (!el) return;
+  document.getElementById('badge-counter-count').textContent = count;
+  el.style.display = count > 0 ? 'flex' : 'none';
+}
+function triggerBadgeAnimation(badgeState) {
+  const isNew = !hasEarnedBadge(currentTrack);
+  const SIZE  = 52;
+  const vw    = window.innerWidth;
+  const vh    = window.innerHeight;
+
+  // Show counter (may already be visible)
+  const counterEl = document.getElementById('badge-counter');
+  counterEl.style.display = 'flex';
+
+  // Create flying badge
+  const flyEl = document.createElement('div');
+  flyEl.style.cssText = `
+    position:fixed;
+    left:${(vw - SIZE) / 2}px;
+    top:${(vh - SIZE) / 2}px;
+    width:${SIZE}px;
+    height:${SIZE}px;
+    font-size:${SIZE}px;
+    line-height:1;
+    pointer-events:none;
+    z-index:9999;
+    animation:badgePulse 600ms ease-in-out forwards;
+  `;
+  flyEl.textContent = '🏅';
+  document.body.appendChild(flyEl);
+
+  // After pulse: fly to counter
+  setTimeout(() => {
+    const rect    = counterEl.getBoundingClientRect();
+    const targetL = rect.left + rect.width  / 2 - SIZE / 2;
+    const targetT = rect.top  + rect.height / 2 - SIZE / 2;
+
+    flyEl.style.animation  = 'none';
+    void flyEl.offsetWidth; // force reflow
+    flyEl.style.transition = 'left 500ms ease-in, top 500ms ease-in, font-size 500ms ease-in, opacity 500ms ease-in';
+    flyEl.style.left       = targetL + 'px';
+    flyEl.style.top        = targetT + 'px';
+    flyEl.style.fontSize   = '14px';
+    flyEl.style.opacity    = '0';
+
+    // After flight: update count + bump counter
+    setTimeout(() => {
+      flyEl.remove();
+      if (isNew) markBadgeEarned(currentTrack, badgeState);
+      updateBadgeCounterUI();
+      counterEl.style.transition = 'transform 150ms ease-out';
+      counterEl.style.transform  = 'scale(1.3)';
+      setTimeout(() => {
+        counterEl.style.transform  = 'scale(1)';
+        counterEl.style.transition = 'transform 200ms ease-in';
+        // Reveal feedback widget after animation fully settles
+        const fw = document.getElementById('feedback-widget');
+        if (fw) {
+          fw.style.display = 'block';
+          void fw.offsetWidth; // force reflow before opacity transition
+          fw.style.transition = 'opacity 400ms ease-in';
+          fw.style.opacity = '1';
+        }
+      }, 150);
+    }, 520);
+  }, 620);
 }
 
 showHome();
