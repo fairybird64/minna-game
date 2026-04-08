@@ -914,9 +914,35 @@
     .scene-fade-in {
       animation: sceneFadeIn 400ms ease-in-out;
     }
+
+    /* ── Badge fly animation ── */
+    @keyframes badgePulse {
+      0%   { transform: scale(1);   box-shadow: 0 0 0px 0px  rgba(212,168,122,0);    }
+      50%  { transform: scale(1.2); box-shadow: 0 0 22px 10px rgba(212,168,122,0.5); }
+      100% { transform: scale(1);   box-shadow: 0 0 0px 0px  rgba(212,168,122,0);    }
+    }
+    #badge-counter {
+      position: fixed;
+      top: 10px;
+      right: 12px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: var(--cream-mid);
+      border: 1.5px solid var(--tan);
+      border-radius: 20px;
+      padding: 4px 10px 4px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+      z-index: 200;
+      pointer-events: none;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
   </style>
 </head>
 <body>
+<div id="badge-counter">&#127885; <span id="badge-counter-count">0</span></div>
 <div id="app">
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   <div id="scene-container"></div>
@@ -1743,6 +1769,7 @@ function updateProgress() {
 
 function showHome() {
   document.getElementById('progress-fill').style.width = '0%';
+  updateBadgeCounterUI();
   const activeTracks = [
     { id: 1, emoji: '&#128049;', title: 'มินนากับมะม่วง',          tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
     { id: 2, emoji: '&#127800;', title: 'มิตรภาพใหม่',              tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
@@ -2266,6 +2293,7 @@ function showSummary() {
     </div>
   `;
   window.scrollTo({ top: 0 });
+  triggerBadgeAnimation();
 }
 
 function selectEmoji(n) {
@@ -2417,6 +2445,82 @@ function restart() {
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
   renderScene(0);
+}
+
+// ── Badge system ──
+function getEarnedBadges() {
+  return JSON.parse(localStorage.getItem('minnaEarnedBadges') || '[]');
+}
+function hasEarnedBadge(trackId) {
+  return getEarnedBadges().includes(trackId);
+}
+function markBadgeEarned(trackId) {
+  const earned = getEarnedBadges();
+  if (!earned.includes(trackId)) earned.push(trackId);
+  localStorage.setItem('minnaEarnedBadges', JSON.stringify(earned));
+  return earned.length;
+}
+function updateBadgeCounterUI() {
+  const count = getEarnedBadges().length;
+  const el = document.getElementById('badge-counter');
+  if (!el) return;
+  document.getElementById('badge-counter-count').textContent = count;
+  el.style.display = count > 0 ? 'flex' : 'none';
+}
+function triggerBadgeAnimation() {
+  const isNew = !hasEarnedBadge(currentTrack);
+  const SIZE  = 52;
+  const vw    = window.innerWidth;
+  const vh    = window.innerHeight;
+
+  // Show counter (may already be visible)
+  const counterEl = document.getElementById('badge-counter');
+  counterEl.style.display = 'flex';
+
+  // Create flying badge
+  const flyEl = document.createElement('div');
+  flyEl.style.cssText = `
+    position:fixed;
+    left:${(vw - SIZE) / 2}px;
+    top:${(vh - SIZE) / 2}px;
+    width:${SIZE}px;
+    height:${SIZE}px;
+    font-size:${SIZE}px;
+    line-height:1;
+    pointer-events:none;
+    z-index:9999;
+    animation:badgePulse 600ms ease-in-out forwards;
+  `;
+  flyEl.textContent = '🏅';
+  document.body.appendChild(flyEl);
+
+  // After pulse: fly to counter
+  setTimeout(() => {
+    const rect    = counterEl.getBoundingClientRect();
+    const targetL = rect.left + rect.width  / 2 - SIZE / 2;
+    const targetT = rect.top  + rect.height / 2 - SIZE / 2;
+
+    flyEl.style.animation  = 'none';
+    void flyEl.offsetWidth; // force reflow
+    flyEl.style.transition = 'left 500ms ease-in, top 500ms ease-in, font-size 500ms ease-in, opacity 500ms ease-in';
+    flyEl.style.left       = targetL + 'px';
+    flyEl.style.top        = targetT + 'px';
+    flyEl.style.fontSize   = '14px';
+    flyEl.style.opacity    = '0';
+
+    // After flight: update count + bump counter
+    setTimeout(() => {
+      flyEl.remove();
+      if (isNew) markBadgeEarned(currentTrack);
+      updateBadgeCounterUI();
+      counterEl.style.transition = 'transform 150ms ease-out';
+      counterEl.style.transform  = 'scale(1.3)';
+      setTimeout(() => {
+        counterEl.style.transform  = 'scale(1)';
+        counterEl.style.transition = 'transform 200ms ease-in';
+      }, 150);
+    }, 520);
+  }, 620);
 }
 
 showHome();
