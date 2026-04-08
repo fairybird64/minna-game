@@ -2530,7 +2530,7 @@ function showBadgeRoom() {
   ).join('');
 
   const earnedIds = Object.keys(earned);
-  const BADGE_HAS_IMG = new Set([1,2,3,4,5,6]);
+  const BADGE_HAS_IMG = new Set([1,2,3,4,5,6,7,8,9,10]);
   const badgesHTML = earnedIds.length === 0
     ? `<div style="font-size:12px;color:#9B7555;text-align:center;padding:8px 0;">ยังไม่มี badge — เล่นจบ track แรกก็ได้รับเลย</div>`
     : earnedIds.map(id => {
@@ -2639,7 +2639,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="assets/badges/badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
