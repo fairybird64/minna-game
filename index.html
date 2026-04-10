@@ -332,6 +332,24 @@
     .next-btn:active { transform: translateY(0); }
     .next-btn.visible { display: block; animation: fadeUp 0.3s ease both; }
 
+    /* Narrative auto-advance skip button */
+    .narrative-skip-btn {
+      display: block;
+      margin-left: auto;
+      margin-top: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 13px;
+      color: var(--text-soft);
+      opacity: 0;
+      padding: 4px 2px;
+      transition: opacity 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .narrative-skip-btn:hover { opacity: 1 !important; }
+
     /* End screen */
     .end-screen {
       display: flex;
@@ -1881,6 +1899,7 @@ let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent:
 let _roomJustEarned = -1; // track id of badge earned this session, for slot entry animation
 let sessionStartTime = null;
 let sessionStuckCount = 0;
+let _autoAdvanceTimer = null;
 
 function updateProgress() {
   const pct = ((currentScene + 1) / currentScenes.length) * 100;
@@ -1888,6 +1907,7 @@ function updateProgress() {
 }
 
 function showHome() {
+  if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
   document.getElementById('progress-fill').style.width = '0%';
   updateBadgeCounterUI();
   const activeTracks = [
@@ -2035,9 +2055,12 @@ function showTrackIntro(trackId) {
 }
 
 function renderScene(index) {
+  if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
   if (index === 0) sessionStartTime = Date.now();
   const s = currentScenes[index];
   updateProgress();
+
+  const isNarrative = !s.choices || s.choices.length === 0;
 
   // Inner voice: string or array of lines
   const innerBodyHTML = Array.isArray(s.innerVoice)
@@ -2068,7 +2091,7 @@ function renderScene(index) {
        </div>`
     : '';
 
-  const choicesHTML = s.choices.map((c, i) =>
+  const choicesHTML = isNarrative ? '' : s.choices.map((c, i) =>
     `<button class="choice-btn" data-index="${i}" onclick="selectChoice(${i})">${c.text}</button>`
   ).join('');
 
@@ -2081,6 +2104,22 @@ function renderScene(index) {
         onclick="submitMirrorText('${s.id}')">ส่งให้มินนา</button>
       <div id="mirror-response-${s.id}" class="mirror-response" style="display:none;"></div>
     </div>` : '';
+
+  const interactionHTML = isNarrative
+    ? `<button class="narrative-skip-btn" id="narrative-skip">ข้าม ›</button>`
+    : `<div class="choices-section">
+         <div class="choices-label">เลือกสักทาง</div>
+         <div class="choices">${choicesHTML}</div>
+       </div>
+       ${freePromptHTML}
+       <div class="outcome" id="outcome">
+         <div class="outcome-arrow">&#x25B6; ผลที่ตามมา</div>
+         <div class="outcome-text" id="outcome-text"></div>
+         <span class="outcome-tag" id="outcome-tag"></span>
+       </div>
+       <button class="next-btn" id="next-btn" onclick="nextScene()">
+         ${index < currentScenes.length - 1 ? 'ไปต่อ ›' : 'จบบทนี้'}
+       </button>`;
 
   const html = `
     <div class="game-header">
@@ -2104,25 +2143,29 @@ function renderScene(index) {
         ${hintHTML}
         ${insightHTML}
         ${chooserHTML}
-        <div class="choices-section">
-          <div class="choices-label">เลือกสักทาง</div>
-          <div class="choices">${choicesHTML}</div>
-        </div>
-        ${freePromptHTML}
-        <div class="outcome" id="outcome">
-          <div class="outcome-arrow">&#x25B6; ผลที่ตามมา</div>
-          <div class="outcome-text" id="outcome-text"></div>
-          <span class="outcome-tag" id="outcome-tag"></span>
-        </div>
-        <button class="next-btn" id="next-btn" onclick="nextScene()">
-          ${index < currentScenes.length - 1 ? 'ไปต่อ ›' : 'จบบทนี้'}
-        </button>
+        ${interactionHTML}
       </div>
     </div>
   `;
 
   document.getElementById('scene-container').innerHTML = html;
   window.scrollTo({ top: 0 });
+
+  if (isNarrative) {
+    const skipBtn = document.getElementById('narrative-skip');
+    if (skipBtn) {
+      // Fade in skip button after scene fade-in completes (400ms)
+      setTimeout(() => { skipBtn.style.opacity = '0.7'; }, 420);
+      skipBtn.addEventListener('click', () => {
+        if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
+        nextScene();
+      });
+    }
+    _autoAdvanceTimer = setTimeout(() => {
+      _autoAdvanceTimer = null;
+      nextScene();
+    }, 3000);
+  }
 }
 
 function selectChoice(index) {
@@ -2341,6 +2384,7 @@ function getReflection(choices) {
 }
 
 function showSummary() {
+  if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
   document.getElementById('progress-fill').style.width = '100%';
   const reflection = getReflection(playerChoices);
   const { closingTitle, closingText, insights, question } = tracks[currentTrack].summary;
