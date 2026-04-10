@@ -730,18 +730,27 @@
     }
     .fb-emoji-btn {
       flex: 1;
-      font-size: 22px;
-      background: var(--cream);
-      border: 2px solid var(--cream-dark);
+      background: none;
+      border: none;
       border-radius: 12px;
-      padding: 9px 2px;
+      padding: 4px 2px;
       cursor: pointer;
-      line-height: 1;
-      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       -webkit-tap-highlight-color: transparent;
     }
-    .fb-emoji-btn:hover  { border-color: var(--tan); background: var(--cream-mid); }
-    .fb-emoji-btn.selected { border-color: var(--brown-light); background: var(--inner-bg); }
+    .fb-emoji-btn img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 50%;
+      opacity: 0.5;
+      transform: scale(1);
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .fb-emoji-btn:hover img  { opacity: 1; transform: scale(1.1); }
+    .fb-emoji-btn.selected img { opacity: 1; transform: scale(1.2); box-shadow: 0 0 0 3px #f5a623, 0 4px 14px rgba(245,166,35,0.45); }
     .fb-textarea {
       width: 100%;
       border: 1.5px solid var(--cream-dark);
@@ -2590,11 +2599,11 @@ function showBadgeRoom() {
 
         <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
         <div class="feedback-emoji-row">
-          <button class="fb-emoji-btn" onclick="selectEmoji(1)">&#128532;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(2)">&#128528;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(3)">&#128578;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(4)">&#128522;</button>
-          <button class="fb-emoji-btn" onclick="selectEmoji(5)">&#128516;</button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(1)"><img src="assets/mood/mood_1.jpg" alt="ร้องไห้"></button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(2)"><img src="assets/mood/mood_2.jpg" alt="เศร้า"></button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(3)"><img src="assets/mood/mood_3.jpg" alt="เฉย"></button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(4)"><img src="assets/mood/mood_4.jpg" alt="ยิ้มเล็ก"></button>
+          <button class="fb-emoji-btn" onclick="selectEmoji(5)"><img src="assets/mood/mood_5.jpg" alt="สุขมาก"></button>
         </div>
 
         <div class="feedback-q">อยากบอกอะไรกับ${tracks[currentTrack].protagonist}ไหม?</div>
