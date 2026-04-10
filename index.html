@@ -1879,6 +1879,8 @@ let playerChoices = [];
 let currentScenes = [];
 let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
 let _roomJustEarned = -1; // track id of badge earned this session, for slot entry animation
+let sessionStartTime = null;
+let sessionStuckCount = 0;
 
 function updateProgress() {
   const pct = ((currentScene + 1) / currentScenes.length) * 100;
@@ -1956,6 +1958,8 @@ function startGame(trackId) {
   currentScene = 0;
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  sessionStartTime = null;
+  sessionStuckCount = 0;
   showOnboarding(currentTrack);
 }
 
@@ -2031,6 +2035,7 @@ function showTrackIntro(trackId) {
 }
 
 function renderScene(index) {
+  if (index === 0) sessionStartTime = Date.now();
   const s = currentScenes[index];
   updateProgress();
 
@@ -2124,6 +2129,7 @@ function selectChoice(index) {
   const s = currentScenes[currentScene];
   const choice = s.choices[index];
 
+  if (choice.type === 'stuck') sessionStuckCount++;
   playerChoices.push({
     sceneId: s.id,
     choiceText: choice.text,
@@ -2440,7 +2446,9 @@ function submitFeedback() {
     rating:        feedbackState.rating,
     freeText:      feedbackState.freeText || '',
     recommend:     feedbackState.recommend,
-    returnIntent:  feedbackState.returnIntent
+    returnIntent:  feedbackState.returnIntent,
+    stuckCount:    sessionStuckCount,
+    timeSpent:     sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : null
   };
   if (APPS_SCRIPT_URL) {
     fetch(APPS_SCRIPT_URL, {
