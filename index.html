@@ -936,7 +936,7 @@
       background: var(--cream);
       border-radius: 10px;
       padding: 32px;
-      min-height: 400px;
+      min-height: 320px;
       box-sizing: border-box;
     }
     .badge-modal-branding {
@@ -944,8 +944,16 @@
       font-weight: 700;
       letter-spacing: 2px;
       color: var(--text-soft);
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       text-align: center;
+    }
+    #badge-modal-img {
+      display: block;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin: 0 auto 16px;
     }
     .badge-modal-track {
       font-size: 11px;
@@ -1148,6 +1156,7 @@
       <button class="badge-modal-close" onclick="closeBadgeModal()">✕</button>
       <div id="share-capture-area">
         <div class="badge-modal-branding">MINNA JOURNEY</div>
+        <img id="badge-modal-img" src="" alt="">
         <div class="badge-modal-label" id="badge-modal-label"></div>
         <div class="badge-modal-desc" id="badge-modal-desc"></div>
         <div class="badge-modal-track" id="badge-modal-track"></div>
@@ -2311,7 +2320,7 @@ function selectChoice(index) {
   if (choice.desc) {
     outcomeTag.style.cursor = 'pointer';
     outcomeTag.title = 'แตะเพื่ออ่านเพิ่มเติม';
-    outcomeTag.onclick = () => openBadgeModal(choice.tag, choice.desc);
+    outcomeTag.onclick = () => openBadgeModal(choice.tag, choice.desc, choice.type);
   } else {
     outcomeTag.style.cursor = '';
     outcomeTag.title = '';
@@ -2334,11 +2343,13 @@ function nextScene() {
   }
 }
 
-function openBadgeModal(label, desc) {
+function openBadgeModal(label, desc, type) {
   document.getElementById('badge-modal-label').textContent = label;
   document.getElementById('badge-modal-desc').textContent  = desc;
   const trackTitle = tracks[currentTrack] ? tracks[currentTrack].title : '';
   document.getElementById('badge-modal-track').textContent = trackTitle;
+  const state = type === 'stuck' ? 'stuck' : (type === 'good' || type === 'joyful') ? 'good' : 'else';
+  document.getElementById('badge-modal-img').src = `assets/badges/badge_t${currentTrack}_${state}.jpg`;
   document.getElementById('badge-modal').style.display = 'flex';
 }
 
@@ -2521,7 +2532,7 @@ function showSummary() {
       <span class="summary-scene-badge">${c.sceneId}</span>
       <div class="summary-choice-detail">
         <div class="summary-choice-text">${c.choiceText}</div>
-        <span class="summary-type-badge tag-${c.type}"${c.desc ? ` style="cursor:pointer" data-label="${c.tag.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-desc="${c.desc.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="openBadgeModal(this.dataset.label,this.dataset.desc)"` : ''}>${c.tag}</span>
+        <span class="summary-type-badge tag-${c.type}"${c.desc ? ` style="cursor:pointer" data-label="${c.tag.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-desc="${c.desc.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-type="${c.type}" onclick="openBadgeModal(this.dataset.label,this.dataset.desc,this.dataset.type)"` : ''}>${c.tag}</span>
       </div>
     </div>
   `).join('');
