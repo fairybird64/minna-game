@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minna Journey — มินนา เส้นทางของใจ</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --cream:        #FFF8F0;
@@ -931,6 +932,41 @@
       color: var(--text-mid);
       line-height: 1.85;
     }
+    #share-capture-area {
+      background: var(--cream);
+      border-radius: 10px;
+      padding: 4px 0 12px;
+    }
+    .badge-modal-branding {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .badge-modal-track {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-top: 12px;
+      text-align: right;
+    }
+    .badge-share-btn {
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 10px;
+      background: var(--cream-mid);
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 10px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .badge-share-btn:active { opacity: 0.75; }
 
     /* ── Cork Board Room ── */
     .cork-board-wrap {
@@ -1108,8 +1144,13 @@
   <div id="badge-modal" class="badge-modal-overlay" style="display:none" onclick="closeBadgeModal()">
     <div class="badge-modal-card" onclick="event.stopPropagation()">
       <button class="badge-modal-close" onclick="closeBadgeModal()">✕</button>
-      <div class="badge-modal-label" id="badge-modal-label"></div>
-      <div class="badge-modal-desc" id="badge-modal-desc"></div>
+      <div id="share-capture-area">
+        <div class="badge-modal-branding">MINNA JOURNEY</div>
+        <div class="badge-modal-label" id="badge-modal-label"></div>
+        <div class="badge-modal-desc" id="badge-modal-desc"></div>
+        <div class="badge-modal-track" id="badge-modal-track"></div>
+      </div>
+      <button class="badge-share-btn" onclick="shareBadge()">📷 แชร์ความรู้สึกนี้</button>
     </div>
   </div>
 </div>
@@ -2294,7 +2335,21 @@ function nextScene() {
 function openBadgeModal(label, desc) {
   document.getElementById('badge-modal-label').textContent = label;
   document.getElementById('badge-modal-desc').textContent  = desc;
+  const trackTitle = tracks[currentTrack] ? tracks[currentTrack].title : '';
+  document.getElementById('badge-modal-track').textContent = trackTitle;
   document.getElementById('badge-modal').style.display = 'flex';
+}
+
+function shareBadge() {
+  const el = document.getElementById('share-capture-area');
+  html2canvas(el, { backgroundColor: '#FFF8F0', scale: 2, useCORS: true })
+    .then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'minna-journey-badge.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    })
+    .catch(err => console.error('shareBadge error:', err));
 }
 
 function closeBadgeModal() {
