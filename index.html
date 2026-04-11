@@ -1984,7 +1984,7 @@ let _currentAmbient = null;
 let _isMuted = false;
 
 function playAmbient(sceneId) {
-  const audio = _ambientTracks[sceneId];
+  const audio = _ambientTracks[sceneId.toUpperCase()];
   if (!audio) return;
   if (_currentAmbient === audio) return;
   stopAmbient();
