@@ -1128,8 +1128,8 @@ function showHome() {
     { id: 8, emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',   tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
     { id: 9, emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',  tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
     { id: 10, emoji: '&#127769;', title: 'ห้องของมินนา',             tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
-    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'assets/images/story11_b1.jpg' },
-    { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'assets/images/story12_b1.jpg' },
+    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'story11_b1.jpg' },
+    { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'story12_b1.jpg' },
   ];
   const trackCardsHTML = activeTracks.map(t => `
     <div onclick="selectTrack(${t.id})" style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; cursor:pointer; -webkit-tap-highlight-color:transparent;">
@@ -1433,7 +1433,7 @@ function openBadgeModal(label, desc, type) {
   const trackTitle = tracks[currentTrack] ? tracks[currentTrack].title : '';
   document.getElementById('badge-modal-track').textContent = trackTitle;
   const state = type === 'stuck' ? 'stuck' : (type === 'good' || type === 'joyful') ? 'good' : 'else';
-  document.getElementById('badge-modal-img').src = `assets/badges/badge_t${currentTrack}_${state}.jpg`;
+  document.getElementById('badge-modal-img').src = ([11,12].includes(currentTrack) ? '' : 'assets/badges/') + `badge_t${currentTrack}_${state}.jpg`;
   document.getElementById('badge-modal').style.display = 'flex';
 }
 
@@ -1823,7 +1823,7 @@ function showBadgeRoom() {
     if (isEarned) {
       return `<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})">
         <div class="cork-pin"></div>
-        <img class="cork-badge" src="assets/badges/badge_t${id}_${state}.jpg" alt="">
+        <img class="cork-badge" src="${([11,12].includes(id)?'':'assets/badges/')}badge_t${id}_${state}.jpg" alt="">
       </div>`;
     }
     return `<div class="cork-slot" id="slot-${id}"><div class="cork-slot-empty">?</div></div>`;
@@ -1913,7 +1913,7 @@ function openRoomBadgePopup(trackId) {
   if (imgEl) {
     const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(trackId));
     imgEl.innerHTML = hasImg
-      ? `<img src="assets/badges/badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
+      ? `<img src="${([11,12].includes(Number(trackId))?'':'assets/badges/')}badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
   }
   document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
