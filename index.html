@@ -272,6 +272,7 @@
 
     .choice-btn.picked-good  { background: var(--good-bg);  border-color: var(--good-border);  color: var(--good-text);  opacity: 1 !important; }
     .choice-btn.picked-ok    { background: var(--ok-bg);    border-color: var(--ok-border);    color: var(--ok-text);    opacity: 1 !important; }
+    .choice-btn.picked-else  { background: var(--ok-bg);    border-color: var(--ok-border);    color: var(--ok-text);    opacity: 1 !important; }
     .choice-btn.picked-stuck { background: var(--stuck-bg); border-color: var(--stuck-border); color: var(--stuck-text); opacity: 1 !important; }
 
     /* Outcome */
@@ -309,6 +310,7 @@
     }
     .tag-good  { background: var(--good-bg);  color: var(--good-text);  border: 1px solid var(--good-border); }
     .tag-ok    { background: var(--ok-bg);    color: var(--ok-text);    border: 1px solid var(--ok-border); }
+    .tag-else  { background: var(--ok-bg);    color: var(--ok-text);    border: 1px solid var(--ok-border); }
     .tag-stuck { background: var(--stuck-bg); color: var(--stuck-text); border: 1px solid var(--stuck-border); }
 
     /* Next button */
@@ -1126,11 +1128,12 @@ function showHome() {
     { id: 8, emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',   tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
     { id: 9, emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',  tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
     { id: 10, emoji: '&#127769;', title: 'ห้องของมินนา',             tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
+    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'assets/images/story11_cover.jpg' },
   ];
   const trackCardsHTML = activeTracks.map(t => `
     <div onclick="selectTrack(${t.id})" style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; cursor:pointer; -webkit-tap-highlight-color:transparent;">
       <div style="aspect-ratio:16/9; overflow:hidden; background:var(--cream-mid);">
-        <img src="story${t.id}_b1.jpg" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
+        <img src="${t.cover || ('story' + t.id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
              onerror="this.style.display='none'">
       </div>
       <div style="padding:10px 12px 12px;">
@@ -1199,6 +1202,7 @@ const trackIntros = {
   8: { emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',    protagonist: 'ติดตามมินนาในวันที่พูดพลาดกับเพื่อน',           blurb: 'เมื่อวานมินนาพูดอะไรบางอย่างในกลุ่ม แล้วใบบัวเงียบไปเลย<br>มินนาไม่ได้ตั้งใจ — แต่คำพูดนั้นยังวนอยู่ในหัว วันนี้เธอไม่รู้จะเริ่มยังไง' },
   9: { emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',   protagonist: 'ติดตามใบบัวในวันที่ความกังวลวนซ้ำ',              blurb: 'ใบบัวเปิดไพ่ดูดวงซ้ำๆ มาหลายรอบแล้ว — ทุกครั้งที่ได้ผล ก็อยากเปิดอีก<br>เหมือนถ้ารู้ก่อนว่าจะเป็นยังไง อย่างน้อยก็เตรียมใจได้' },
   10: { emoji: '&#127769;', title: 'ห้องของมินนา',              protagonist: 'ติดตามมินนาในคืนที่เธอมองย้อนกลับไป',            blurb: 'คืนก่อนเปิดเทอมใหม่ มินนานอนอยู่ในห้อง — มองรูปหมู่บนผนัง แล้วนึกถึงคนที่อยู่ในรูปนั้นทีละคน' },
+  11: { emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',       protagonist: 'ติดตามโมเน่ในวันที่เขาแบกเรื่องนี้คนเดียว',            blurb: 'โมเน่เป็นเด็กผู้ชายที่เงียบๆ อ่อนโยน และสังเกตทุกอย่างรอบข้างเสมอ<br>เขารู้มาสักพักแล้วว่าตัวเองชอบผู้ชายด้วยกัน — มันไม่ได้ทำให้เขากลัวตัวเอง แต่ทำให้เขากลัวในสิ่งที่ยิ่งใหญ่กว่า' },
 };
 
 function showOnboarding(trackId) {
@@ -1905,7 +1909,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="assets/badges/badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
@@ -1985,6 +1989,11 @@ const badgeData = {
     stuck: 'การเติบโตไม่ต้องรีบ — แค่ยังเดินอยู่ก็พอ',
     else:  'เธอเห็นคนอื่น เห็นตัวเอง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
     good:  'มิตรภาพไม่ใช่การทำให้เหมือนกัน — แต่คือการยอมรับในความต่างอย่างให้เกียรติ'
+  },
+  11: {
+    stuck: 'บางทีการอยู่เงียบๆ ก็เป็นวิธีหนึ่งที่จะรับมือกับสิ่งที่ยังพูดไม่ได้',
+    else:  'รู้ว่าอยากเปิด แต่ยังไม่พร้อม — และนั่นก็โอเคแล้ว',
+    good:  'ไม่ต้องรู้ทุกอย่างก่อน — แค่ไม่แบกคนเดียวก็เบาขึ้นแล้ว'
   }
 };
 
