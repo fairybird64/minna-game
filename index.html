@@ -1128,8 +1128,8 @@ function showHome() {
     { id: 8, emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',   tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
     { id: 9, emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',  tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
     { id: 10, emoji: '&#127769;', title: 'ห้องของมินนา',             tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
-    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'assets/images/story11_cover.jpg' },
-    { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'assets/images/story12_cover.jpg' },
+    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'assets/images/story11_b1.jpg' },
+    { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'assets/images/story12_b1.jpg' },
   ];
   const trackCardsHTML = activeTracks.map(t => `
     <div onclick="selectTrack(${t.id})" style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; cursor:pointer; -webkit-tap-highlight-color:transparent;">
@@ -1911,7 +1911,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="assets/badges/badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
@@ -1996,6 +1996,11 @@ const badgeData = {
     stuck: 'บางทีการอยู่เงียบๆ ก็เป็นวิธีหนึ่งที่จะรับมือกับสิ่งที่ยังพูดไม่ได้',
     else:  'รู้ว่าอยากเปิด แต่ยังไม่พร้อม — และนั่นก็โอเคแล้ว',
     good:  'ไม่ต้องรู้ทุกอย่างก่อน — แค่ไม่แบกคนเดียวก็เบาขึ้นแล้ว'
+  },
+  12: {
+    stuck: 'บางครั้งการไม่ลองก็เป็นวิธีหนึ่งที่จะรู้สึกปลอดภัย',
+    else:  'รู้ว่ามีบางอย่างในตัวที่รอการเติบโต แม้ยังไม่เห็นชัด',
+    good:  'เห็นแล้วว่าเสียงนั้นไม่ใช่เสียงของเรา — และนั่นคือจุดเริ่มต้น'
   }
 };
 
