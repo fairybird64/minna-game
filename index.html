@@ -2005,8 +2005,7 @@ const badgeData = {
 };
 
 function badgePath(id, state) {
-  const dir = [11, 12].includes(Number(id)) ? '' : 'assets/badges/';
-  return dir + 'badge_t' + id + '_' + state + '.jpg';
+  return 'assets/badges/badge_t' + id + '_' + state + '.jpg';
 }
 
 function getEarnedBadges() {
