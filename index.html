@@ -1433,7 +1433,7 @@ function openBadgeModal(label, desc, type) {
   const trackTitle = tracks[currentTrack] ? tracks[currentTrack].title : '';
   document.getElementById('badge-modal-track').textContent = trackTitle;
   const state = type === 'stuck' ? 'stuck' : (type === 'good' || type === 'joyful') ? 'good' : 'else';
-  document.getElementById('badge-modal-img').src = ([11,12].includes(currentTrack) ? '' : 'assets/badges/') + `badge_t${currentTrack}_${state}.jpg`;
+  document.getElementById('badge-modal-img').src = badgePath(currentTrack, state);
   document.getElementById('badge-modal').style.display = 'flex';
 }
 
@@ -1823,7 +1823,7 @@ function showBadgeRoom() {
     if (isEarned) {
       return `<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})">
         <div class="cork-pin"></div>
-        <img class="cork-badge" src="${([11,12].includes(id)?'':'assets/badges/')}badge_t${id}_${state}.jpg" alt="">
+        <img class="cork-badge" src="${badgePath(id, state)}" alt="">
       </div>`;
     }
     return `<div class="cork-slot" id="slot-${id}"><div class="cork-slot-empty">?</div></div>`;
@@ -1913,7 +1913,7 @@ function openRoomBadgePopup(trackId) {
   if (imgEl) {
     const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(trackId));
     imgEl.innerHTML = hasImg
-      ? `<img src="${([11,12].includes(Number(trackId))?'':'assets/badges/')}badge_t${trackId}_${state}.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
+      ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
   }
   document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
@@ -2003,6 +2003,11 @@ const badgeData = {
     good:  'เห็นแล้วว่าเสียงนั้นไม่ใช่เสียงของเรา — และนั่นคือจุดเริ่มต้น'
   }
 };
+
+function badgePath(id, state) {
+  const dir = [11, 12].includes(Number(id)) ? '' : 'assets/badges/';
+  return dir + 'badge_t' + id + '_' + state + '.jpg';
+}
 
 function getEarnedBadges() {
   const data = JSON.parse(localStorage.getItem('minnaEarnedBadges') || '{}');
