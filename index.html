@@ -957,7 +957,7 @@
       top: 10%; left: 8%; right: 8%; bottom: 10%;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(3, 1fr);
+      grid-auto-rows: 1fr;
       gap: 8px;
     }
     .cork-slot {
@@ -1130,6 +1130,7 @@ function showHome() {
     { id: 10, emoji: '&#127769;', title: 'ห้องของมินนา',             tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
     { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'story11_b1.jpg' },
     { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'story12_b1.jpg' },
+    { id: 13, emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
   ];
   const trackCardsHTML = activeTracks.map(t => `
     <div onclick="selectTrack(${t.id})" style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; cursor:pointer; -webkit-tap-highlight-color:transparent;">
@@ -1205,6 +1206,7 @@ const trackIntros = {
   10: { emoji: '&#127769;', title: 'ห้องของมินนา',              protagonist: 'ติดตามมินนาในคืนที่เธอมองย้อนกลับไป',            blurb: 'คืนก่อนเปิดเทอมใหม่ มินนานอนอยู่ในห้อง — มองรูปหมู่บนผนัง แล้วนึกถึงคนที่อยู่ในรูปนั้นทีละคน' },
   11: { emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',       protagonist: 'ติดตามโมเน่ในวันที่เขาแบกเรื่องนี้คนเดียว',            blurb: 'โมเน่เป็นเด็กผู้ชายที่เงียบๆ อ่อนโยน และสังเกตทุกอย่างรอบข้างเสมอ<br>เขารู้มาสักพักแล้วว่าตัวเองชอบผู้ชายด้วยกัน — มันไม่ได้ทำให้เขากลัวตัวเอง แต่ทำให้เขากลัวในสิ่งที่ยิ่งใหญ่กว่า' },
   12: { emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', protagonist: 'ติดตามใบบัวในคืนที่ฟีดไม่มีวันหมด',                    blurb: 'ใบบัวไม่ใช่คนที่ตามเทรนด์ เขาสังเกตทุกอย่างเงียบๆ และคิดลึกกว่าที่พูดออกมาเสมอ<br>แต่มีบางคืนที่เปิดฟีดแล้วรู้สึกว่า — ทุกคนกำลังเดินไปข้างหน้า และตัวเองยืนอยู่ที่เดิม' },
+  13: { emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   protagonist: 'ติดตามหยกในวันที่ความสมบูรณ์แบบพาเธอให้ยืนอยู่คนเดียว', blurb: 'หยกทำงานเสร็จแล้ว ทุกคนบอกว่าดีมาก — แต่หยกยังนั่งอยู่<br>เพราะมีบางอย่างในใจที่บอกว่ายังไม่พอ และหยกก็ไม่แน่ใจว่าเสียงนั้นเป็นของใคร' },
 };
 
 function showOnboarding(trackId) {
@@ -1911,7 +1913,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
@@ -2001,6 +2003,11 @@ const badgeData = {
     stuck: 'บางครั้งการไม่ลองก็เป็นวิธีหนึ่งที่จะรู้สึกปลอดภัย',
     else:  'รู้ว่ามีบางอย่างในตัวที่รอการเติบโต แม้ยังไม่เห็นชัด',
     good:  'เห็นแล้วว่าเสียงนั้นไม่ใช่เสียงของเรา — และนั่นคือจุดเริ่มต้น'
+  },
+  13: {
+    stuck: 'หยกยังอยู่กับมาตรฐานที่ไม่มีวันสิ้นสุด — แต่ก็รู้แล้วว่าตัวเองอยู่ตรงนี้',
+    else:  'ลังเลอยู่ระหว่างเสียงข้างในกับสิ่งที่คนอื่นเห็น — แต่ก็เริ่มสังเกตตัวเองแล้ว',
+    good:  'เริ่มถามว่าทำเพราะอยากทำ หรือเพราะกลัว — และนั่นคือจุดเริ่มต้น'
   }
 };
 
