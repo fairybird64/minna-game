@@ -201,6 +201,59 @@
       line-height: 1.75;
     }
 
+    /* Dialogue box (Minna speaking to protagonist) */
+    .dialogue-voice {
+      position: relative;
+      background: #F0F5FF;
+      border-left: 3px solid #8EB4E3;
+      border-radius: 0 10px 10px 0;
+      padding: 12px 14px 12px 16px;
+      margin-bottom: 14px;
+    }
+    .dialogue-voice .inner-label {
+      color: #5A7AB8;
+    }
+    .dialogue-voice .inner-text {
+      color: #3A5080;
+    }
+
+    /* Summary ending card — mission box */
+    .ending-mission-box {
+      background: var(--inner-bg);
+      border: 1px solid var(--inner-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--text-dark);
+      line-height: 1.85;
+      white-space: pre-line;
+    }
+    .ending-bridge {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.8;
+      margin-top: 12px;
+      font-style: italic;
+      white-space: pre-line;
+    }
+
+    /* Heart reaction button on track card */
+    .track-heart-btn {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-soft);
+      padding: 2px 0;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .track-heart-btn.liked { color: #e05c7a; }
+
     /* Hint */
     .hint-box {
       background: var(--hint-bg);
@@ -1088,7 +1141,7 @@
         <div class="badge-modal-desc" id="badge-modal-desc"></div>
         <div class="badge-modal-track" id="badge-modal-track"></div>
       </div>
-      <button class="badge-share-btn" onclick="shareBadge()">📷 แชร์ความรู้สึกนี้</button>
+      <button class="badge-share-btn" onclick="shareBadgeWeb()">&#128279; แชร์ความรู้สึกนี้</button>
     </div>
   </div>
 </div>
@@ -1102,15 +1155,35 @@ let currentScene = 0;
 let currentTrack  = 1;
 let playerChoices = [];
 let currentScenes = [];
-let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
 let _roomJustEarned = -1; // track id of badge earned this session, for slot entry animation
 let sessionStartTime = null;
 let sessionStuckCount = 0;
 let _autoAdvanceTimer = null;
+let _replayMode = null; // { savedChoices: [...] } when replaying a single scene
 
 function updateProgress() {
   const pct = ((currentScene + 1) / currentScenes.length) * 100;
   document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function toggleHeart(trackId, event) {
+  event.stopPropagation();
+  const likedKey = 'heart_liked_' + trackId;
+  const countKey = 'heart_' + trackId;
+  const wasLiked = localStorage.getItem(likedKey) === '1';
+  const count = parseInt(localStorage.getItem(countKey) || '0');
+  const newLiked = !wasLiked;
+  const newCount = newLiked ? count + 1 : Math.max(0, count - 1);
+  localStorage.setItem(likedKey, newLiked ? '1' : '0');
+  localStorage.setItem(countKey, String(newCount));
+  const btn = document.getElementById('heart-btn-' + trackId);
+  const countEl = document.getElementById('heart-count-' + trackId);
+  if (btn) {
+    btn.classList.toggle('liked', newLiked);
+    btn.childNodes[0].textContent = newLiked ? '♥ ' : '♡ ';
+  }
+  if (countEl) countEl.textContent = newCount > 0 ? newCount : '';
 }
 
 function showHome() {
@@ -1132,18 +1205,29 @@ function showHome() {
     { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'story12_b1.jpg' },
     { id: 13, emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
   ];
-  const trackCardsHTML = activeTracks.map(t => `
-    <div onclick="selectTrack(${t.id})" style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; cursor:pointer; -webkit-tap-highlight-color:transparent;">
-      <div style="aspect-ratio:16/9; overflow:hidden; background:var(--cream-mid);">
-        <img src="${t.cover || ('story' + t.id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
-             onerror="this.style.display='none'">
+  const trackCardsHTML = activeTracks.map(t => {
+    const heartCount = parseInt(localStorage.getItem('heart_' + t.id) || '0');
+    const liked = localStorage.getItem('heart_liked_' + t.id) === '1';
+    return `
+    <div style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;">
+      <div onclick="selectTrack(${t.id})" style="cursor:pointer; -webkit-tap-highlight-color:transparent;">
+        <div style="aspect-ratio:16/9; overflow:hidden; background:var(--cream-mid);">
+          <img src="${t.cover || ('story' + t.id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
+               onerror="this.style.display='none'">
+        </div>
+        <div style="padding:10px 12px 6px;">
+          <div style="font-size:22px; margin-bottom:4px;">${t.emoji}</div>
+          <div style="font-size:13px; font-weight:600; color:var(--text-dark); margin-bottom:3px; line-height:1.3;">${t.title}</div>
+          <div style="font-size:11px; color:var(--text-soft); line-height:1.5;">${t.tagline}</div>
+        </div>
       </div>
-      <div style="padding:10px 12px 12px;">
-        <div style="font-size:22px; margin-bottom:4px;">${t.emoji}</div>
-        <div style="font-size:13px; font-weight:600; color:var(--text-dark); margin-bottom:3px; line-height:1.3;">${t.title}</div>
-        <div style="font-size:11px; color:var(--text-soft); line-height:1.5;">${t.tagline}</div>
+      <div style="padding:4px 12px 10px; display:flex; justify-content:flex-end;">
+        <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${t.id}" onclick="toggleHeart(${t.id}, event)">
+          ${liked ? '♥' : '♡'} <span id="heart-count-${t.id}">${heartCount > 0 ? heartCount : ''}</span>
+        </button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   document.getElementById('scene-container').innerHTML = `
     <div style="padding:24px 16px 48px;">
       <div style="text-align:center; margin-bottom:20px;">
@@ -1187,7 +1271,7 @@ function startGame(trackId) {
   currentScenes = tracks[currentTrack].scenes;
   currentScene = 0;
   playerChoices = [];
-  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
   sessionStartTime = null;
   sessionStuckCount = 0;
   showOnboarding(currentTrack);
@@ -1343,8 +1427,8 @@ function renderScene(index) {
         <h1 class="scene-title">${s.title}</h1>
         <div class="divider"></div>
         <p class="scene-text">${s.text}</p>
-        <div class="inner-voice">
-          <div class="inner-label">เสียงในใจ</div>
+        <div class="${s.voiceLabel ? 'dialogue-voice' : 'inner-voice'}">
+          <div class="inner-label">${s.voiceLabel || 'เสียงในใจ'}</div>
           ${innerBodyHTML}
         </div>
         ${hintHTML}
@@ -1421,6 +1505,15 @@ function selectChoice(index) {
 }
 
 function nextScene() {
+  if (_replayMode) {
+    // Fill in saved choices for all subsequent scenes, then go to summary
+    const saved = _replayMode.savedChoices;
+    _replayMode = null;
+    const remaining = saved.slice(playerChoices.length);
+    playerChoices = playerChoices.concat(remaining);
+    showSummary();
+    return;
+  }
   currentScene++;
   if (currentScene < currentScenes.length) {
     renderScene(currentScene);
@@ -1449,6 +1542,21 @@ function shareBadge() {
       link.click();
     })
     .catch(err => console.error('shareBadge error:', err));
+}
+
+function shareBadgeWeb() {
+  const label = document.getElementById('badge-modal-label').textContent;
+  const desc  = document.getElementById('badge-modal-desc').textContent;
+  const url   = window.location.href;
+  const text  = `วันนี้ฉันได้เรียนรู้: ${label}\n${desc}\nมาสำรวจใจกับมินนาได้ที่: ${url}`;
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.badge-share-btn');
+      if (btn) { btn.textContent = '✓ คัดลอกแล้ว!'; setTimeout(() => { btn.innerHTML = '&#128279; แชร์ความรู้สึกนี้'; }, 2000); }
+    }).catch(() => {});
+  }
 }
 
 function closeBadgeModal() {
@@ -1576,6 +1684,36 @@ function getReflection(choices) {
     }
   }
 
+  if (currentTrack === 11) {
+    if (stuck >= 3) {
+      return { title: 'โมเน่ยังแบกอยู่คนเดียว', text: 'แต่ก็รู้แล้วว่าตัวเองรู้สึกอะไร — และนั่นก็ไม่ใช่เรื่องเล็กๆ เลย' };
+    } else if (goodish >= 3) {
+      return { title: 'โมเน่เริ่มเปิดประตูให้ใครสักคน', text: 'นั่นต้องใช้ความกล้ามาก — และโมเน่ก็ทำได้' };
+    } else {
+      return { title: 'โมเน่รู้ว่าอยากแบ่งปัน แต่ยังไม่พร้อม', text: 'และนั่นก็โอเคแล้ว — ไม่มีจังหวะที่ถูกหรือผิด' };
+    }
+  }
+
+  if (currentTrack === 12) {
+    if (stuck >= 3) {
+      return { title: 'ใบบัวยังอยู่กับเสียงที่บอกว่าไม่ดีพอ', text: 'แต่ก็เริ่มรู้แล้วว่ามันมาจากไหน — และนั่นคือจุดเริ่มต้น' };
+    } else if (goodish >= 3) {
+      return { title: 'ใบบัวเริ่มรู้แล้วว่าเสียงนั้นไม่ใช่ของตัวเอง', text: 'นั่นคือก้าวที่เปลี่ยนทุกอย่างได้ — แม้จะยังต้องใช้เวลา' };
+    } else {
+      return { title: 'ใบบัวเริ่มสังเกตเห็นเสียงในหัว', text: 'แม้จะยังไม่รู้จะทำอะไรกับมัน — แค่รู้ว่ามันอยู่ที่นั่นก็พอแล้วสำหรับวันนี้' };
+    }
+  }
+
+  if (currentTrack === 13) {
+    if (stuck >= 3) {
+      return { title: 'หยกยังอยู่กับมาตรฐานที่ไม่มีวันพอ', text: 'แต่เริ่มเห็นแล้วว่าตัวเองอยู่ตรงนี้ — และนั่นก็คือความกล้าแบบหนึ่ง' };
+    } else if (goodish >= 3) {
+      return { title: 'หยกเริ่มถามว่าทำเพราะอยากทำ หรือเพราะกลัว', text: 'และนั่นคือก้าวแรกของการเข้าใจตัวเองอย่างแท้จริง' };
+    } else {
+      return { title: 'หยกเริ่มสังเกตเสียงในหัว', text: 'รู้ว่ามีบางอย่างที่ต้องคุยกับตัวเอง — และนั่นก็ไม่ใช่จุดเล็กๆ เลย' };
+    }
+  }
+
   // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
@@ -1644,11 +1782,17 @@ function showSummary() {
 
       <div class="ending-card">
         <div class="ending-card-title">วันนี้${tracks[currentTrack].protagonist}เรียนรู้ว่า...</div>
-        <ul class="ending-insight-list">
-          ${insights.map(i => `<li>${i}</li>`).join('')}
-        </ul>
-        <div class="ending-divider"></div>
-        <p class="ending-question">${question}</p>
+        ${currentTrack === 13 ? `
+          <p class="ending-question" style="font-style:normal; color:var(--text-mid);">ความสมบูรณ์แบบไม่ได้เกิดจากความขยัน<br>มันเกิดจากความกลัว — กลัวว่าถ้าไม่ดีพอ จะไม่ได้รับความรัก<br><br>หยกไม่ได้ทำงานเพื่อตัวเอง<br>เธอทำเพื่อเสียงที่เรียนรู้มาตั้งแต่เด็กว่า<br>"ดี = ได้รับความรัก"</p>
+          <div class="ending-mission-box">ภารกิจเล็กๆ ของหยก:\nครั้งหน้าที่ทำอะไรเสร็จแล้ว\nก่อนจะแก้ไขต่อ — หยุดถามตัวเองก่อนว่า\n"ฉันแก้เพราะมันไม่ดีจริงๆ\nหรือเพราะยังรู้สึกไม่ปลอดภัย?"</div>
+          <p class="ending-bridge">และถ้าวันไหนหยกเริ่มสังเกตว่า\nตัวเองช่วยคนอื่นเยอะมาก\nอาจถึงเวลาถามคำถามเดิมอีกครั้ง</p>
+        ` : `
+          <ul class="ending-insight-list">
+            ${insights.map(i => `<li>${i}</li>`).join('')}
+          </ul>
+          <div class="ending-divider"></div>
+          <p class="ending-question">${question}</p>
+        `}
       </div>
 
       <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
@@ -1714,6 +1858,7 @@ function submitFeedback() {
     freeText:      feedbackState.freeText || '',
     recommend:     feedbackState.recommend,
     returnIntent:  feedbackState.returnIntent,
+    favoriteTrack: feedbackState.favoriteTrack || null,
     stuckCount:    sessionStuckCount,
     timeSpent:     sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : null
   };
@@ -1749,8 +1894,10 @@ function showReplayPanel() {
 }
 
 function replayFrom(sceneIndex) {
+  const savedChoices = [...playerChoices];
   playerChoices = playerChoices.slice(0, sceneIndex);
-  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
+  _replayMode = { savedChoices };
   currentScene = sceneIndex;
   renderScene(sceneIndex);
 }
@@ -1758,7 +1905,7 @@ function replayFrom(sceneIndex) {
 function replayTrack() {
   currentScene = 0;
   playerChoices = [];
-  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
   renderScene(0);
 }
 
@@ -1804,7 +1951,7 @@ function showEnd() {
 function restart() {
   currentScene = 0;
   playerChoices = [];
-  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null };
+  feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
   renderScene(0);
 }
 
@@ -1852,7 +1999,7 @@ function showBadgeRoom() {
       <div id="room-feedback-widget" class="feedback-widget" style="display:none; opacity:0; margin:16px 16px 0;">
         <div class="feedback-widget-title">บอกความรู้สึกให้หน่อยนะ</div>
 
-        <div class="feedback-q">วันนี้รู้สึกยังไงบ้าง?</div>
+        <div class="feedback-q">เล่นแล้วรู้สึกยังไงบ้าง?</div>
         <div class="feedback-emoji-row">
           <button class="fb-emoji-btn" onclick="selectEmoji(1)"><img src="assets/mood/mood_1.jpg" alt="ร้องไห้"></button>
           <button class="fb-emoji-btn" onclick="selectEmoji(2)"><img src="assets/mood/mood_2.jpg" alt="เศร้า"></button>
@@ -1861,9 +2008,27 @@ function showBadgeRoom() {
           <button class="fb-emoji-btn" onclick="selectEmoji(5)"><img src="assets/mood/mood_5.jpg" alt="สุขมาก"></button>
         </div>
 
-        <div class="feedback-q">อยากบอกอะไรกับ${tracks[currentTrack].protagonist}ไหม?</div>
+        <div class="feedback-q">มีอะไรอยากให้เราเพิ่มหรือปรับไหม?</div>
         <textarea class="fb-textarea" id="fb-text" placeholder="พิมพ์ได้เลยนะ..." maxlength="200" rows="3" oninput="updateFbText(this)"></textarea>
         <div class="fb-char-count" id="fb-char-count">0 / 200</div>
+
+        <div class="feedback-q">track ไหนที่รู้สึกว่าตรงกับตัวเองมากที่สุด?</div>
+        <select style="width:100%; padding:10px 12px; border:1.5px solid var(--cream-dark); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text-dark); background:white; margin-bottom:16px;" onchange="feedbackState.favoriteTrack=this.value">
+          <option value="">— เลือก track —</option>
+          <option value="1">T1 · มินนากับมะม่วง</option>
+          <option value="2">T2 · มิตรภาพใหม่</option>
+          <option value="3">T3 · วันที่ดีแบบเรียบง่าย</option>
+          <option value="4">T4 · วันที่เพื่อนล้อ</option>
+          <option value="5">T5 · ความสัมพันธ์ในครอบครัว</option>
+          <option value="6">T6 · โมเน่กับวันเสาร์ที่บ้าน</option>
+          <option value="7">T7 · หมอน้อย</option>
+          <option value="8">T8 · มินนากับวันหลังจากนั้น</option>
+          <option value="9">T9 · ใบบัวกับไพ่ที่วางไม่ลง</option>
+          <option value="10">T10 · ห้องของมินนา</option>
+          <option value="11">T11 · วันที่โมเน่นั่งเงียบ</option>
+          <option value="12">T12 · ใบบัวกับฟีดที่ไม่มีวันหมด</option>
+          <option value="13">T13 · วันที่หยกต้องสมบูรณ์แบบ</option>
+        </select>
 
         <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
         <div class="fb-pair-btns">
@@ -1918,9 +2083,9 @@ function openRoomBadgePopup(trackId) {
       ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
   }
-  document.getElementById('room-badge-title').textContent = 'บทที่ ' + trackId + ' — ' + info.title;
-  document.getElementById('room-badge-sub').textContent = info.protagonist;
-  document.getElementById('room-badge-note').textContent = resourceText;
+  document.getElementById('room-badge-title').textContent = (data && data.roomTitle) ? data.roomTitle : ('บทที่ ' + trackId + ' — ' + info.protagonist);
+  document.getElementById('room-badge-sub').textContent = info.title;
+  document.getElementById('room-badge-note').textContent = (data && data.roomNote) ? data.roomNote : resourceText;
   const popup = document.getElementById('room-badge-popup');
   popup.style.display = 'flex';
 }
@@ -2007,7 +2172,15 @@ const badgeData = {
   13: {
     stuck: 'หยกยังอยู่กับมาตรฐานที่ไม่มีวันสิ้นสุด — แต่ก็รู้แล้วว่าตัวเองอยู่ตรงนี้',
     else:  'ลังเลอยู่ระหว่างเสียงข้างในกับสิ่งที่คนอื่นเห็น — แต่ก็เริ่มสังเกตตัวเองแล้ว',
-    good:  'เริ่มถามว่าทำเพราะอยากทำ หรือเพราะกลัว — และนั่นคือจุดเริ่มต้น'
+    good:  'เริ่มถามว่าทำเพราะอยากทำ หรือเพราะกลัว — และนั่นคือจุดเริ่มต้น',
+    name: 'ดอกลิลลี่',
+    popupDesc: {
+      good:  'ดอกไม้ที่บานได้แม้ไม่สมบูรณ์แบบ — เธอเริ่มฟังตัวเองแล้ว',
+      else:  'ดอกไม้ที่กำลังบาน — ยังมีเวลาเสมอ',
+      stuck: 'ดอกไม้ที่รอวันบาน — ยังไม่พร้อมก็โอเค'
+    },
+    roomTitle: 'บทที่ 13 — หยก',
+    roomNote: 'เธอสังเกตเห็นคำถามที่ไม่เคยมีใครถาม — นั่นคือจุดเริ่มต้นของการเข้าใจตัวเอง'
   }
 };
 
@@ -2090,6 +2263,12 @@ function triggerBadgeAnimation(badgeState) {
       flyEl.remove();
       if (isNew) { markBadgeEarned(currentTrack, badgeState); _roomJustEarned = currentTrack; }
       updateBadgeCounterUI();
+      const bd = badgeData[currentTrack];
+      if (bd && bd.name && bd.popupDesc) {
+        setTimeout(() => {
+          openBadgeModal(bd.name, bd.popupDesc[badgeState] || bd.popupDesc.else, badgeState);
+        }, 200);
+      }
       counterEl.style.transition = 'transform 150ms ease-out';
       counterEl.style.transform  = 'scale(1.3)';
       setTimeout(() => {
