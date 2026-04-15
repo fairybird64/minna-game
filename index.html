@@ -987,7 +987,7 @@
       position: relative;
       width: 100%;
       aspect-ratio: 3/2;
-      overflow: visible;
+      overflow: hidden;
     }
     .cork-board-fallback {
       position: absolute;
@@ -1019,6 +1019,8 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      min-height: 0;
+      overflow: hidden;
     }
     .cork-slot-empty {
       width: 75%;
@@ -1036,6 +1038,7 @@
     .cork-slot img.cork-badge {
       width: 92%;
       aspect-ratio: 1;
+      max-height: 100%;
       object-fit: cover;
       border-radius: 5px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.18);
