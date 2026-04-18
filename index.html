@@ -1720,13 +1720,7 @@ function getReflection(choices) {
   }
 
   if (currentTrack === 14) {
-    if (stuck >= 3) {
-      return { title: 'หยกยังวิ่งตามเสียงที่บอกว่าไม่ดีพอ', text: 'แต่ก็เริ่มเห็นแล้วว่ามันเป็นเสียงของใคร — และนั่นคือจุดเริ่มต้น' };
-    } else if (goodish >= 3) {
-      return { title: 'หยกเริ่มยอมให้คำชมซึมเข้ามา', text: 'นั่นคือก้าวแรกของการเชื่อในตัวเอง — และมันไม่ใช่เรื่องเล็กๆ เลย' };
-    } else {
-      return { title: 'หยกเริ่มสังเกตว่าตัวเองรับคำชมไม่ได้', text: 'แค่รู้ว่ามันอยู่ที่นั่น ก็เป็นจุดเริ่มต้นแล้ว' };
-    }
+    return { title: 'หยกทำสิ่งที่ถูกต้องมาตลอด', text: 'แต่วันนี้หยกเริ่มถามว่าทำเพื่ออะไร — ไม่มีคำตอบที่ผิด แค่การถามก็คือก้าวแรกแล้ว' };
   }
 
   // Track 1
@@ -2202,11 +2196,15 @@ const badgeData = {
     stuck: 'หยกยังวิ่งตามเสียงที่บอกว่าไม่ดีพอ — แต่ก็เริ่มเห็นแล้วว่าตัวเองอยู่ตรงนี้',
     else:  'หยกเริ่มสังเกตว่าตัวเองรับคำชมไม่ได้ — และนั่นก็คือจุดเริ่มต้นแล้ว',
     good:  'หยกเริ่มยอมให้คำชมซึมเข้ามา — นั่นคือก้าวแรกของการเชื่อในตัวเอง',
-    name: 'ดอกทานตะวัน',
+    popupName: {
+      good:  'เห็นตัวเอง',
+      else:  'เริ่มมอง',
+      stuck: 'กระจกมีรอย'
+    },
     popupDesc: {
-      good:  'ดอกไม้ที่หันหน้าสู่แสง — เธอเริ่มเชื่อในตัวเองแล้ว',
-      else:  'ดอกไม้ที่กำลังหาทิศทาง — ยังมีเวลาเสมอ',
-      stuck: 'ดอกไม้ที่ยังรอแสง — แต่ก็เริ่มเห็นท้องฟ้าแล้ว'
+      good:  'วันนี้หยกกล้ามองกระจกโดยไม่ต้องแก้ไขอะไรก่อน',
+      else:  'ยังไม่ชัดทั้งหมด แต่หยกเริ่มหันหน้าเข้าหากระจกแล้ว',
+      stuck: 'บางทีการมองตัวเองก็เจ็บเกินไปในวันนั้น'
     },
     roomTitle: 'บทที่ 14 — หยก',
     roomNote: 'เธอเริ่มตั้งคำถามกับเสียงที่บอกว่าไม่ดีพอ — นั่นคือก้าวที่สำคัญที่สุด'
@@ -2293,9 +2291,10 @@ function triggerBadgeAnimation(badgeState) {
       if (isNew) { markBadgeEarned(currentTrack, badgeState); _roomJustEarned = currentTrack; }
       updateBadgeCounterUI();
       const bd = badgeData[currentTrack];
-      if (bd && bd.name && bd.popupDesc) {
+      if (bd && (bd.name || bd.popupName) && bd.popupDesc) {
         setTimeout(() => {
-          openBadgeModal(bd.name, bd.popupDesc[badgeState] || bd.popupDesc.else, badgeState);
+          const label = bd.popupName ? (bd.popupName[badgeState] || bd.popupName.else) : bd.name;
+          openBadgeModal(label, bd.popupDesc[badgeState] || bd.popupDesc.else, badgeState);
         }, 200);
       }
       counterEl.style.transition = 'transform 150ms ease-out';
