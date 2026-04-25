@@ -1210,6 +1210,7 @@ function showHome() {
     { id: 13, emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
     { id: 14, emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
     { id: 15, emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
+    { id: 16, emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',             cover: 'story16_b1.jpg' },
   ];
   const trackCardsHTML = activeTracks.map(t => {
     const heartCount = parseInt(localStorage.getItem('heart_' + t.id) || '0');
@@ -1259,7 +1260,8 @@ function showHome() {
 function preloadTrackImages(trackId) {
   const t = tracks[trackId];
   if (!t) return;
-  t.scenes.forEach(s => {
+  const scenesArr = Array.isArray(t.scenes) ? t.scenes : Object.values(t.scenes);
+  scenesArr.forEach(s => {
     if (s.image) {
       const img = new Image();
       img.src = s.image;
@@ -1274,13 +1276,51 @@ function selectTrack(trackId) {
 
 function startGame(trackId) {
   currentTrack = trackId || 1;
-  currentScenes = tracks[currentTrack].scenes;
+  const rawScenes = tracks[currentTrack].scenes;
+  currentScenes = Array.isArray(rawScenes) ? rawScenes : normalizeNewSchemaScenes(rawScenes, currentTrack);
   currentScene = 0;
   playerChoices = [];
   feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
   sessionStartTime = null;
   sessionStuckCount = 0;
   showOnboarding(currentTrack);
+}
+
+function normalizeNewSchemaScenes(scenesObj, trackId) {
+  const track = tracks[trackId];
+  const badge = track.badge;
+  return Object.entries(scenesObj).map(([key, scene], i) => {
+    const sceneId = 'B' + (i + 1);
+    const textParts = [];
+    const innerLines = [];
+    (scene.content || []).forEach(item => {
+      if (item.type === 'text') {
+        textParts.push(item.text);
+      } else if (item.type === 'dialogue') {
+        textParts.push(item.speaker + ': ' + item.text);
+      } else if (item.type === 'innerVoice') {
+        (item.lines || []).forEach(l => innerLines.push(l));
+      }
+    });
+    const choices = (scene.choices || []).map(c => ({
+      text:    c.text,
+      type:    c.tag,
+      outcome: badge[c.tag] ? badge[c.tag].desc : '',
+      tag:     badge[c.tag] ? badge[c.tag].label : c.tag,
+      desc:    null
+    }));
+    return {
+      id:         sceneId,
+      badge:      sceneId,
+      title:      scene.setting || '',
+      image:      scene.image   || '',
+      text:       textParts.join('<br><br>'),
+      innerVoice: innerLines.length > 0 ? innerLines : '',
+      voiceLabel: null,
+      hint:       null,
+      choices
+    };
+  });
 }
 
 const trackIntros = {
@@ -1299,6 +1339,7 @@ const trackIntros = {
   13: { emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   protagonist: 'ติดตามหยกในวันที่ความสมบูรณ์แบบพาเธอให้ยืนอยู่คนเดียว', blurb: 'หยกทำงานเสร็จแล้ว ทุกคนบอกว่าดีมาก — แต่หยกยังนั่งอยู่<br>เพราะมีบางอย่างในใจที่บอกว่ายังไม่พอ และหยกก็ไม่แน่ใจว่าเสียงนั้นเป็นของใคร' },
   14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    protagonist: 'ติดตามหยกในวันที่คำชมกลายเป็นสิ่งที่รับไม่ได้', blurb: 'ครูบอกว่าหยกทำได้ดีมาก — แต่หยกกลับสงสัยว่ามันจริงไหม<br>วันนี้หยกจะได้เรียนรู้ว่าทำไมการรับคำชมถึงยากกว่าที่คิด' },
   15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           protagonist: 'ติดตามมินนาในคืนที่บ้านกลายเป็นสถานที่ค้นพบ',          blurb: 'หยกกับใบบัวมาค้างคืนที่บ้านมินนา — ดูเหมือนเป็นคืนธรรมดา<br>แต่บทสนทนาเรื่องกตัญญูทำให้ทุกคนได้เห็นบางอย่างที่ไม่เคยนึกถึงมาก่อน' },
+  16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          protagonist: 'ติดตามใบบัวในวันที่เสียงในหัวพูดดังที่สุด',                  blurb: 'ใบบัวโตมากับคำสอนที่บอกว่าต้องเรียบร้อย ต้องไม่ทำให้ใครเดือดร้อน<br>แต่วันนี้เธอบอกความรู้สึกออกไป — และโลกก็ไม่ได้พัง' },
 };
 
 function showOnboarding(trackId) {
@@ -1730,6 +1771,11 @@ function getReflection(choices) {
     return { title: 'คืนนี้ไม่มีใครได้คำตอบที่สมบูรณ์', text: 'แต่ทุกคนได้ยินอะไรบางอย่างที่รอมานาน และบางทีนั่นก็พอแล้ว' };
   }
 
+  if (currentTrack === 16) {
+    const ref = tracks[16].summaryReflection.replace(/\n/g, '<br>');
+    return { title: 'ใบบัวฟังเสียงในใจ — แล้วเลือกว่าจะถือหรือวาง', text: ref };
+  }
+
   // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
@@ -2046,6 +2092,7 @@ function showBadgeRoom() {
           <option value="13">T13 · วันที่หยกต้องสมบูรณ์แบบ</option>
           <option value="14">T14 · วันที่หยกรับคำชมไม่ได้</option>
           <option value="15">T15 · คืนที่บ้านมินนา</option>
+          <option value="16">T16 · ใบบัวกับเสียงในใจ</option>
         </select>
 
         <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
@@ -2096,7 +2143,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">&#127885;</span>`;
@@ -2233,6 +2280,23 @@ const badgeData = {
     },
     roomTitle: 'บทที่ 15 — มินนา',
     roomNote: 'เพื่อนๆ เห็นสิ่งที่มินนามีมาตลอด — คืนนั้นมินนาก็เริ่มเห็นมันด้วย'
+  },
+  16: {
+    stuck: tracks[16].badge.stuck.desc,
+    else:  tracks[16].badge.else.desc,
+    good:  tracks[16].badge.good.desc,
+    popupName: {
+      good:  tracks[16].badge.good.label,
+      else:  tracks[16].badge.else.label,
+      stuck: tracks[16].badge.stuck.label
+    },
+    popupDesc: {
+      good:  tracks[16].badge.good.desc,
+      else:  tracks[16].badge.else.desc,
+      stuck: tracks[16].badge.stuck.desc
+    },
+    roomTitle: 'บทที่ 16 — ใบบัว',
+    roomNote: 'ใบบัวทำสิ่งที่เสียงในหัวบอกว่าอย่าทำ — แล้วโลกก็ไม่ได้พัง'
   }
 };
 
