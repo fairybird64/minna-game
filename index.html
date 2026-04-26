@@ -1212,7 +1212,7 @@ function showHome() {
     { id: 15, emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
     { id: 16, emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',             cover: 'story16_b1.jpg' },
   ];
-  const trackCardsHTML = activeTracks.map(t => {
+  const trackCardsHTML = activeTracks.filter(t => !(tracks[t.id] && tracks[t.id].hidden)).map(t => {
     const heartCount = parseInt(localStorage.getItem('heart_' + t.id) || '0');
     const liked = localStorage.getItem('heart_liked_' + t.id) === '1';
     return `
@@ -2031,6 +2031,11 @@ function showBadgeRoom() {
     const isEarned = earned[id] !== undefined;
     const state   = earned[id] || 'else';
     const isNew   = (id === justEarned);
+    if (tracks[id] && tracks[id].hidden) {
+      return `<div class="cork-slot" id="slot-${id}" title="บางเรื่องไม่ต้องพิเศษก็มีค่า" style="opacity:0.35;cursor:default;">
+        <div class="cork-slot-empty">?</div>
+      </div>`;
+    }
     if (isEarned) {
       return `<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})">
         <div class="cork-pin"></div>

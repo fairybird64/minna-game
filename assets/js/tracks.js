@@ -225,6 +225,7 @@ const tracks = {
     ]
   },
   3: {
+    hidden: true,
     title: 'วันที่ดีแบบเรียบง่าย',
     protagonist: 'มินนา',
     summary: {
