@@ -1281,6 +1281,7 @@ function showHome() {
   }
 
   function buildSection(sec) {
+    const open = sec.id === 'minna';
     const cards = sec.trackIds.map(id => buildTrackCard(id)).join('');
     const placeholders = sec.placeholders.map(p => buildPlaceholder(p.label)).join('');
     return `
@@ -1288,9 +1289,9 @@ function showHome() {
       <div onclick="toggleCharSection('${sec.id}')"
            style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--cream-mid); border-radius:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; margin-bottom:10px;">
         <span style="font-size:15px; font-weight:700; color:var(--text-dark);">${sec.name}</span>
-        <span id="char-arrow-${sec.id}" style="font-size:11px; color:var(--text-soft); transition:transform 0.2s;">&#9660;</span>
+        <span id="char-arrow-${sec.id}" style="font-size:11px; color:var(--text-soft); transition:transform 0.2s;${open ? '' : ' transform:rotate(-90deg);'}">&#9660;</span>
       </div>
-      <div id="char-body-${sec.id}" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div id="char-body-${sec.id}" style="display:${open ? 'grid' : 'none'}; grid-template-columns:1fr 1fr; gap:12px;">
         ${cards}${placeholders}
       </div>
     </div>`;
