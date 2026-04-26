@@ -2,6 +2,7 @@ const tracks = {
   1: {
     title: 'มินนากับมะม่วง',
     protagonist: 'มินนา',
+    character: 'minna',
     summary: {
       closingTitle: 'จบบทที่ 1',
       closingText:  'มะม่วงไม่ได้งอนมินนา — มันแค่รอให้มินนากลับมาจริงๆ<br>ความสัมพันธ์เล็กๆ ก็สอนเราเรื่องใหญ่ๆ ได้เสมอ',
@@ -153,6 +154,7 @@ const tracks = {
   2: {
     title: 'มิตรภาพใหม่',
     protagonist: 'มินนา',
+    character: 'minna',
     summary: {
       closingTitle: 'จบบทที่ 2',
       closingText:  'ใบบัวไม่ได้รอเพื่อนที่สมบูรณ์แบบ — เธอแค่รอคนที่กล้าเดินเข้ามา<br>และมินนาก็เป็นคนนั้น',
@@ -225,8 +227,10 @@ const tracks = {
     ]
   },
   3: {
+    hidden: true,
     title: 'วันที่ดีแบบเรียบง่าย',
     protagonist: 'มินนา',
+    character: 'minna',
     summary: {
       closingTitle: 'จบบทที่ 3',
       closingText:  'มินนาไม่ได้คำตอบทุกอย่างภายในวันนี้ แต่เริ่มเห็นแล้วว่าการโอเคกับตัวเอง ไม่ต้องรอให้ใครอนุญาตก่อน',
@@ -306,6 +310,7 @@ const tracks = {
   4: {
     title: 'วันที่เพื่อนล้อ',
     protagonist: 'โมเน่',
+    character: 'mone',
     summary: {
       closingTitle: 'จบบทที่ 4',
       closingText:  'วันนี้โมเน่ยังไม่กล้า แต่รู้สึกได้ครั้งแรกว่า — บางทีก็โอเคที่จะชอบในสิ่งที่ชอบ',
@@ -379,6 +384,7 @@ const tracks = {
   5: {
     title: 'ความสัมพันธ์ในครอบครัว',
     protagonist: 'ครอบครัว',
+    character: 'special',
     summary: {
       closingTitle: 'ความสัมพันธ์ในครอบครัว',
       closingText:  'บ้านไม่ได้สมบูรณ์เสมอ แต่นี่คือที่ที่เรากลับมาหากันได้ และนั่นก็เพียงพอแล้ว',
@@ -452,6 +458,7 @@ const tracks = {
   6: {
     title: 'โมเน่กับวันเสาร์ที่บ้าน',
     protagonist: 'โมเน่',
+    character: 'mone',
     summary: {
       closingTitle: 'จบบทที่ 6',
       closingText:  'เรากล้ากว่าที่คิด แข็งแกร่งกว่าที่รู้สึก — และฉลาดกว่าที่เชื่อ',
@@ -520,6 +527,7 @@ const tracks = {
   7: {
     title: 'หมอน้อย',
     protagonist: 'หยก',
+    character: 'yok',
     summary: {
       closingTitle: 'จบบทที่ 7',
       closingText:  'แค่ใส่ใจนิดหน่อย คิดถึงคนอื่นสักเล็กน้อย — มันเปลี่ยนทุกอย่างได้เลย',
@@ -588,6 +596,7 @@ const tracks = {
   8: {
     title: 'มินนากับวันหลังจากนั้น',
     protagonist: 'มินนา',
+    character: 'minna',
     summary: {
       closingTitle: 'จบบทที่ 8',
       closingText:  'วันนี้ฉันพูดพลาด — แต่ฉันก็ยังเป็นฉันที่พยายามอยู่',
@@ -656,6 +665,7 @@ const tracks = {
   9: {
     title: 'ใบบัวกับไพ่ที่วางไม่ลง',
     protagonist: 'ใบบัว',
+    character: 'baibua',
     summary: {
       closingTitle: 'จบบทที่ 9',
       closingText:  'บางทีการอนุญาตให้ตัวเองไม่รู้ — ก็เป็นคำตอบที่ใจดีกับเราที่สุดแล้ว',
@@ -724,6 +734,7 @@ const tracks = {
   10: {
     title: 'ห้องของมินนา',
     protagonist: 'มินนา',
+    character: 'minna',
     summary: {
       closingTitle: 'จบบทที่ 10',
       closingText:  'จำไว้นะ — เธอกล้ากว่าที่คิด แข็งแกร่งกว่าที่รู้สึก และมีคุณค่ามากกว่าที่เชื่อ',
@@ -792,6 +803,7 @@ const tracks = {
   11: {
     title: 'วันที่โมเน่นั่งเงียบ',
     protagonist: 'โมเน่',
+    character: 'mone',
     summary: {
       closingTitle: 'จบบทที่ 11',
       closingText:  'การรู้จักตัวเองคือก้าวแรก — แต่ไม่จำเป็นต้องเดินคนเดียวตลอดทาง',
@@ -860,6 +872,7 @@ const tracks = {
   12: {
     title: 'ใบบัวกับฟีดที่ไม่มีวันหมด',
     protagonist: 'ใบบัว',
+    character: 'baibua',
     summary: {
       closingTitle: 'จบบทที่ 12',
       closingText:  'เสียงที่บอกว่าไม่ดีพอ — ไม่ได้เป็นความจริง แค่เป็นเสียงที่คุ้นเคย',
@@ -928,6 +941,7 @@ const tracks = {
   13: {
     title: 'วันที่หยกต้องสมบูรณ์แบบ',
     protagonist: 'หยก',
+    character: 'yok',
     summary: {
       closingTitle: 'จบบทที่ 13',
       closingText:  'ความสมบูรณ์แบบไม่ได้เกิดจากความขยัน — มันเกิดจากความกลัวว่าถ้าไม่ดีพอ จะไม่ได้รับความรัก',
@@ -1002,6 +1016,7 @@ const tracks = {
   14: {
     title: 'วันที่หยกรับคำชมไม่ได้',
     protagonist: 'หยก',
+    character: 'yok',
     summary: {
       closingTitle: 'จบบทที่ 14',
       closingText:  'การรับคำชมไม่ได้ ไม่ได้แปลว่าเราไม่คู่ควร — มันแปลว่าเรายังเชื่อตัวเองไม่เต็มที่',
@@ -1070,6 +1085,7 @@ const tracks = {
   15: {
     title: 'คืนที่บ้านมินนา',
     protagonist: 'มินนา',
+    character: 'special',
     summary: {
       closingTitle: 'จบบทที่ 15',
       closingText:  'กตัญญูไม่ได้แปลว่าต้องตอบแทนให้เท่ากัน — มันคือการจำ การเห็น และการส่งต่อในแบบของตัวเอง',
@@ -1144,6 +1160,7 @@ const tracks = {
     id: 16,
     title: 'ใบบัวกับเสียงในใจ',
     protagonist: 'ใบบัว',
+    character: 'baibua',
     coverImage: 'story16_b1.jpg',
     badge: {
       name: 'สมุดบันทึก',

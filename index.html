@@ -1194,32 +1194,63 @@ function showHome() {
   if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
   document.getElementById('progress-fill').style.width = '0%';
   updateBadgeCounterUI();
-  const activeTracks = [
-    { id: 1, emoji: '&#128049;', title: 'มินนากับมะม่วง',          tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
-    { id: 2, emoji: '&#127800;', title: 'มิตรภาพใหม่',              tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
-    { id: 3, emoji: '&#127807;', title: 'วันที่ดีแบบเรียบง่าย',    tagline: 'เมื่อคนรอบข้างทำให้เริ่มมองเห็นตัวเอง' },
-    { id: 4, emoji: '&#128153;', title: 'วันที่เพื่อนล้อ',         tagline: 'เมื่อสิ่งที่ชอบถูกหัวเราะเยาะ ความรู้สึกไปไหน?' },
-    { id: 5, emoji: '&#127968;', title: 'ความสัมพันธ์ในครอบครัว',  tagline: 'บ้านคือที่ที่ปลอดภัยเสมอไหม?' },
-    { id: 6, emoji: '&#127807;', title: 'โมเน่กับวันเสาร์ที่บ้าน', tagline: 'วันหยุดไม่ได้แปลว่าว่างเสมอไป' },
-    { id: 7, emoji: '&#128153;', title: 'หมอน้อย',                  tagline: 'ติดตามหยกและเพื่อนๆ ในโครงการจิตอาสา' },
-    { id: 8, emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',   tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
-    { id: 9, emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',  tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
-    { id: 10, emoji: '&#127769;', title: 'ห้องของมินนา',             tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
-    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'story11_b1.jpg' },
-    { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'story12_b1.jpg' },
-    { id: 13, emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
-    { id: 14, emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
-    { id: 15, emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
-    { id: 16, emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',             cover: 'story16_b1.jpg' },
+
+  const allTrackData = {
+    1:  { emoji: '&#128049;', title: 'มินนากับมะม่วง',           tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
+    2:  { emoji: '&#127800;', title: 'มิตรภาพใหม่',               tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
+    4:  { emoji: '&#128153;', title: 'วันที่เพื่อนล้อ',          tagline: 'เมื่อสิ่งที่ชอบถูกหัวเราะเยาะ ความรู้สึกไปไหน?' },
+    5:  { emoji: '&#127968;', title: 'ความสัมพันธ์ในครอบครัว',   tagline: 'บ้านคือที่ที่ปลอดภัยเสมอไหม?' },
+    6:  { emoji: '&#127807;', title: 'โมเน่กับวันเสาร์ที่บ้าน',  tagline: 'วันหยุดไม่ได้แปลว่าว่างเสมอไป' },
+    7:  { emoji: '&#128153;', title: 'หมอน้อย',                   tagline: 'ติดตามหยกและเพื่อนๆ ในโครงการจิตอาสา' },
+    8:  { emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',    tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
+    9:  { emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',   tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
+    10: { emoji: '&#127769;', title: 'ห้องของมินนา',              tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
+    11: { emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',       tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้',       cover: 'story11_b1.jpg' },
+    12: { emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่',        cover: 'story12_b1.jpg' },
+    13: { emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
+    14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
+    15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
+    16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',            cover: 'story16_b1.jpg' },
+  };
+
+  const characterSections = [
+    {
+      id: 'minna', name: 'มินนา',
+      trackIds: [1, 2, 8, 10],
+      placeholders: [{ label: 'T-มินนา' }]
+    },
+    {
+      id: 'mone', name: 'โมเน่',
+      trackIds: [4, 6, 11],
+      placeholders: [{ label: 'T-โมเน่' }]
+    },
+    {
+      id: 'yok', name: 'หยก',
+      trackIds: [7, 13, 14],
+      placeholders: [{ label: 'บทหยก' }, { label: 'บทหยก' }]
+    },
+    {
+      id: 'baibua', name: 'ใบบัว',
+      trackIds: [9, 12, 16],
+      placeholders: [{ label: 'บทใบบัว' }, { label: 'บทใบบัว' }]
+    },
+    {
+      id: 'special', name: 'บทพิเศษ',
+      trackIds: [5, 15],
+      placeholders: [{ label: 'T20' }, { label: 'นิทาน ep1' }, { label: 'นิทาน ep2' }]
+    }
   ];
-  const trackCardsHTML = activeTracks.map(t => {
-    const heartCount = parseInt(localStorage.getItem('heart_' + t.id) || '0');
-    const liked = localStorage.getItem('heart_liked_' + t.id) === '1';
+
+  function buildTrackCard(id) {
+    const t = allTrackData[id];
+    if (!t || (tracks[id] && tracks[id].hidden)) return '';
+    const heartCount = parseInt(localStorage.getItem('heart_' + id) || '0');
+    const liked = localStorage.getItem('heart_liked_' + id) === '1';
     return `
     <div style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;">
-      <div onclick="selectTrack(${t.id})" style="cursor:pointer; -webkit-tap-highlight-color:transparent;">
+      <div onclick="selectTrack(${id})" style="cursor:pointer; -webkit-tap-highlight-color:transparent;">
         <div style="aspect-ratio:16/9; overflow:hidden; background:var(--cream-mid);">
-          <img src="${t.cover || ('story' + t.id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
+          <img src="${t.cover || ('story' + id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
                onerror="this.style.display='none'">
         </div>
         <div style="padding:10px 12px 6px;">
@@ -1229,12 +1260,44 @@ function showHome() {
         </div>
       </div>
       <div style="padding:4px 12px 10px; display:flex; justify-content:flex-end;">
-        <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${t.id}" onclick="toggleHeart(${t.id}, event)">
-          ${liked ? '♥' : '♡'} <span id="heart-count-${t.id}">${heartCount > 0 ? heartCount : ''}</span>
+        <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${id}" onclick="toggleHeart(${id}, event)">
+          ${liked ? '♥' : '♡'} <span id="heart-count-${id}">${heartCount > 0 ? heartCount : ''}</span>
         </button>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  function buildPlaceholder(label) {
+    return `
+    <div style="background:var(--cream-mid); border:1.5px dashed var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; opacity:0.6;">
+      <div style="aspect-ratio:16/9; background:var(--cream-dark); display:flex; align-items:center; justify-content:center;">
+        <span style="font-size:28px; color:var(--text-soft);">?</span>
+      </div>
+      <div style="padding:10px 12px 12px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-soft); margin-bottom:4px;">เร็วๆนี้</div>
+        <div style="font-size:12px; color:var(--text-soft); line-height:1.4;">${label}</div>
+      </div>
+    </div>`;
+  }
+
+  function buildSection(sec) {
+    const cards = sec.trackIds.map(id => buildTrackCard(id)).join('');
+    const placeholders = sec.placeholders.map(p => buildPlaceholder(p.label)).join('');
+    return `
+    <div style="margin-bottom:20px;">
+      <div onclick="toggleCharSection('${sec.id}')"
+           style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--cream-mid); border-radius:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; margin-bottom:10px;">
+        <span style="font-size:15px; font-weight:700; color:var(--text-dark);">${sec.name}</span>
+        <span id="char-arrow-${sec.id}" style="font-size:11px; color:var(--text-soft); transition:transform 0.2s;">&#9660;</span>
+      </div>
+      <div id="char-body-${sec.id}" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        ${cards}${placeholders}
+      </div>
+    </div>`;
+  }
+
+  const sectionsHTML = characterSections.map(buildSection).join('');
+
   document.getElementById('scene-container').innerHTML = `
     <div style="padding:24px 16px 48px;">
       <div style="text-align:center; margin-bottom:20px;">
@@ -1244,10 +1307,7 @@ function showHome() {
       <div style="background:var(--cream-mid); border-radius:14px; padding:16px 18px; margin-bottom:24px; text-align:center; line-height:1.9; font-size:14px; color:var(--text-mid);">
         บางวันง่าย บางวันยาก — ทุกวันมีเรื่องเล่า<br>มินนาและเพื่อนๆ อยู่ที่นี่เสมอ &#127793;
       </div>
-      <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-soft); margin-bottom:12px;">เลือกเรื่องที่อยากเล่น</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        ${trackCardsHTML}
-      </div>
+      ${sectionsHTML}
       <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
         <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
           &#127968; ห้องของฉัน
@@ -1255,6 +1315,15 @@ function showHome() {
       </div>
     </div>
   `;
+}
+
+function toggleCharSection(id) {
+  const body = document.getElementById('char-body-' + id);
+  const arrow = document.getElementById('char-arrow-' + id);
+  if (!body || !arrow) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'grid';
+  arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
 function preloadTrackImages(trackId) {
@@ -2031,6 +2100,11 @@ function showBadgeRoom() {
     const isEarned = earned[id] !== undefined;
     const state   = earned[id] || 'else';
     const isNew   = (id === justEarned);
+    if (tracks[id] && tracks[id].hidden) {
+      return `<div class="cork-slot" id="slot-${id}" title="บางเรื่องไม่ต้องพิเศษก็มีค่า" style="opacity:0.35;cursor:default;">
+        <div class="cork-slot-empty">?</div>
+      </div>`;
+    }
     if (isEarned) {
       return `<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})">
         <div class="cork-pin"></div>
