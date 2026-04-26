@@ -1160,7 +1160,8 @@ let currentTrack  = 1;
 let playerChoices = [];
 let currentScenes = [];
 let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
-let _roomJustEarned = -1; // track id of badge earned this session, for slot entry animation
+let _roomJustEarned  = -1;   // track id of badge earned this session, for slot entry animation
+let _currentRoomTab = 'minna'; // active tab in badge room
 let sessionStartTime = null;
 let sessionStuckCount = 0;
 let _autoAdvanceTimer = null;
@@ -2087,33 +2088,34 @@ function restart() {
   renderScene(0);
 }
 
-// ── Badge Room (Cork Board) ──
+// ── Badge Room (Cork Board) — per-character tabs ──
+const _charRooms = [
+  { id: 'minna',   name: 'ห้องมินนา', trackIds: [1, 2, 8, 10], t3: true, phCount: 1 },
+  { id: 'mone',    name: 'ห้องโมเน่',  trackIds: [4, 6, 11],              phCount: 2 },
+  { id: 'yok',     name: 'ห้องหยก',    trackIds: [7, 13, 14],             phCount: 2 },
+  { id: 'baibua',  name: 'ห้องใบบัว', trackIds: [9, 12, 16],             phCount: 2 },
+  { id: 'special', name: 'บทพิเศษ',   trackIds: [5, 15],                 phCount: 3 },
+];
+
 function showBadgeRoom() {
-  const earned    = getEarnedBadges();
-  const total     = 20;
-  const earnedIds = Object.keys(earned);
-
   const justEarned = _roomJustEarned;
-  _roomJustEarned  = -1; // consume so revisits don't re-animate
+  _roomJustEarned  = -1;
 
-  const slotsHTML = Array.from({ length: total }, (_, i) => {
-    const id      = i + 1;
-    const isEarned = earned[id] !== undefined;
-    const state   = earned[id] || 'else';
-    const isNew   = (id === justEarned);
-    if (tracks[id] && tracks[id].hidden) {
-      return `<div class="cork-slot" id="slot-${id}" title="บางเรื่องไม่ต้องพิเศษก็มีค่า" style="opacity:0.35;cursor:default;">
-        <div class="cork-slot-empty">?</div>
-      </div>`;
+  // Auto-switch to the tab containing the just-earned badge
+  if (justEarned > 0) {
+    for (const room of _charRooms) {
+      if (room.trackIds.includes(justEarned)) { _currentRoomTab = room.id; break; }
     }
-    if (isEarned) {
-      return `<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})">
-        <div class="cork-pin"></div>
-        <img class="cork-badge" src="${badgePath(id, state)}" alt="">
-      </div>`;
-    }
-    return `<div class="cork-slot" id="slot-${id}"><div class="cork-slot-empty">?</div></div>`;
-  }).join('');
+  }
+
+  const tabBtnsHTML = _charRooms.map(r => `
+    <button id="tab-btn-${r.id}" onclick="switchRoomTab('${r.id}')"
+      style="flex-shrink:0; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:600;
+             font-family:inherit; cursor:pointer; border:1.5px solid rgba(58,36,20,0.2);
+             background:rgba(255,255,255,0.65); color:#3A2414;
+             -webkit-tap-highlight-color:transparent; transition:background 150ms,color 150ms;">
+      ${r.name}
+    </button>`).join('');
 
   document.getElementById('scene-container').innerHTML = `
     <div style="min-height:100vh; background:var(--cream);">
@@ -2122,15 +2124,16 @@ function showBadgeRoom() {
       <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
         <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
         <span style="font-size:15px; font-weight:700; color:#3A2414;">ห้องของฉัน</span>
-        <span style="margin-left:auto; font-size:12px; color:#9B7555;">&#127885; ${earnedIds.length}/${total}</span>
+        <span id="room-badge-count" style="margin-left:auto; font-size:12px; color:#9B7555;"></span>
       </div>
 
-      <!-- Cork Board -->
-      <div class="cork-board-wrap" style="margin:12px auto 0;">
-        <div class="cork-board-fallback"></div>
-        <img class="cork-bg" src="assets/corkboard.jpg" alt="" onerror="this.style.display='none'">
-        <div class="cork-grid">${slotsHTML}</div>
+      <!-- Tab bar -->
+      <div style="display:flex; gap:8px; overflow-x:auto; padding:12px 16px 0; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
+        ${tabBtnsHTML}
       </div>
+
+      <!-- Cork board — updated by switchRoomTab -->
+      <div id="room-cork-area"></div>
 
       <!-- Feedback form (hidden until requested) -->
       <div id="room-feedback-widget" class="feedback-widget" style="display:none; opacity:0; margin:16px 16px 0;">
@@ -2205,7 +2208,74 @@ function showBadgeRoom() {
       </div>
     </div>
   `;
+
+  switchRoomTab(_currentRoomTab, justEarned > 0 ? justEarned : -1);
   window.scrollTo({ top: 0 });
+}
+
+function switchRoomTab(tabId, justEarnedId) {
+  _currentRoomTab = tabId;
+  const room   = _charRooms.find(r => r.id === tabId);
+  if (!room) return;
+  const earned = getEarnedBadges();
+
+  // Highlight active tab
+  _charRooms.forEach(r => {
+    const btn = document.getElementById('tab-btn-' + r.id);
+    if (!btn) return;
+    const active = r.id === tabId;
+    btn.style.background   = active ? '#3A2414'              : 'rgba(255,255,255,0.65)';
+    btn.style.color        = active ? 'white'                : '#3A2414';
+    btn.style.borderColor  = active ? '#3A2414'              : 'rgba(58,36,20,0.2)';
+  });
+
+  // Build slot list in numeric order, inserting T3 (faded) for มินนา room
+  const slots = [];
+  const addTrack = (id, isNew) => {
+    const isEarned = earned[id] !== undefined;
+    const state    = earned[id] || 'else';
+    if (isEarned) {
+      slots.push(`<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})"><div class="cork-pin"></div><img class="cork-badge" src="${badgePath(id, state)}" alt=""></div>`);
+    } else {
+      slots.push(`<div class="cork-slot" id="slot-${id}"><div class="cork-slot-empty">?</div></div>`);
+    }
+  };
+
+  room.trackIds.forEach(id => {
+    // Insert T3 faded slot before T8 (its natural numeric position in มินนา)
+    if (room.t3 && id === 8) {
+      slots.push(`<div class="cork-slot" title="บางเรื่องไม่ต้องพิเศษก็มีค่า" style="opacity:0.35;cursor:default;"><div class="cork-slot-empty">?</div></div>`);
+    }
+    addTrack(id, id === justEarnedId);
+  });
+
+  // Locked placeholder slots (future tracks)
+  for (let i = 0; i < room.phCount; i++) {
+    slots.push(`<div class="cork-slot" style="opacity:0.45;cursor:default;"><div class="cork-slot-empty">&#128274;</div></div>`);
+  }
+
+  // 3-column grid; pad to fill the last row with invisible cells
+  const COLS = 3;
+  const rows = Math.ceil(slots.length / COLS);
+  while (slots.length < COLS * rows) {
+    slots.push(`<div class="cork-slot" style="pointer-events:none;visibility:hidden;"></div>`);
+  }
+
+  const corkArea = document.getElementById('room-cork-area');
+  if (corkArea) {
+    corkArea.innerHTML = `
+      <div class="cork-board-wrap" style="margin:12px auto 0;">
+        <div class="cork-board-fallback"></div>
+        <img class="cork-bg" src="assets/corkboard.jpg" alt="" onerror="this.style.display='none'">
+        <div class="cork-grid" style="grid-template-columns:repeat(${COLS},1fr);grid-template-rows:repeat(${rows},1fr);">${slots.join('')}</div>
+      </div>`;
+  }
+
+  // Per-room counter: earned / (real tracks + placeholders); T3 not counted
+  const earnedCount = room.trackIds.filter(id => earned[id] !== undefined).length;
+  const total       = room.trackIds.length + room.phCount;
+  const countEl     = document.getElementById('room-badge-count');
+  if (countEl) countEl.textContent = `&#127885; ${earnedCount}/${total}`;
 }
 
 
