@@ -1189,6 +1189,7 @@ function showHome() {
     14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
     15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
     16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',            cover: 'story16_b1.jpg' },
+    17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          tagline: 'เมื่อสอบพลาด — แต่ก็ยังรู้ว่าจะเริ่มจากตรงไหน',             cover: 'story17_b1.jpg' },
   };
 
   const characterSections = [
@@ -1199,8 +1200,8 @@ function showHome() {
     },
     {
       id: 'mone', name: 'โมเน่',
-      trackIds: [4, 6, 11],
-      placeholders: [{ label: 'T-โมเน่' }]
+      trackIds: [4, 6, 11, 17],
+      placeholders: []
     },
     {
       id: 'yok', name: 'หยก',
@@ -1350,13 +1351,16 @@ function normalizeNewSchemaScenes(scenesObj, trackId) {
         (item.lines || []).forEach(l => innerLines.push(l));
       }
     });
-    const choices = (scene.choices || []).map(c => ({
-      text:    c.text,
-      type:    c.tag,
-      outcome: badge[c.tag] ? badge[c.tag].desc : '',
-      tag:     badge[c.tag] ? badge[c.tag].label : c.tag,
-      desc:    null
-    }));
+    const choices = (scene.choices || []).map(c => {
+      const pb = c.badge;
+      return {
+        text:    c.text,
+        type:    c.tag,
+        outcome: pb ? pb.desc : (badge[c.tag] ? badge[c.tag].desc : ''),
+        tag:     pb ? pb.label : (badge[c.tag] ? badge[c.tag].label : c.tag),
+        desc:    pb ? pb.desc : null
+      };
+    });
     return {
       id:         sceneId,
       badge:      sceneId,
@@ -1388,6 +1392,7 @@ const trackIntros = {
   14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    protagonist: 'ติดตามหยกในวันที่คำชมกลายเป็นสิ่งที่รับไม่ได้', blurb: 'ครูบอกว่าหยกทำได้ดีมาก — แต่หยกกลับสงสัยว่ามันจริงไหม<br>วันนี้หยกจะได้เรียนรู้ว่าทำไมการรับคำชมถึงยากกว่าที่คิด' },
   15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           protagonist: 'ติดตามมินนาในคืนที่บ้านกลายเป็นสถานที่ค้นพบ',          blurb: 'หยกกับใบบัวมาค้างคืนที่บ้านมินนา — ดูเหมือนเป็นคืนธรรมดา<br>แต่บทสนทนาเรื่องกตัญญูทำให้ทุกคนได้เห็นบางอย่างที่ไม่เคยนึกถึงมาก่อน' },
   16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          protagonist: 'ติดตามใบบัวในวันที่เสียงในหัวพูดดังที่สุด',                  blurb: 'ใบบัวโตมากับคำสอนที่บอกว่าต้องเรียบร้อย ต้องไม่ทำให้ใครเดือดร้อน<br>แต่วันนี้เธอบอกความรู้สึกออกไป — และโลกก็ไม่ได้พัง' },
+  17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          protagonist: 'ติดตามโมเน่ในวันที่สอบพลาด',                                  blurb: 'โมเน่รู้ตั้งแต่ต้นว่าสอบครั้งนี้ไม่ได้เริ่มดี<br>แต่ก็ยังทำในสิ่งที่ทำได้ — และรู้ว่าจะเริ่มจากตรงไหนครั้งหน้า' },
 };
 
 function showOnboarding(trackId) {
@@ -1824,6 +1829,11 @@ function getReflection(choices) {
     return { title: 'ใบบัวฟังเสียงในใจ — แล้วเลือกว่าจะถือหรือวาง', text: ref };
   }
 
+  if (currentTrack === 17) {
+    const ref = tracks[17].summaryReflection.replace(/\n/g, '<br>');
+    return { title: 'โมเน่รู้แล้วว่าจะเริ่มจากตรงไหน', text: ref };
+  }
+
   // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
@@ -2068,7 +2078,7 @@ function restart() {
 // ── Badge Room (Cork Board) — per-character tabs ──
 const _charRooms = [
   { id: 'minna',   name: 'ห้องมินนา', trackIds: [1, 2, 8, 10], t3: true, phCount: 1 },
-  { id: 'mone',    name: 'ห้องโมเน่',  trackIds: [4, 6, 11],              phCount: 2 },
+  { id: 'mone',    name: 'ห้องโมเน่',  trackIds: [4, 6, 11, 17],          phCount: 1 },
   { id: 'yok',     name: 'ห้องหยก',    trackIds: [7, 13, 14],             phCount: 2 },
   { id: 'baibua',  name: 'ห้องใบบัว', trackIds: [9, 12, 16],             phCount: 2 },
   { id: 'special', name: 'บทพิเศษ',   trackIds: [5, 15],                 phCount: 3 },
@@ -2148,6 +2158,7 @@ function showBadgeRoom() {
           <option value="14">T14 · วันที่หยกรับคำชมไม่ได้</option>
           <option value="15">T15 · คืนที่บ้านมินนา</option>
           <option value="16">T16 · ใบบัวกับเสียงในใจ</option>
+          <option value="17">T17 · วันที่โมเน่รู้แล้ว</option>
         </select>
 
         <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
@@ -2265,7 +2276,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">🏅</span>`;
@@ -2441,6 +2452,23 @@ const badgeData = {
     },
     roomTitle: 'บทที่ 16 — ใบบัว',
     roomNote: 'ใบบัวทำสิ่งที่เสียงในหัวบอกว่าอย่าทำ — แล้วโลกก็ไม่ได้พัง'
+  },
+  17: {
+    stuck: tracks[17].badge.stuck.desc,
+    else:  tracks[17].badge.else.desc,
+    good:  tracks[17].badge.good.desc,
+    popupName: {
+      good:  tracks[17].badge.good.label,
+      else:  tracks[17].badge.else.label,
+      stuck: tracks[17].badge.stuck.label
+    },
+    popupDesc: {
+      good:  tracks[17].badge.good.desc,
+      else:  tracks[17].badge.else.desc,
+      stuck: tracks[17].badge.stuck.desc
+    },
+    roomTitle: 'บทที่ 17 — โมเน่',
+    roomNote: 'โมเน่รู้ว่าความผิดพลาดไม่ใช่จุดสิ้นสุด — มันแค่บอกว่าจะเริ่มจากตรงไหนครั้งหน้า'
   }
 };
 
