@@ -1,4 +1,3 @@
-[00_PRODUCT_PRINCIPLES_v1.0.md](https://github.com/user-attachments/files/27191680/00_PRODUCT_PRINCIPLES_v1.0.md)
 # Minna Journey — Product Principles v1.0
 
 ## Purpose
@@ -9,7 +8,7 @@
 ## 1. Product Identity
 
 ### Minna Journey คืออะไร
-Minna Journey คือเกมเล่าเรื่องเชิงสะท้อนใจสำหรับวัยรุ่น ที่ช่วยให้ผู้เล่นเข้าใจความรู้สึก ความคิด ความสัมพันธ์ และคุณค่าของตนเอง ผ่านเรื่องราวของตัวละครหลัก การเลือกทางเดินของใจ การสะท้อนความหมายของสิ่งที่เลือก และการเก็บ badge เป็นความทรงจำทางใจใน “ห้องของฉัน”
+Minna Journey คือเกมเล่าเรื่องเชิงสะท้อนใจสำหรับวัยรุ่น ที่ช่วยให้ผู้เล่นเข้าใจความรู้สึก ความคิด ความสัมพันธ์ และคุณค่าของตนเอง ผ่านเรื่องราวของตัวละครหลัก การเลือกทางเดินของใจ การสะท้อนความหมายของสิ่งที่เลือก และการเก็บ badge เป็นความทรงจำทางใจในห้องของตัวละครแต่ละคน
 
 ### Minna Journey อยู่ตรงไหนในระบบน้องฮัก
 - Minna = reflective narrative / universal prevention
@@ -26,7 +25,9 @@ Minna Journey คือเกมเล่าเรื่องเชิงสะ
 ---
 
 ## 2. Product Promise
+
 Minna สัญญากับผู้เล่นว่า
+
 1. ผู้เล่นจะไม่ถูกตัดสินจากสิ่งที่เลือก
 2. เกมจะช่วยให้ผู้เล่น “เห็นตัวเองมากขึ้น” ไม่ใช่ “เก่งขึ้นตามเกณฑ์ของระบบ”
 3. badge คือของที่เก็บไว้ในใจ ไม่ใช่รางวัลเชิงแข่งขัน
@@ -61,21 +62,23 @@ Minna สัญญากับผู้เล่นว่า
 ---
 
 ## 4. Product Engines
+
 ทุก feature ใหม่ต้องอยู่ใน engine ใด engine หนึ่งต่อไปนี้
 
 1. **Narrative Engine** — track, B1–B4, protagonist, arc
 2. **Reflection Engine** — popup, summary, share-safe quote
-3. **Memory Engine** — badge, room, cork board
+3. **Memory Engine** — badge, protagonist room, cork board
 4. **Replay Engine** — replay scene, choice shuffle, future replay depth
 5. **Universe Engine** — character bible, นิทาน, trilogy unlock, crossover hints
 6. **Safety Engine** — passive exit, wording, framing, sensitivity review
-7. **Integration Engine** — bridge กลับน้องฮัก, home, room, support path
+7. **Integration Engine** — bridge กลับน้องฮัก, home, protagonist room, support path
 
 ถ้า feature ใหม่ไม่อยู่ใน engine ใดเลย ให้พักไว้ใน backlog ก่อน
 
 ---
 
 ## 5. Target Users
+
 ### Primary
 - เด็กและวัยรุ่นประมาณ 11–19 ปี
 - ผู้ใช้ทั่วไปที่อาจยังไม่พร้อมเข้าสู่การคุยเชิงลึกหรือการประเมินตรง ๆ
@@ -87,6 +90,7 @@ Minna สัญญากับผู้เล่นว่า
 ---
 
 ## 6. Working Rules
+
 1. Character Bible เป็น law สูงสุดของ content
 2. Safety by Design Framework เป็น law สูงสุดของ safety
 3. Claude Code ทำ feature ตาม spec เท่านั้น ห้ามเปลี่ยน clinical/content logic เอง
@@ -96,6 +100,7 @@ Minna สัญญากับผู้เล่นว่า
 ---
 
 ## 7. Gold Standard Tracks
+
 - **T15 คืนที่บ้านมินนา** = system benchmark (ensemble / belonging / gratitude)
 - **T16 ใบบัวกับเสียงในใจ** = safety-sensitive benchmark (disclosure / rejection / self-compassion / inner voice)
 
@@ -104,6 +109,7 @@ Minna สัญญากับผู้เล่นว่า
 ---
 
 ## 8. What Success Looks Like
+
 Minna สำเร็จเมื่อ
 - เด็กเล่นแล้วไม่รู้สึกถูกตัดสิน
 - เด็กเห็นทางเลือกของตัวเองชัดขึ้น
@@ -114,4 +120,5 @@ Minna สำเร็จเมื่อ
 ---
 
 ## 9. Final Position Statement
-Minna Journey ไม่ได้ออกแบบให้เด็กเลือกคำตอบที่ถูก แต่เพื่อให้เด็กกลับมาเห็นตัวเองมากขึ้นทุกครั้งที่เล่น ผ่านเรื่องราว ทางเลือก badge ความทรงจำ การเล่นซ้ำ และความเข้าใจอย่างอ่อนโยน โดยมีน้องฮักเป็น ecosystem รองรับ และมีมนุษย์เป็นผู้คุมทิศทางด้านความหมาย ความปลอดภัย และคุณค่าทางคลินิกเสมอ
+
+Minna Journey ไม่ได้ออกแบบให้เด็กเลือกคำตอบที่ถูก แต่เพื่อให้เด็กกลับมาเห็นตัวเองมากขึ้นทุกครั้งที่เล่น ผ่านเรื่องราว ทางเลือก badge ความทรงจำ การเล่นซ้ำ และความเข้าใจอย่างอ่อนโยน โดยมีน้องฮักเป็น ecosystem รองรับ มีห้องรายตัวละครเป็นพื้นที่เก็บความหมายของแต่ละเส้นเรื่อง และมีมนุษย์เป็นผู้คุมทิศทางด้านความหมาย ความปลอดภัย และคุณค่าทางคลินิกเสมอ
