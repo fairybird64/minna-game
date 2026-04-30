@@ -1291,7 +1291,7 @@ function showHome() {
       ${sectionsHTML}
       <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
         <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
-          &#127968; ห้องของฉัน
+          &#127968; ${getRoomLabel(currentTrack)}
         </button>
       </div>
     </div>
@@ -1930,7 +1930,7 @@ function showSummary() {
       </div>
 
       <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
-        <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ${currentTrack === 18 ? 'ห้องใบบัว' : 'ห้องของฉัน'}</button>
+        <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ${getRoomLabel(currentTrack)}</button>
       </div>
 
       <div class="summary-buttons">
@@ -2098,6 +2098,16 @@ const _charRooms = [
   { id: 'special', name: 'บทพิเศษ',   trackIds: [5, 15],                 phCount: 3 },
 ];
 
+const _trackRoomLabel = {
+  1:'ห้องมินนา', 2:'ห้องมินนา', 3:'ห้องมินนา', 8:'ห้องมินนา', 10:'ห้องมินนา', 15:'ห้องมินนา',
+  4:'ห้องโมเน่',  6:'ห้องโมเน่',  11:'ห้องโมเน่',  17:'ห้องโมเน่',
+  7:'ห้องหยก',   13:'ห้องหยก',   14:'ห้องหยก',
+  9:'ห้องใบบัว', 12:'ห้องใบบัว', 16:'ห้องใบบัว', 18:'ห้องใบบัว'
+};
+function getRoomLabel(trackId) {
+  return _trackRoomLabel[trackId] || 'ห้องของฉัน';
+}
+
 function showBadgeRoom() {
   const justEarned = _roomJustEarned;
   _roomJustEarned  = -1;
@@ -2124,7 +2134,7 @@ function showBadgeRoom() {
       <!-- Header -->
       <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
         <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
-        <span style="font-size:15px; font-weight:700; color:#3A2414;">ห้องของฉัน</span>
+        <span style="font-size:15px; font-weight:700; color:#3A2414;">${getRoomLabel(currentTrack)}</span>
         <span id="room-badge-count" style="margin-left:auto; font-size:12px; color:#9B7555;"></span>
       </div>
 
