@@ -1190,6 +1190,7 @@ function showHome() {
     15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
     16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',            cover: 'story16_b1.jpg' },
     17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          tagline: 'เมื่อสอบพลาด — แต่ก็ยังรู้ว่าจะเริ่มจากตรงไหน',             cover: 'story17_b1.jpg' },
+    18: { emoji: '&#127861;', title: 'เช้าที่ใบบัวเห็นยาย',         tagline: 'วันที่ใบบัวหยุดดิ้นรน',                                       cover: 'story18_b1.jpg' },
   };
 
   const characterSections = [
@@ -1210,8 +1211,8 @@ function showHome() {
     },
     {
       id: 'baibua', name: 'ใบบัว',
-      trackIds: [9, 12, 16],
-      placeholders: [{ label: 'บทใบบัว' }, { label: 'บทใบบัว' }]
+      trackIds: [9, 12, 16, 18],
+      placeholders: [{ label: 'บทใบบัว' }]
     },
     {
       id: 'special', name: 'บทพิเศษ',
@@ -1393,6 +1394,7 @@ const trackIntros = {
   15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           protagonist: 'ติดตามมินนาในคืนที่บ้านกลายเป็นสถานที่ค้นพบ',          blurb: 'หยกกับใบบัวมาค้างคืนที่บ้านมินนา — ดูเหมือนเป็นคืนธรรมดา<br>แต่บทสนทนาเรื่องกตัญญูทำให้ทุกคนได้เห็นบางอย่างที่ไม่เคยนึกถึงมาก่อน' },
   16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          protagonist: 'ติดตามใบบัวในวันที่เสียงในหัวพูดดังที่สุด',                  blurb: 'ใบบัวโตมากับคำสอนที่บอกว่าต้องเรียบร้อย ต้องไม่ทำให้ใครเดือดร้อน<br>แต่วันนี้เธอบอกความรู้สึกออกไป — และโลกก็ไม่ได้พัง' },
   17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          protagonist: 'ติดตามโมเน่ในวันที่สอบพลาด',                                  blurb: 'โมเน่รู้ตั้งแต่ต้นว่าสอบครั้งนี้ไม่ได้เริ่มดี<br>แต่ก็ยังทำในสิ่งที่ทำได้ — และรู้ว่าจะเริ่มจากตรงไหนครั้งหน้า' },
+  18: { emoji: '&#127861;', title: 'เช้าที่ใบบัวเห็นยาย',         protagonist: 'ติดตามใบบัวในเช้าที่บ้านเงียบ ก่อนที่ทุกคนจะตื่น',           blurb: 'เช้าที่บ้านเงียบ ก่อนที่ทุกคนจะตื่น' },
 };
 
 function showOnboarding(trackId) {
@@ -1834,6 +1836,11 @@ function getReflection(choices) {
     return { title: 'โมเน่รู้แล้วว่าจะเริ่มจากตรงไหน', text: ref };
   }
 
+  if (currentTrack === 18) {
+    const ref = tracks[18].summaryReflection.replace(/\n/g, '<br>');
+    return { title: 'ใบบัวเริ่มเห็นสิ่งที่ไม่เคยมองเห็น', text: ref };
+  }
+
   // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
@@ -1906,6 +1913,13 @@ function showSummary() {
           <p class="ending-question" style="font-style:normal; color:var(--text-mid);">ความสมบูรณ์แบบไม่ได้เกิดจากความขยัน<br>มันเกิดจากความกลัว — กลัวว่าถ้าไม่ดีพอ จะไม่ได้รับความรัก<br><br>หยกไม่ได้ทำงานเพื่อตัวเอง<br>เธอทำเพื่อเสียงที่เรียนรู้มาตั้งแต่เด็กว่า<br>"ดี = ได้รับความรัก"</p>
           <div class="ending-mission-box">ภารกิจเล็กๆ ของหยก:\nครั้งหน้าที่ทำอะไรเสร็จแล้ว\nก่อนจะแก้ไขต่อ — หยุดถามตัวเองก่อนว่า\n"ฉันแก้เพราะมันไม่ดีจริงๆ\nหรือเพราะยังรู้สึกไม่ปลอดภัย?"</div>
           <p class="ending-bridge">และถ้าวันไหนหยกเริ่มสังเกตว่า\nตัวเองช่วยคนอื่นเยอะมาก\nอาจถึงเวลาถามคำถามเดิมอีกครั้ง</p>
+        ` : currentTrack === 18 ? `
+          <ul class="ending-insight-list">
+            ${insights.map(i => `<li>${i}</li>`).join('')}
+          </ul>
+          <div class="ending-divider"></div>
+          <p class="ending-question">${question}</p>
+          <p class="ending-bridge">ถ้าเรื่องนี้ทำให้นึกถึงอะไรในใจ<br>ลองกลับไปคุยกับน้องฮักต่อได้นะ</p>
         ` : `
           <ul class="ending-insight-list">
             ${insights.map(i => `<li>${i}</li>`).join('')}
@@ -2080,7 +2094,7 @@ const _charRooms = [
   { id: 'minna',   name: 'ห้องมินนา', trackIds: [1, 2, 8, 10], t3: true, phCount: 1 },
   { id: 'mone',    name: 'ห้องโมเน่',  trackIds: [4, 6, 11, 17],          phCount: 1 },
   { id: 'yok',     name: 'ห้องหยก',    trackIds: [7, 13, 14],             phCount: 2 },
-  { id: 'baibua',  name: 'ห้องใบบัว', trackIds: [9, 12, 16],             phCount: 2 },
+  { id: 'baibua',  name: 'ห้องใบบัว', trackIds: [9, 12, 16, 18],          phCount: 1 },
   { id: 'special', name: 'บทพิเศษ',   trackIds: [5, 15],                 phCount: 3 },
 ];
 
@@ -2159,6 +2173,7 @@ function showBadgeRoom() {
           <option value="15">T15 · คืนที่บ้านมินนา</option>
           <option value="16">T16 · ใบบัวกับเสียงในใจ</option>
           <option value="17">T17 · วันที่โมเน่รู้แล้ว</option>
+          <option value="18">T18 · เช้าที่ใบบัวเห็นยาย</option>
         </select>
 
         <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
@@ -2276,7 +2291,7 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
       : `<span style="font-size:44px;">🏅</span>`;
@@ -2469,6 +2484,23 @@ const badgeData = {
     },
     roomTitle: 'บทที่ 17 — โมเน่',
     roomNote: 'โมเน่รู้ว่าความผิดพลาดไม่ใช่จุดสิ้นสุด — มันแค่บอกว่าจะเริ่มจากตรงไหนครั้งหน้า'
+  },
+  18: {
+    stuck: tracks[18].badge.stuck.desc,
+    else:  tracks[18].badge.else.desc,
+    good:  tracks[18].badge.good.desc,
+    popupName: {
+      good:  tracks[18].badge.good.label,
+      else:  tracks[18].badge.else.label,
+      stuck: tracks[18].badge.stuck.label
+    },
+    popupDesc: {
+      good:  tracks[18].badge.good.desc,
+      else:  tracks[18].badge.else.desc,
+      stuck: tracks[18].badge.stuck.desc
+    },
+    roomTitle: 'บทที่ 18 — ใบบัว',
+    roomNote: 'ใบบัวเริ่มเห็นยายเป็นคนคนหนึ่ง — ที่กำลังนั่งอยู่กับความเจ็บปวดของตัวเองโดยที่ไม่รู้วิธีบอก'
   }
 };
 
