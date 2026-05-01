@@ -1952,7 +1952,7 @@ function showSummary() {
 
       <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
         <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ${getRoomLabel(currentTrack)}</button>
-        ${tracks[currentTrack] && tracks[currentTrack].shareCard ? `<button class="share-card-btn" onclick="onSummaryShareCardClick()">✦ สร้างการ์ดแชร์</button>` : ''}
+        <!-- share card button hidden pending html2canvas fix -->
       </div>
 
       <div class="summary-buttons">
@@ -2335,13 +2335,13 @@ function openRoomBadgePopup(trackId) {
   document.getElementById('room-badge-sub').textContent = info.title;
   document.getElementById('room-badge-note').textContent = (data && data.roomNote) ? data.roomNote : resourceText;
 
-  // Share card button: show only if b4State is available in localStorage
+  // Share card button: hidden pending html2canvas fix
   const shareBtnWrap = document.getElementById('room-share-btn-wrap');
   const shareBtn = document.getElementById('room-share-card-btn');
   if (shareBtnWrap && shareBtn) {
     const b4State = getB4State(trackId);
     const hasShareCard = !!(info.shareCard && b4State);
-    shareBtnWrap.style.display = hasShareCard ? 'block' : 'none';
+    shareBtnWrap.style.display = 'none'; // hidden until html2canvas fix
     if (hasShareCard) shareBtn.dataset.trackId = String(trackId);
   }
 
