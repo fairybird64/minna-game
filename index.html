@@ -1106,32 +1106,10 @@
       50%  { transform: scale(1.2); box-shadow: 0 0 22px 10px rgba(212,168,122,0.5); }
       100% { transform: scale(1);   box-shadow: 0 0 0px 0px  rgba(212,168,122,0);    }
     }
-    #badge-counter {
-      position: fixed;
-      top: 10px;
-      right: 12px;
-      display: none;
-      align-items: center;
-      gap: 6px;
-      background: var(--cream-mid);
-      border: 1.5px solid var(--tan);
-      border-radius: 20px;
-      padding: 7px 14px 7px 10px;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-dark);
-      z-index: 200;
-      cursor: pointer;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-      transition: background 0.15s, transform 0.12s;
-    }
-    #badge-counter:hover { background: var(--cream-dark); transform: scale(1.05); }
-    #badge-counter:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
 
-<div id="badge-counter" onclick="showBadgeRoom()" title="ห้องของฉัน">&#127885; <span id="badge-counter-count">0</span></div>
 <div id="app">
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   <div id="scene-container"></div>
@@ -1160,7 +1138,8 @@ let currentTrack  = 1;
 let playerChoices = [];
 let currentScenes = [];
 let feedbackState = { rating: null, freeText: '', recommend: null, returnIntent: null, favoriteTrack: null };
-let _roomJustEarned = -1; // track id of badge earned this session, for slot entry animation
+let _roomJustEarned  = -1;   // track id of badge earned this session, for slot entry animation
+let _currentRoomTab = 'minna'; // active tab in badge room
 let sessionStartTime = null;
 let sessionStuckCount = 0;
 let _autoAdvanceTimer = null;
@@ -1193,33 +1172,65 @@ function toggleHeart(trackId, event) {
 function showHome() {
   if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
   document.getElementById('progress-fill').style.width = '0%';
-  updateBadgeCounterUI();
-  const activeTracks = [
-    { id: 1, emoji: '&#128049;', title: 'มินนากับมะม่วง',          tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
-    { id: 2, emoji: '&#127800;', title: 'มิตรภาพใหม่',              tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
-    { id: 3, emoji: '&#127807;', title: 'วันที่ดีแบบเรียบง่าย',    tagline: 'เมื่อคนรอบข้างทำให้เริ่มมองเห็นตัวเอง' },
-    { id: 4, emoji: '&#128153;', title: 'วันที่เพื่อนล้อ',         tagline: 'เมื่อสิ่งที่ชอบถูกหัวเราะเยาะ ความรู้สึกไปไหน?' },
-    { id: 5, emoji: '&#127968;', title: 'ความสัมพันธ์ในครอบครัว',  tagline: 'บ้านคือที่ที่ปลอดภัยเสมอไหม?' },
-    { id: 6, emoji: '&#127807;', title: 'โมเน่กับวันเสาร์ที่บ้าน', tagline: 'วันหยุดไม่ได้แปลว่าว่างเสมอไป' },
-    { id: 7, emoji: '&#128153;', title: 'หมอน้อย',                  tagline: 'ติดตามหยกและเพื่อนๆ ในโครงการจิตอาสา' },
-    { id: 8, emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',   tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
-    { id: 9, emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',  tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
-    { id: 10, emoji: '&#127769;', title: 'ห้องของมินนา',             tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
-    { id: 11, emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',      tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้', cover: 'story11_b1.jpg' },
-    { id: 12, emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่', cover: 'story12_b1.jpg' },
-    { id: 13, emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
-    { id: 14, emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
-    { id: 15, emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
-    { id: 16, emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',             cover: 'story16_b1.jpg' },
+
+  const allTrackData = {
+    1:  { emoji: '&#128049;', title: 'มินนากับมะม่วง',           tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
+    2:  { emoji: '&#127800;', title: 'มิตรภาพใหม่',               tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
+    4:  { emoji: '&#128153;', title: 'วันที่เพื่อนล้อ',          tagline: 'เมื่อสิ่งที่ชอบถูกหัวเราะเยาะ ความรู้สึกไปไหน?' },
+    5:  { emoji: '&#127968;', title: 'ความสัมพันธ์ในครอบครัว',   tagline: 'บ้านคือที่ที่ปลอดภัยเสมอไหม?' },
+    6:  { emoji: '&#127807;', title: 'โมเน่กับวันเสาร์ที่บ้าน',  tagline: 'วันหยุดไม่ได้แปลว่าว่างเสมอไป' },
+    7:  { emoji: '&#128153;', title: 'หมอน้อย',                   tagline: 'ติดตามหยกและเพื่อนๆ ในโครงการจิตอาสา' },
+    8:  { emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',    tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
+    9:  { emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',   tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
+    10: { emoji: '&#127769;', title: 'ห้องของมินนา',              tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
+    11: { emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',       tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้',       cover: 'story11_b1.jpg' },
+    12: { emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่',        cover: 'story12_b1.jpg' },
+    13: { emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
+    14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
+    15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
+    16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',            cover: 'story16_b1.jpg' },
+    17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          tagline: 'เมื่อสอบพลาด — แต่ก็ยังรู้ว่าจะเริ่มจากตรงไหน',             cover: 'story17_b1.jpg' },
+    18: { emoji: '&#127861;', title: 'เช้าที่ใบบัวเห็นยาย',         tagline: 'วันที่ใบบัวหยุดดิ้นรน',                                       cover: 'story18_b1.jpg' },
+  };
+
+  const characterSections = [
+    {
+      id: 'minna', name: 'มินนา',
+      trackIds: [1, 2, 8, 10],
+      placeholders: [{ label: 'T-มินนา' }]
+    },
+    {
+      id: 'mone', name: 'โมเน่',
+      trackIds: [4, 6, 11, 17],
+      placeholders: []
+    },
+    {
+      id: 'yok', name: 'หยก',
+      trackIds: [7, 13, 14],
+      placeholders: [{ label: 'บทหยก' }, { label: 'บทหยก' }]
+    },
+    {
+      id: 'baibua', name: 'ใบบัว',
+      trackIds: [9, 12, 16, 18],
+      placeholders: [{ label: 'บทใบบัว' }]
+    },
+    {
+      id: 'special', name: 'บทพิเศษ',
+      trackIds: [5, 15],
+      placeholders: [{ label: 'T20' }, { label: 'นิทาน ep1' }, { label: 'นิทาน ep2' }]
+    }
   ];
-  const trackCardsHTML = activeTracks.map(t => {
-    const heartCount = parseInt(localStorage.getItem('heart_' + t.id) || '0');
-    const liked = localStorage.getItem('heart_liked_' + t.id) === '1';
+
+  function buildTrackCard(id) {
+    const t = allTrackData[id];
+    if (!t || (tracks[id] && tracks[id].hidden)) return '';
+    const heartCount = parseInt(localStorage.getItem('heart_' + id) || '0');
+    const liked = localStorage.getItem('heart_liked_' + id) === '1';
     return `
     <div style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;">
-      <div onclick="selectTrack(${t.id})" style="cursor:pointer; -webkit-tap-highlight-color:transparent;">
+      <div onclick="selectTrack(${id})" style="cursor:pointer; -webkit-tap-highlight-color:transparent;">
         <div style="aspect-ratio:16/9; overflow:hidden; background:var(--cream-mid);">
-          <img src="${t.cover || ('story' + t.id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
+          <img src="${t.cover || ('story' + id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
                onerror="this.style.display='none'">
         </div>
         <div style="padding:10px 12px 6px;">
@@ -1229,12 +1240,45 @@ function showHome() {
         </div>
       </div>
       <div style="padding:4px 12px 10px; display:flex; justify-content:flex-end;">
-        <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${t.id}" onclick="toggleHeart(${t.id}, event)">
-          ${liked ? '♥' : '♡'} <span id="heart-count-${t.id}">${heartCount > 0 ? heartCount : ''}</span>
+        <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${id}" onclick="toggleHeart(${id}, event)">
+          ${liked ? '♥' : '♡'} <span id="heart-count-${id}">${heartCount > 0 ? heartCount : ''}</span>
         </button>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  function buildPlaceholder(label) {
+    return `
+    <div style="background:var(--cream-mid); border:1.5px dashed var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; opacity:0.6;">
+      <div style="aspect-ratio:16/9; background:var(--cream-dark); display:flex; align-items:center; justify-content:center;">
+        <span style="font-size:28px; color:var(--text-soft);">?</span>
+      </div>
+      <div style="padding:10px 12px 12px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-soft); margin-bottom:4px;">เร็วๆนี้</div>
+        <div style="font-size:12px; color:var(--text-soft); line-height:1.4;">${label}</div>
+      </div>
+    </div>`;
+  }
+
+  function buildSection(sec) {
+    const open = sec.id === 'minna';
+    const cards = sec.trackIds.map(id => buildTrackCard(id)).join('');
+    const placeholders = sec.placeholders.map(p => buildPlaceholder(p.label)).join('');
+    return `
+    <div style="margin-bottom:20px;">
+      <div onclick="toggleCharSection('${sec.id}')"
+           style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--cream-mid); border-radius:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; margin-bottom:10px;">
+        <span style="font-size:15px; font-weight:700; color:var(--text-dark);">${sec.name}</span>
+        <span id="char-arrow-${sec.id}" style="font-size:11px; color:var(--text-soft); transition:transform 0.2s;${open ? '' : ' transform:rotate(-90deg);'}">&#9660;</span>
+      </div>
+      <div id="char-body-${sec.id}" style="display:${open ? 'grid' : 'none'}; grid-template-columns:1fr 1fr; gap:12px;">
+        ${cards}${placeholders}
+      </div>
+    </div>`;
+  }
+
+  const sectionsHTML = characterSections.map(buildSection).join('');
+
   document.getElementById('scene-container').innerHTML = `
     <div style="padding:24px 16px 48px;">
       <div style="text-align:center; margin-bottom:20px;">
@@ -1244,17 +1288,23 @@ function showHome() {
       <div style="background:var(--cream-mid); border-radius:14px; padding:16px 18px; margin-bottom:24px; text-align:center; line-height:1.9; font-size:14px; color:var(--text-mid);">
         บางวันง่าย บางวันยาก — ทุกวันมีเรื่องเล่า<br>มินนาและเพื่อนๆ อยู่ที่นี่เสมอ &#127793;
       </div>
-      <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-soft); margin-bottom:12px;">เลือกเรื่องที่อยากเล่น</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        ${trackCardsHTML}
-      </div>
+      ${sectionsHTML}
       <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
         <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
-          &#127968; ห้องของฉัน
+          &#127968; ${getRoomLabel(currentTrack)}
         </button>
       </div>
     </div>
   `;
+}
+
+function toggleCharSection(id) {
+  const body = document.getElementById('char-body-' + id);
+  const arrow = document.getElementById('char-arrow-' + id);
+  if (!body || !arrow) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'grid';
+  arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
 function preloadTrackImages(trackId) {
@@ -1302,13 +1352,16 @@ function normalizeNewSchemaScenes(scenesObj, trackId) {
         (item.lines || []).forEach(l => innerLines.push(l));
       }
     });
-    const choices = (scene.choices || []).map(c => ({
-      text:    c.text,
-      type:    c.tag,
-      outcome: badge[c.tag] ? badge[c.tag].desc : '',
-      tag:     badge[c.tag] ? badge[c.tag].label : c.tag,
-      desc:    null
-    }));
+    const choices = (scene.choices || []).map(c => {
+      const pb = c.badge;
+      return {
+        text:    c.text,
+        type:    c.tag,
+        outcome: pb ? pb.desc : (badge[c.tag] ? badge[c.tag].desc : ''),
+        tag:     pb ? pb.label : (badge[c.tag] ? badge[c.tag].label : c.tag),
+        desc:    pb ? pb.desc : null
+      };
+    });
     return {
       id:         sceneId,
       badge:      sceneId,
@@ -1340,6 +1393,8 @@ const trackIntros = {
   14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    protagonist: 'ติดตามหยกในวันที่คำชมกลายเป็นสิ่งที่รับไม่ได้', blurb: 'ครูบอกว่าหยกทำได้ดีมาก — แต่หยกกลับสงสัยว่ามันจริงไหม<br>วันนี้หยกจะได้เรียนรู้ว่าทำไมการรับคำชมถึงยากกว่าที่คิด' },
   15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           protagonist: 'ติดตามมินนาในคืนที่บ้านกลายเป็นสถานที่ค้นพบ',          blurb: 'หยกกับใบบัวมาค้างคืนที่บ้านมินนา — ดูเหมือนเป็นคืนธรรมดา<br>แต่บทสนทนาเรื่องกตัญญูทำให้ทุกคนได้เห็นบางอย่างที่ไม่เคยนึกถึงมาก่อน' },
   16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          protagonist: 'ติดตามใบบัวในวันที่เสียงในหัวพูดดังที่สุด',                  blurb: 'ใบบัวโตมากับคำสอนที่บอกว่าต้องเรียบร้อย ต้องไม่ทำให้ใครเดือดร้อน<br>แต่วันนี้เธอบอกความรู้สึกออกไป — และโลกก็ไม่ได้พัง' },
+  17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          protagonist: 'ติดตามโมเน่ในวันที่สอบพลาด',                                  blurb: 'โมเน่รู้ตั้งแต่ต้นว่าสอบครั้งนี้ไม่ได้เริ่มดี<br>แต่ก็ยังทำในสิ่งที่ทำได้ — และรู้ว่าจะเริ่มจากตรงไหนครั้งหน้า' },
+  18: { emoji: '&#127861;', title: 'เช้าที่ใบบัวเห็นยาย',         protagonist: 'ติดตามใบบัวในเช้าที่บ้านเงียบ ก่อนที่ทุกคนจะตื่น',           blurb: 'เช้าที่บ้านเงียบ ก่อนที่ทุกคนจะตื่น' },
 };
 
 function showOnboarding(trackId) {
@@ -1776,6 +1831,16 @@ function getReflection(choices) {
     return { title: 'ใบบัวฟังเสียงในใจ — แล้วเลือกว่าจะถือหรือวาง', text: ref };
   }
 
+  if (currentTrack === 17) {
+    const ref = tracks[17].summaryReflection.replace(/\n/g, '<br>');
+    return { title: 'โมเน่รู้แล้วว่าจะเริ่มจากตรงไหน', text: ref };
+  }
+
+  if (currentTrack === 18) {
+    const ref = tracks[18].summaryReflection.replace(/\n/g, '<br>');
+    return { title: 'ใบบัวเริ่มเห็นสิ่งที่ไม่เคยมองเห็น', text: ref };
+  }
+
   // Track 1
   if (choices.length === 4 && choices[3].type === 'joyful') {
     return {
@@ -1848,6 +1913,13 @@ function showSummary() {
           <p class="ending-question" style="font-style:normal; color:var(--text-mid);">ความสมบูรณ์แบบไม่ได้เกิดจากความขยัน<br>มันเกิดจากความกลัว — กลัวว่าถ้าไม่ดีพอ จะไม่ได้รับความรัก<br><br>หยกไม่ได้ทำงานเพื่อตัวเอง<br>เธอทำเพื่อเสียงที่เรียนรู้มาตั้งแต่เด็กว่า<br>"ดี = ได้รับความรัก"</p>
           <div class="ending-mission-box">ภารกิจเล็กๆ ของหยก:\nครั้งหน้าที่ทำอะไรเสร็จแล้ว\nก่อนจะแก้ไขต่อ — หยุดถามตัวเองก่อนว่า\n"ฉันแก้เพราะมันไม่ดีจริงๆ\nหรือเพราะยังรู้สึกไม่ปลอดภัย?"</div>
           <p class="ending-bridge">และถ้าวันไหนหยกเริ่มสังเกตว่า\nตัวเองช่วยคนอื่นเยอะมาก\nอาจถึงเวลาถามคำถามเดิมอีกครั้ง</p>
+        ` : currentTrack === 18 ? `
+          <ul class="ending-insight-list">
+            ${insights.map(i => `<li>${i}</li>`).join('')}
+          </ul>
+          <div class="ending-divider"></div>
+          <p class="ending-question">${question}</p>
+          <p class="ending-bridge">ถ้าเรื่องนี้ทำให้นึกถึงอะไรในใจ<br>ลองกลับไปคุยกับน้องฮักต่อได้นะ</p>
         ` : `
           <ul class="ending-insight-list">
             ${insights.map(i => `<li>${i}</li>`).join('')}
@@ -1858,7 +1930,7 @@ function showSummary() {
       </div>
 
       <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
-        <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ห้องของฉัน</button>
+        <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ${getRoomLabel(currentTrack)}</button>
       </div>
 
       <div class="summary-buttons">
@@ -2017,28 +2089,44 @@ function restart() {
   renderScene(0);
 }
 
-// ── Badge Room (Cork Board) ──
+// ── Badge Room (Cork Board) — per-character tabs ──
+const _charRooms = [
+  { id: 'minna',   name: 'ห้องมินนา', trackIds: [1, 2, 8, 10], t3: true, phCount: 1 },
+  { id: 'mone',    name: 'ห้องโมเน่',  trackIds: [4, 6, 11, 17],          phCount: 1 },
+  { id: 'yok',     name: 'ห้องหยก',    trackIds: [7, 13, 14],             phCount: 2 },
+  { id: 'baibua',  name: 'ห้องใบบัว', trackIds: [9, 12, 16, 18],          phCount: 1 },
+  { id: 'special', name: 'บทพิเศษ',   trackIds: [5, 15],                 phCount: 3 },
+];
+
+const _trackRoomLabel = {
+  1:'ห้องมินนา', 2:'ห้องมินนา', 3:'ห้องมินนา', 8:'ห้องมินนา', 10:'ห้องมินนา', 15:'ห้องมินนา',
+  4:'ห้องโมเน่',  6:'ห้องโมเน่',  11:'ห้องโมเน่',  17:'ห้องโมเน่',
+  7:'ห้องหยก',   13:'ห้องหยก',   14:'ห้องหยก',
+  9:'ห้องใบบัว', 12:'ห้องใบบัว', 16:'ห้องใบบัว', 18:'ห้องใบบัว'
+};
+function getRoomLabel(trackId) {
+  return _trackRoomLabel[trackId] || 'ห้องของฉัน';
+}
+
 function showBadgeRoom() {
-  const earned    = getEarnedBadges();
-  const total     = 20;
-  const earnedIds = Object.keys(earned);
-
   const justEarned = _roomJustEarned;
-  _roomJustEarned  = -1; // consume so revisits don't re-animate
+  _roomJustEarned  = -1;
 
-  const slotsHTML = Array.from({ length: total }, (_, i) => {
-    const id      = i + 1;
-    const isEarned = earned[id] !== undefined;
-    const state   = earned[id] || 'else';
-    const isNew   = (id === justEarned);
-    if (isEarned) {
-      return `<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})">
-        <div class="cork-pin"></div>
-        <img class="cork-badge" src="${badgePath(id, state)}" alt="">
-      </div>`;
+  // Auto-switch to the tab containing the just-earned badge
+  if (justEarned > 0) {
+    for (const room of _charRooms) {
+      if (room.trackIds.includes(justEarned)) { _currentRoomTab = room.id; break; }
     }
-    return `<div class="cork-slot" id="slot-${id}"><div class="cork-slot-empty">?</div></div>`;
-  }).join('');
+  }
+
+  const tabBtnsHTML = _charRooms.map(r => `
+    <button id="tab-btn-${r.id}" onclick="switchRoomTab('${r.id}')"
+      style="flex-shrink:0; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:600;
+             font-family:inherit; cursor:pointer; border:1.5px solid rgba(58,36,20,0.2);
+             background:rgba(255,255,255,0.65); color:#3A2414;
+             -webkit-tap-highlight-color:transparent; transition:background 150ms,color 150ms;">
+      ${r.name}
+    </button>`).join('');
 
   document.getElementById('scene-container').innerHTML = `
     <div style="min-height:100vh; background:var(--cream);">
@@ -2046,16 +2134,17 @@ function showBadgeRoom() {
       <!-- Header -->
       <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
         <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
-        <span style="font-size:15px; font-weight:700; color:#3A2414;">ห้องของฉัน</span>
-        <span style="margin-left:auto; font-size:12px; color:#9B7555;">&#127885; ${earnedIds.length}/${total}</span>
+        <span style="font-size:15px; font-weight:700; color:#3A2414;">${getRoomLabel(currentTrack)}</span>
+        <span id="room-badge-count" style="margin-left:auto; font-size:12px; color:#9B7555;"></span>
       </div>
 
-      <!-- Cork Board -->
-      <div class="cork-board-wrap" style="margin:12px auto 0;">
-        <div class="cork-board-fallback"></div>
-        <img class="cork-bg" src="assets/corkboard.jpg" alt="" onerror="this.style.display='none'">
-        <div class="cork-grid">${slotsHTML}</div>
+      <!-- Tab bar -->
+      <div style="display:flex; gap:8px; overflow-x:auto; padding:12px 16px 0; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
+        ${tabBtnsHTML}
       </div>
+
+      <!-- Cork board — updated by switchRoomTab -->
+      <div id="room-cork-area"></div>
 
       <!-- Feedback form (hidden until requested) -->
       <div id="room-feedback-widget" class="feedback-widget" style="display:none; opacity:0; margin:16px 16px 0;">
@@ -2093,6 +2182,8 @@ function showBadgeRoom() {
           <option value="14">T14 · วันที่หยกรับคำชมไม่ได้</option>
           <option value="15">T15 · คืนที่บ้านมินนา</option>
           <option value="16">T16 · ใบบัวกับเสียงในใจ</option>
+          <option value="17">T17 · วันที่โมเน่รู้แล้ว</option>
+          <option value="18">T18 · เช้าที่ใบบัวเห็นยาย</option>
         </select>
 
         <div class="feedback-q">อยากชวนเพื่อนมาเล่นด้วยไหม?</div>
@@ -2130,7 +2221,74 @@ function showBadgeRoom() {
       </div>
     </div>
   `;
+
+  switchRoomTab(_currentRoomTab, justEarned > 0 ? justEarned : -1);
   window.scrollTo({ top: 0 });
+}
+
+function switchRoomTab(tabId, justEarnedId) {
+  _currentRoomTab = tabId;
+  const room   = _charRooms.find(r => r.id === tabId);
+  if (!room) return;
+  const earned = getEarnedBadges();
+
+  // Highlight active tab
+  _charRooms.forEach(r => {
+    const btn = document.getElementById('tab-btn-' + r.id);
+    if (!btn) return;
+    const active = r.id === tabId;
+    btn.style.background   = active ? '#3A2414'              : 'rgba(255,255,255,0.65)';
+    btn.style.color        = active ? 'white'                : '#3A2414';
+    btn.style.borderColor  = active ? '#3A2414'              : 'rgba(58,36,20,0.2)';
+  });
+
+  // Build slot list in numeric order, inserting T3 (faded) for มินนา room
+  const slots = [];
+  const addTrack = (id, isNew) => {
+    const isEarned = earned[id] !== undefined;
+    const state    = earned[id] || 'else';
+    if (isEarned) {
+      slots.push(`<div class="cork-slot${isNew ? ' just-earned' : ''}" id="slot-${id}" onclick="openRoomBadgePopup(${id})"><div class="cork-pin"></div><img class="cork-badge" src="${badgePath(id, state)}" alt=""></div>`);
+    } else {
+      slots.push(`<div class="cork-slot" id="slot-${id}"><div class="cork-slot-empty">?</div></div>`);
+    }
+  };
+
+  room.trackIds.forEach(id => {
+    // Insert T3 faded slot before T8 (its natural numeric position in มินนา)
+    if (room.t3 && id === 8) {
+      slots.push(`<div class="cork-slot" title="บางเรื่องไม่ต้องพิเศษก็มีค่า" style="opacity:0.35;cursor:default;"><div class="cork-slot-empty">?</div></div>`);
+    }
+    addTrack(id, id === justEarnedId);
+  });
+
+  // Locked placeholder slots (future tracks)
+  for (let i = 0; i < room.phCount; i++) {
+    slots.push(`<div class="cork-slot" style="opacity:0.45;cursor:default;"><div class="cork-slot-empty">&#128274;</div></div>`);
+  }
+
+  // 3-column grid; pad to fill the last row with invisible cells
+  const COLS = 3;
+  const rows = Math.ceil(slots.length / COLS);
+  while (slots.length < COLS * rows) {
+    slots.push(`<div class="cork-slot" style="pointer-events:none;visibility:hidden;"></div>`);
+  }
+
+  const corkArea = document.getElementById('room-cork-area');
+  if (corkArea) {
+    corkArea.innerHTML = `
+      <div class="cork-board-wrap" style="margin:12px auto 0; aspect-ratio:unset; height:auto; padding:8% 6%;">
+        <div class="cork-board-fallback"></div>
+        <img class="cork-bg" src="assets/corkboard.jpg" alt="" onerror="this.style.display='none'">
+        <div class="cork-grid" style="position:relative; top:unset; left:unset; right:unset; bottom:unset; grid-template-columns:repeat(${COLS},90px); grid-template-rows:repeat(${rows},90px); gap:8px; justify-content:center; align-content:center;">${slots.join('')}</div>
+      </div>`;
+  }
+
+  // Per-room counter: earned / (real tracks + placeholders); T3 not counted
+  const earnedCount = room.trackIds.filter(id => earned[id] !== undefined).length;
+  const total       = room.trackIds.length + room.phCount;
+  const countEl     = document.getElementById('room-badge-count');
+  if (countEl) countEl.textContent = `🏅 ${earnedCount}/${total}`;
 }
 
 
@@ -2143,10 +2301,10 @@ function openRoomBadgePopup(trackId) {
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
   const imgEl = document.getElementById('room-badge-img');
   if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].includes(Number(trackId));
+    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].includes(Number(trackId));
     imgEl.innerHTML = hasImg
       ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
-      : `<span style="font-size:44px;">&#127885;</span>`;
+      : `<span style="font-size:44px;">🏅</span>`;
   }
   document.getElementById('room-badge-title').textContent = (data && data.roomTitle) ? data.roomTitle : ('บทที่ ' + trackId + ' — ' + info.protagonist);
   document.getElementById('room-badge-sub').textContent = info.title;
@@ -2176,13 +2334,17 @@ function showRoomFeedback() {
 const badgeData = {
   1: {
     stuck: 'เธออยู่กับความรู้สึกของตัวเอง — บางวันแค่นั้นก็หนักพอแล้ว',
-    else:  'เธอไม่ได้หนีออกไป — การอยู่ตรงนั้นคือความกล้าแบบหนึ่ง',
-    good:  'เธอเปิดประตูให้ใครสักคนเข้ามา — แม้จะยังไม่รู้ว่าจะได้อะไรกลับมา'
+    else:  'ยังหาคำตอบไม่เจอ แต่วันนี้ก็ยังอยู่ตรงนี้',
+    good:  'แค่นี้ก็ดีมากแล้ว ไม่ต้องพิเศษกว่านี้ก็ได้',
+    popupName: { good: 'วันนี้แค่ซบก็พอแล้ว', else: 'คำบางคำ...รอก่อนก็ได้' },
+    popupDesc: { good: 'แค่นี้ก็ดีมากแล้ว ไม่ต้องพิเศษกว่านี้ก็ได้', else: 'ยังหาคำตอบไม่เจอ แต่วันนี้ก็ยังอยู่ตรงนี้' }
   },
   2: {
     stuck: 'เธอได้ยินเสียงข้างในตัวเอง — แม้จะยังไม่รู้ว่ามันบอกอะไร',
-    else:  'ในความเงียบมีบางอย่างรอให้เธอฟัง — และเธอก็เริ่มฟังแล้ว',
-    good:  'เธอได้ยินเสียงของตัวเองชัดขึ้น — นั่นคือจุดเริ่มต้นของการรู้จักตัวเอง'
+    else:  'ข้างในพยายามมาเยอะแล้ว แม้คนอื่นจะยังไม่เห็น',
+    good:  'กลัวอยู่ก็กลัว แต่ก็ยังเดินออกมาแล้ว',
+    popupName: { good: 'สั่นนะ...แต่ก็ทักไปแล้ว', else: 'ซ้อมในใจ...รอบที่ร้อย' },
+    popupDesc: { good: 'กลัวอยู่ก็กลัว แต่ก็ยังเดินออกมาแล้ว', else: 'ข้างในพยายามมาเยอะแล้ว แม้คนอื่นจะยังไม่เห็น' }
   },
   3: {
     stuck: 'แม้วันนั้นจะหนัก — เธอก็ยังอยู่กับมันได้จนผ่านไป',
@@ -2191,57 +2353,75 @@ const badgeData = {
   },
   4: {
     stuck: 'ความโกรธที่รู้สึกอยู่นั้นจริง — และเธอก็ผ่านวันนั้นมาได้',
-    else:  'เธอไม่ได้หายไป — ยังอยู่ตรงนี้แม้จะหนัก',
-    good:  'ความโกรธคือเกราะที่ปกป้องความสั่นไหวข้างใน — เธอเริ่มรู้จักมันแล้ว'
+    else:  'วันนี้ยังไม่พูดออกมา แต่ก็รู้ว่ามันอยู่ตรงไหน',
+    good:  'เสียงข้างนอกดังแค่ไหน แต่ข้างในยังดีอยู่',
+    popupName: { good: 'ข้างในยัง OK อยู่', else: 'เก็บไว้ในใจ...แต่ไม่ลืม' },
+    popupDesc: { good: 'เสียงข้างนอกดังแค่ไหน แต่ข้างในยังดีอยู่', else: 'วันนี้ยังไม่พูดออกมา แต่ก็รู้ว่ามันอยู่ตรงไหน' }
   },
   5: {
     stuck: 'ความสัมพันธ์ในครอบครัวซับซ้อนได้ — และเธอก็รู้สึกถึงมันได้อย่างซื่อสัตย์',
-    else:  'เธอเห็นทั้งสองด้าน — นั่นต้องใช้ความกล้ามาก',
-    good:  'เธอเลือกที่จะเข้าใจ — แม้จะยังไม่ง่ายนัก'
+    else:  'ยังพูดไม่ครบ แต่มีคนนั่งรอฟังอยู่',
+    good:  'แค่มีคนฟัง...แค่นี้ก็เปลี่ยนความรู้สึกแล้ว',
+    popupName: { good: 'คืนที่ได้ยินกันจริงๆ', else: 'เริ่มแง้มประตูใจ' },
+    popupDesc: { good: 'แค่มีคนฟัง...แค่นี้ก็เปลี่ยนความรู้สึกแล้ว', else: 'ยังพูดไม่ครบ แต่มีคนนั่งรอฟังอยู่' }
   },
   6: {
     stuck: 'ทำคนเดียวทั้งวันโดยไม่มีใครเห็น — นั่นต้องใช้ความกล้ามากกว่าที่คิด',
-    else:  'ความรู้สึกไม่แฟร์นั้นจริง — แต่เธอก็ยังเลือกทำต่อได้',
-    good:  'ทุกสิ่งที่ทำด้วยความใส่ใจ — คือหลักฐานว่าความกล้าเงียบๆ ของเธอมีอยู่จริง'
+    else:  'ทำเสร็จแล้ว แต่ความรู้สึกไม่แฟร์นั้นยังอยู่อีกสักพัก',
+    good:  'ไม่ได้ชอบมัน แต่โมเน่ก็ทำ — เพราะรู้ว่ามันคือหน้าที่',
+    popupName: { good: 'ทำได้ แม้ไม่ชอบ', else: 'ทำไปก็ได้...แต่ใจยังคาอยู่' },
+    popupDesc: { good: 'ไม่ได้ชอบมัน แต่โมเน่ก็ทำ — เพราะรู้ว่ามันคือหน้าที่', else: 'ทำเสร็จแล้ว แต่ความรู้สึกไม่แฟร์นั้นยังอยู่อีกสักพัก' }
   },
   7: {
     stuck: 'ก้าวแรกไม่ต้องสมบูรณ์แบบ — การมาก็คือความกล้าแบบหนึ่งแล้ว',
-    else:  'เธอสังเกตเห็นคนรอบข้าง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
-    good:  'แสงที่งดงามที่สุด — คือแสงที่ส่องออกมาจากตัวตนที่เธอเลือกจะเป็นอย่างซื่อสัตย์'
+    else:  'ยังไม่กล้าเต็มๆ แต่ก็ไม่ได้ถอย',
+    good:  'ไม่ได้ทำเพราะอยากดี — แต่เพราะหัวใจมันพาไป',
+    popupName: { good: 'ใจอ่อนโยนพอที่จะเริ่ม', else: 'ไม่ได้อยากเก่ง...แค่อยากลอง' },
+    popupDesc: { good: 'ไม่ได้ทำเพราะอยากดี — แต่เพราะหัวใจมันพาไป', else: 'ยังไม่กล้าเต็มๆ แต่ก็ไม่ได้ถอย' }
   },
   8: {
     stuck: 'ยังสั่นอยู่แต่ก็พูดออกไปแล้ว — ความกล้าที่แท้จริงคือแบบนี้',
-    else:  'ความผิดพลาดไม่ได้จบที่ตรงนั้น — มันพาเธอไปหาบางอย่างที่ดีกว่า',
-    good:  'ความผิดพลาดไม่ใช่ตราบาป — มันคือผ้าห่มที่โอบกอดและบอกว่าเธอก็เป็นเพียงมนุษย์คนหนึ่ง'
+    else:  'มันยังอยู่ในอก แต่ก็รู้ว่าไม่ต้องถือไปตลอด',
+    good:  'พูดผิดไปแล้ว — แต่ฉันก็แก้ได้',
+    popupName: { good: 'รู้ว่าพลาด แต่ไม่จมอยู่กับมัน', else: 'ยังวางไม่ได้' },
+    popupDesc: { good: 'พูดผิดไปแล้ว — แต่ฉันก็แก้ได้', else: 'มันยังอยู่ในอก แต่ก็รู้ว่าไม่ต้องถือไปตลอด' }
   },
   9: {
     stuck: 'ความกังวลที่รู้สึกอยู่นั้นจริง — และเธอก็อยู่กับมันได้โดยไม่ต้องแก้ทุกอย่าง',
-    else:  'เธอไม่ได้ต้องรู้ทุกอย่าง — แค่อยู่กับปัจจุบันก็พอ',
-    good:  'เธอเรียนรู้ที่จะปล่อย — และนั่นยากกว่าการควบคุมมาก'
+    else:  'มันไม่ได้หนักตั้งแต่แรก — แต่ถือนานพอก็หนักได้เหมือนกัน',
+    good:  'ไพ่ยังอยู่ตรงนั้น แต่ฉันเลือกที่จะวางมันลง',
+    popupName: { good: 'วางมือ...เพื่อถือใจตัวเอง', else: 'ถือมานานแล้ว' },
+    popupDesc: { good: 'ไพ่ยังอยู่ตรงนั้น แต่ฉันเลือกที่จะวางมันลง', else: 'มันไม่ได้หนักตั้งแต่แรก — แต่ถือนานพอก็หนักได้เหมือนกัน' }
   },
   10: {
     stuck: 'การเติบโตไม่ต้องรีบ — แค่ยังเดินอยู่ก็พอ',
-    else:  'เธอเห็นคนอื่น เห็นตัวเอง — นั่นคือจุดเริ่มต้นของการเข้าใจ',
-    good:  'มิตรภาพไม่ใช่การทำให้เหมือนกัน — แต่คือการยอมรับในความต่างอย่างให้เกียรติ'
+    else:  'เห็นเพื่อนๆเติบโต แต่ยังไม่แน่ใจว่าตัวเองอยู่ตรงไหน',
+    good:  'มินนามองรอบๆ แล้วรู้สึกว่าการเปลี่ยนแปลงนั้นงดงาม',
+    popupName: { good: 'เห็นแล้ว — ทุกคนต่างก็เติบโต', else: 'เห็นคนอื่นชัด ตัวเองยังพร่า' },
+    popupDesc: { good: 'มินนามองรอบๆ แล้วรู้สึกว่าการเปลี่ยนแปลงนั้นงดงาม', else: 'เห็นเพื่อนๆเติบโต แต่ยังไม่แน่ใจว่าตัวเองอยู่ตรงไหน' }
   },
   11: {
     stuck: 'บางทีการอยู่เงียบๆ ก็เป็นวิธีหนึ่งที่จะรับมือกับสิ่งที่ยังพูดไม่ได้',
-    else:  'รู้ว่าอยากเปิด แต่ยังไม่พร้อม — และนั่นก็โอเคแล้ว',
-    good:  'ไม่ต้องรู้ทุกอย่างก่อน — แค่ไม่แบกคนเดียวก็เบาขึ้นแล้ว'
+    else:  'ยังไม่พร้อมพูด แต่ก็ไม่ได้หนีความรู้สึก',
+    good:  'รู้จักตัวเองมากขึ้นอีกนิด และยังเป็นคนเดิมอยู่',
+    popupName: { good: 'นี่แหละ...คือฉัน', else: 'เงียบ...เพื่อฟังตัวเอง' },
+    popupDesc: { good: 'รู้จักตัวเองมากขึ้นอีกนิด และยังเป็นคนเดิมอยู่', else: 'ยังไม่พร้อมพูด แต่ก็ไม่ได้หนีความรู้สึก' }
   },
   12: {
     stuck: 'บางครั้งการไม่ลองก็เป็นวิธีหนึ่งที่จะรู้สึกปลอดภัย',
-    else:  'รู้ว่ามีบางอย่างในตัวที่รอการเติบโต แม้ยังไม่เห็นชัด',
-    good:  'เห็นแล้วว่าเสียงนั้นไม่ใช่เสียงของเรา — และนั่นคือจุดเริ่มต้น'
+    else:  'มือยังเลื่อนอยู่ แต่ใจเริ่มรู้ตัวว่าทำอะไร',
+    good:  'ปิดหน้าจอลง แล้วกลับมาอยู่กับลมหายใจ',
+    popupName: { good: 'Log out...เพื่อออกมาหายใจ', else: 'เลื่อนช้าลง...มองเห็นตัวเอง' },
+    popupDesc: { good: 'ปิดหน้าจอลง แล้วกลับมาอยู่กับลมหายใจ', else: 'มือยังเลื่อนอยู่ แต่ใจเริ่มรู้ตัวว่าทำอะไร' }
   },
   13: {
     stuck: 'หยกยังอยู่กับมาตรฐานที่ไม่มีวันสิ้นสุด — แต่ก็รู้แล้วว่าตัวเองอยู่ตรงนี้',
-    else:  'ลังเลอยู่ระหว่างเสียงข้างในกับสิ่งที่คนอื่นเห็น — แต่ก็เริ่มสังเกตตัวเองแล้ว',
-    good:  'เริ่มถามว่าทำเพราะอยากทำ หรือเพราะกลัว — และนั่นคือจุดเริ่มต้น',
-    name: 'ดอกลิลลี่',
+    else:  'งานอาจมีตำหนิ แต่ตัวฉันไม่ได้มีตำหนิตามงานไปด้วย',
+    good:  'สมบูรณ์พอแล้ว สำหรับใจฉัน',
+    popupName: { good: 'หยุดเพราะพอ ไม่ใช่เพราะแพ้', else: 'ไม่สมบูรณ์...แต่ฉันโอเค' },
     popupDesc: {
-      good:  'ดอกไม้ที่บานได้แม้ไม่สมบูรณ์แบบ — เธอเริ่มฟังตัวเองแล้ว',
-      else:  'ดอกไม้ที่กำลังบาน — ยังมีเวลาเสมอ',
+      good:  'สมบูรณ์พอแล้ว สำหรับใจฉัน',
+      else:  'งานอาจมีตำหนิ แต่ตัวฉันไม่ได้มีตำหนิตามงานไปด้วย',
       stuck: 'ดอกไม้ที่รอวันบาน — ยังไม่พร้อมก็โอเค'
     },
     roomTitle: 'บทที่ 13 — หยก',
@@ -2249,16 +2429,16 @@ const badgeData = {
   },
   14: {
     stuck: 'หยกยังวิ่งตามเสียงที่บอกว่าไม่ดีพอ — แต่ก็เริ่มเห็นแล้วว่าตัวเองอยู่ตรงนี้',
-    else:  'หยกเริ่มสังเกตว่าตัวเองรับคำชมไม่ได้ — และนั่นก็คือจุดเริ่มต้นแล้ว',
-    good:  'หยกเริ่มยอมให้คำชมซึมเข้ามา — นั่นคือก้าวแรกของการเชื่อในตัวเอง',
+    else:  'รับคำชมมาแล้ว แม้จะยังทำตัวไม่ถูกก็ตาม',
+    good:  'รับคำชมมาไว้ในใจ แล้วลองอยู่กับมันดู',
     popupName: {
-      good:  'เห็นตัวเอง',
-      else:  'เริ่มมอง',
+      good:  'เออ...เราก็เก่งเหมือนกันนะ',
+      else:  'รับมาแล้ว...แต่ยังเขินอยู่',
       stuck: 'กระจกมีรอย'
     },
     popupDesc: {
-      good:  'วันนี้หยกกล้ามองกระจกโดยไม่ต้องแก้ไขอะไรก่อน',
-      else:  'ยังไม่ชัดทั้งหมด แต่หยกเริ่มหันหน้าเข้าหากระจกแล้ว',
+      good:  'รับคำชมมาไว้ในใจ แล้วลองอยู่กับมันดู',
+      else:  'รับคำชมมาแล้ว แม้จะยังทำตัวไม่ถูกก็ตาม',
       stuck: 'บางทีการมองตัวเองก็เจ็บเกินไปในวันนั้น'
     },
     roomTitle: 'บทที่ 14 — หยก',
@@ -2266,16 +2446,16 @@ const badgeData = {
   },
   15: {
     stuck: 'มินนาเห็นทุกอย่างรอบข้าง — แต่ยังไม่เคยหยุดนับว่าตัวเองได้รับอะไรมาบ้าง',
-    else:  'มินนาเริ่มเห็นว่าบ้านของเธอมีบางอย่างที่เพื่อนมองเห็น — แม้เธอยังไม่เห็นชัด',
-    good:  'มินนายืนอยู่กับความอบอุ่นที่เธอโตมากับมัน — และวันนี้เธอเห็นมันแล้ว',
+    else:  'มันยังไม่ดีที่สุด แต่ขอบคุณที่มีคนอยู่ข้างๆ',
+    good:  'ไม่ต้องพูดทุกเรื่อง คืนนี้แค่นี้ก็อุ่นใจแล้ว',
     popupName: {
-      good:  'อ่อนโยนขึ้น',
-      else:  'เริ่มเห็น',
+      good:  'ไม่ต้องครบ...แต่พอดี',
+      else:  'ไม่สมบูรณ์...แต่ไม่ลำพัง',
       stuck: 'นับถอยหลัง'
     },
     popupDesc: {
-      good:  'นึกถึงสิ่งที่ได้รับมา — แล้วรู้สึกว่าหัวใจมันเบาลง และอยากดูแลคนข้างๆ มากขึ้น',
-      else:  'ยังไม่ชัดทั้งหมด — แต่มีบางอย่างที่เริ่มรู้สึกว่าเบาลง',
+      good:  'ไม่ต้องพูดทุกเรื่อง คืนนี้แค่นี้ก็อุ่นใจแล้ว',
+      else:  'มันยังไม่ดีที่สุด แต่ขอบคุณที่มีคนอยู่ข้างๆ',
       stuck: 'พยายามจะเป็นผู้ให้ — แต่ในใจก็แอบนับว่าเหลือพลังอยู่เท่าไร'
     },
     roomTitle: 'บทที่ 15 — มินนา',
@@ -2297,6 +2477,40 @@ const badgeData = {
     },
     roomTitle: 'บทที่ 16 — ใบบัว',
     roomNote: 'ใบบัวทำสิ่งที่เสียงในหัวบอกว่าอย่าทำ — แล้วโลกก็ไม่ได้พัง'
+  },
+  17: {
+    stuck: tracks[17].badge.stuck.desc,
+    else:  tracks[17].badge.else.desc,
+    good:  tracks[17].badge.good.desc,
+    popupName: {
+      good:  tracks[17].badge.good.label,
+      else:  tracks[17].badge.else.label,
+      stuck: tracks[17].badge.stuck.label
+    },
+    popupDesc: {
+      good:  tracks[17].badge.good.desc,
+      else:  tracks[17].badge.else.desc,
+      stuck: tracks[17].badge.stuck.desc
+    },
+    roomTitle: 'บทที่ 17 — โมเน่',
+    roomNote: 'โมเน่รู้ว่าความผิดพลาดไม่ใช่จุดสิ้นสุด — มันแค่บอกว่าจะเริ่มจากตรงไหนครั้งหน้า'
+  },
+  18: {
+    stuck: tracks[18].badge.stuck.desc,
+    else:  tracks[18].badge.else.desc,
+    good:  tracks[18].badge.good.desc,
+    popupName: {
+      good:  tracks[18].badge.good.label,
+      else:  tracks[18].badge.else.label,
+      stuck: tracks[18].badge.stuck.label
+    },
+    popupDesc: {
+      good:  tracks[18].badge.good.desc,
+      else:  tracks[18].badge.else.desc,
+      stuck: tracks[18].badge.stuck.desc
+    },
+    roomTitle: 'บทที่ 18 — ใบบัว',
+    roomNote: 'ใบบัวเริ่มเห็นยายเป็นคนคนหนึ่ง — ที่กำลังนั่งอยู่กับความเจ็บปวดของตัวเองโดยที่ไม่รู้วิธีบอก'
   }
 };
 
@@ -2326,24 +2540,13 @@ function markBadgeEarned(trackId, badgeState) {
   localStorage.setItem('minnaEarnedBadges', JSON.stringify(earned));
   return Object.keys(earned).length;
 }
-function updateBadgeCounterUI() {
-  const count = Object.keys(getEarnedBadges()).length;
-  const el = document.getElementById('badge-counter');
-  if (!el) return;
-  document.getElementById('badge-counter-count').textContent = count;
-  el.style.display = count > 0 ? 'flex' : 'none';
-}
 function triggerBadgeAnimation(badgeState) {
   const isNew = !hasEarnedBadge(currentTrack);
   const SIZE  = 52;
   const vw    = window.innerWidth;
   const vh    = window.innerHeight;
 
-  // Show counter (may already be visible)
-  const counterEl = document.getElementById('badge-counter');
-  counterEl.style.display = 'flex';
-
-  // Create flying badge
+  // Create badge that pulses at screen center then fades out
   const flyEl = document.createElement('div');
   flyEl.style.cssText = `
     position:fixed;
@@ -2360,25 +2563,18 @@ function triggerBadgeAnimation(badgeState) {
   flyEl.textContent = '🏅';
   document.body.appendChild(flyEl);
 
-  // After pulse: fly to counter
+  // After pulse: fade out in place
   setTimeout(() => {
-    const rect    = counterEl.getBoundingClientRect();
-    const targetL = rect.left + rect.width  / 2 - SIZE / 2;
-    const targetT = rect.top  + rect.height / 2 - SIZE / 2;
-
     flyEl.style.animation  = 'none';
-    void flyEl.offsetWidth; // force reflow
-    flyEl.style.transition = 'left 500ms ease-in, top 500ms ease-in, font-size 500ms ease-in, opacity 500ms ease-in';
-    flyEl.style.left       = targetL + 'px';
-    flyEl.style.top        = targetT + 'px';
-    flyEl.style.fontSize   = '14px';
+    void flyEl.offsetWidth;
+    flyEl.style.transition = 'opacity 400ms ease-in, transform 400ms ease-in';
     flyEl.style.opacity    = '0';
+    flyEl.style.transform  = 'scale(0.5)';
 
-    // After flight: update count + bump counter
+    // After fade: mark badge, show popup, reveal post-animation section
     setTimeout(() => {
       flyEl.remove();
       if (isNew) { markBadgeEarned(currentTrack, badgeState); _roomJustEarned = currentTrack; }
-      updateBadgeCounterUI();
       const bd = badgeData[currentTrack];
       if (bd && (bd.name || bd.popupName) && bd.popupDesc) {
         setTimeout(() => {
@@ -2386,21 +2582,14 @@ function triggerBadgeAnimation(badgeState) {
           openBadgeModal(label, bd.popupDesc[badgeState] || bd.popupDesc.else, badgeState);
         }, 200);
       }
-      counterEl.style.transition = 'transform 150ms ease-out';
-      counterEl.style.transform  = 'scale(1.3)';
-      setTimeout(() => {
-        counterEl.style.transform  = 'scale(1)';
-        counterEl.style.transition = 'transform 200ms ease-in';
-        // Reveal "ห้องของฉัน" button after animation fully settles
-        const pas = document.getElementById('post-animation-section');
-        if (pas) {
-          pas.style.display = 'block';
-          void pas.offsetWidth;
-          pas.style.transition = 'opacity 400ms ease-in';
-          pas.style.opacity = '1';
-        }
-      }, 150);
-    }, 520);
+      const pas = document.getElementById('post-animation-section');
+      if (pas) {
+        pas.style.display = 'block';
+        void pas.offsetWidth;
+        pas.style.transition = 'opacity 400ms ease-in';
+        pas.style.opacity = '1';
+      }
+    }, 420);
   }, 620);
 }
 
