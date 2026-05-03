@@ -955,9 +955,10 @@
       display: block;
       width: 120px;
       height: 120px;
-      object-fit: cover;
       border-radius: 12px;
       margin: 0 auto 16px;
+      text-align: center;
+      line-height: 120px;
     }
     .badge-modal-track {
       font-size: 11px;
@@ -1139,7 +1140,7 @@
       <button class="badge-modal-close" onclick="closeBadgeModal()">✕</button>
       <div id="share-capture-area">
         <div class="badge-modal-branding">MINNA JOURNEY</div>
-        <img id="badge-modal-img" src="" alt="">
+        <div id="badge-modal-img"></div>
         <div class="badge-modal-label" id="badge-modal-label"></div>
         <div class="badge-modal-desc" id="badge-modal-desc"></div>
         <div class="badge-modal-track" id="badge-modal-track"></div>
@@ -1666,7 +1667,13 @@ function openBadgeModal(label, desc, type) {
   const trackTitle = tracks[currentTrack] ? tracks[currentTrack].title : '';
   document.getElementById('badge-modal-track').textContent = trackTitle;
   const state = type === 'stuck' ? 'stuck' : (type === 'good' || type === 'joyful') ? 'good' : 'else';
-  document.getElementById('badge-modal-img').src = badgePath(currentTrack, state);
+  const _imgEl = document.getElementById('badge-modal-img');
+  const _shareEmoji = tracks[currentTrack] && tracks[currentTrack].shareCard && tracks[currentTrack].shareCard.emoji;
+  if (_shareEmoji) {
+    _imgEl.innerHTML = `<span style="font-size:72px;line-height:1;display:block;padding-top:16px;">${_shareEmoji}</span>`;
+  } else {
+    _imgEl.innerHTML = `<img src="${badgePath(currentTrack, state)}" style="width:120px;height:120px;object-fit:cover;border-radius:12px;display:block;margin:0 auto;" alt="">`;
+  }
   document.getElementById('badge-modal').style.display = 'flex';
 }
 
