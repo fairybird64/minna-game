@@ -953,12 +953,7 @@
     }
     #badge-modal-img {
       display: block;
-      width: 120px;
-      height: 120px;
-      border-radius: 12px;
       margin: 0 auto 16px;
-      text-align: center;
-      line-height: 120px;
     }
     .badge-modal-track {
       font-size: 11px;
@@ -1666,14 +1661,7 @@ function openBadgeModal(label, desc, type) {
   document.getElementById('badge-modal-desc').textContent  = desc;
   const trackTitle = tracks[currentTrack] ? tracks[currentTrack].title : '';
   document.getElementById('badge-modal-track').textContent = trackTitle;
-  const state = type === 'stuck' ? 'stuck' : (type === 'good' || type === 'joyful') ? 'good' : 'else';
-  const _imgEl = document.getElementById('badge-modal-img');
-  const _shareEmoji = tracks[currentTrack] && tracks[currentTrack].shareCard && tracks[currentTrack].shareCard.emoji;
-  if (_shareEmoji) {
-    _imgEl.innerHTML = `<span style="font-size:72px;line-height:1;display:block;padding-top:16px;">${_shareEmoji}</span>`;
-  } else {
-    _imgEl.innerHTML = `<img src="${badgePath(currentTrack, state)}" style="width:120px;height:120px;object-fit:cover;border-radius:12px;display:block;margin:0 auto;" alt="">`;
-  }
+  document.getElementById('badge-modal-img').innerHTML = buildQuoteCardHTML(currentTrack);
   document.getElementById('badge-modal').style.display = 'flex';
 }
 
@@ -2326,6 +2314,24 @@ function switchRoomTab(tabId, justEarnedId) {
 }
 
 
+function buildQuoteCardHTML(trackId) {
+  const info   = tracks[trackId];
+  const sc     = info && info.shareCard;
+  const emoji  = (sc && sc.emoji)  || '✦';
+  const footer = (sc && sc.footer) || '— Minna Journey';
+  const titleTx = (info && info.title) || '';
+  const b4State = getB4State(trackId);
+  const quote   = (b4State && sc && sc.lines) ? (sc.lines[b4State] || null) : null;
+  return (
+    '<div style="background:#FFF8F0;border:1.5px solid #EDD9C0;border-radius:14px;padding:20px 16px;text-align:center;">' +
+      `<div style="font-size:40px;line-height:1;margin-bottom:10px;">${emoji}</div>` +
+      `<div style="font-size:12px;font-weight:700;color:#9B7555;letter-spacing:0.5px;${quote ? 'margin-bottom:14px;' : ''}">${titleTx}</div>` +
+      (quote ? `<div style="font-size:14px;line-height:1.75;color:#3A2414;margin-bottom:12px;">${quote}</div>` : '') +
+      `<div style="font-size:12px;color:#C4895A;letter-spacing:0.5px;">${footer}</div>` +
+    '</div>'
+  );
+}
+
 function openRoomBadgePopup(trackId) {
   const info = tracks[trackId];
   if (!info) return;
@@ -2338,38 +2344,9 @@ function openRoomBadgePopup(trackId) {
   const titleEl = document.getElementById('room-badge-title');
   const subEl   = document.getElementById('room-badge-sub');
 
-  if (info.shareCard) {
-    // ── Quote card preview (DOM only, no export) ────────────────────────────
-    const b4State = getB4State(trackId);
-    const quote   = b4State ? (info.shareCard.lines[b4State] || null) : null;
-    const emoji   = info.shareCard.emoji  || '✦';
-    const footer  = info.shareCard.footer || '— Minna Journey';
-    const titleTx = info.title || '';
-
-    if (imgEl) {
-      imgEl.innerHTML =
-        '<div style="background:#FFF8F0;border:1.5px solid #EDD9C0;border-radius:14px;padding:20px 16px;text-align:center;margin-bottom:4px;">' +
-          `<div style="font-size:40px;line-height:1;margin-bottom:10px;">${emoji}</div>` +
-          `<div style="font-size:12px;font-weight:700;color:#9B7555;letter-spacing:0.5px;${quote ? 'margin-bottom:14px;' : ''}">${titleTx}</div>` +
-          (quote ? `<div style="font-size:14px;line-height:1.75;color:#3A2414;margin-bottom:12px;">${quote}</div>` : '') +
-          `<div style="font-size:12px;color:#C4895A;letter-spacing:0.5px;">${footer}</div>` +
-        '</div>';
-    }
-    // Title and sub are already inside the card — hide the separate fields
-    if (titleEl) titleEl.style.display = 'none';
-    if (subEl)   subEl.style.display   = 'none';
-  } else {
-    // ── Fallback: badge image (no shareCard data on this track) ─────────────
-    console.warn('[ShareCard] No shareCard data for track', trackId, '— fallback to badge image');
-    if (imgEl) {
-      const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].includes(Number(trackId));
-      imgEl.innerHTML = hasImg
-        ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
-        : `<span style="font-size:44px;">🏅</span>`;
-    }
-    if (titleEl) { titleEl.style.display = ''; titleEl.textContent = (data && data.roomTitle) ? data.roomTitle : ('บทที่ ' + trackId + ' — ' + info.protagonist); }
-    if (subEl)   { subEl.style.display   = ''; subEl.textContent   = info.title; }
-  }
+  if (imgEl) imgEl.innerHTML = buildQuoteCardHTML(trackId);
+  if (titleEl) titleEl.style.display = 'none';
+  if (subEl)   subEl.style.display   = 'none';
 
   document.getElementById('room-badge-note').textContent = (data && data.roomNote) ? data.roomNote : resourceText;
   document.getElementById('room-badge-popup').style.display = 'flex';
