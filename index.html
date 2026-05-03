@@ -1144,7 +1144,7 @@
         <div class="badge-modal-desc" id="badge-modal-desc"></div>
         <div class="badge-modal-track" id="badge-modal-track"></div>
       </div>
-      <button class="badge-share-btn" onclick="shareBadgeWeb()">&#128279; แชร์ความรู้สึกนี้</button>
+      <button id="badge-share-btn" class="badge-share-btn" onclick="shareBadgeWeb()">&#128279; แชร์ความรู้สึกนี้</button>
     </div>
   </div>
 </div>
@@ -1153,6 +1153,19 @@
 <script>
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRIKhQ6LsVWcF4ksUJ5mJMmA-9GCCkbPd0yOt3Ax2yecLEhzulWuI44XmpdUzaoFjO/exec';  // ← วาง URL ของ Apps Script Web App ที่นี่
+
+// ── Share Card Feature Flag ──────────────────────────────────────────────────
+// 'off'     → hide all share UI; no dead buttons
+// 'preview' → show quote card preview in room popup (DOM only, no export)
+// 'live'    → enable export/share (not implemented yet)
+const SHARE_CARD_MODE = 'off';
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Hide share UI immediately when mode is 'off' (DOM is ready; script is at end of body)
+if (SHARE_CARD_MODE === 'off') {
+  const _shareBtn = document.getElementById('badge-share-btn');
+  if (_shareBtn) _shareBtn.style.display = 'none';
+}
 
 let currentScene = 0;
 let currentTrack  = 1;
@@ -1658,18 +1671,11 @@ function openBadgeModal(label, desc, type) {
 }
 
 function shareBadge() {
-  const el = document.getElementById('share-capture-area');
-  html2canvas(el, { backgroundColor: '#FFF8F0', scale: 2, useCORS: true })
-    .then(canvas => {
-      const link = document.createElement('a');
-      link.download = 'minna-journey-badge.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    })
-    .catch(err => console.error('shareBadge error:', err));
+  if (SHARE_CARD_MODE !== 'live') return; // export not available in this mode
 }
 
 function shareBadgeWeb() {
+  if (SHARE_CARD_MODE === 'off') return;
   const label = document.getElementById('badge-modal-label').textContent;
   const desc  = document.getElementById('badge-modal-desc').textContent;
   const url   = window.location.href;
@@ -1952,7 +1958,6 @@ function showSummary() {
 
       <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
         <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ${getRoomLabel(currentTrack)}</button>
-        <!-- share card button hidden pending html2canvas fix -->
       </div>
 
       <div class="summary-buttons">
@@ -2239,9 +2244,6 @@ function showBadgeRoom() {
         <div id="room-badge-title" style="font-size:16px; font-weight:700; text-align:center; color:#3A2414; margin-bottom:4px;"></div>
         <div id="room-badge-sub" style="font-size:13px; text-align:center; color:#9B7555; margin-bottom:14px;"></div>
         <div id="room-badge-note" style="font-size:13px; color:#6B4830; line-height:1.8; background:#FFF8F0; border-radius:10px; padding:12px 14px;"></div>
-        <div id="room-share-btn-wrap" style="display:none; margin-top:12px;">
-          <button id="room-share-card-btn" class="share-card-btn" style="margin-top:0;" onclick="onRoomShareCardClick(this.dataset.trackId)" data-track-id="">✦ สร้างการ์ดแชร์</button>
-        </div>
         <button onclick="closeRoomBadgePopup()" style="margin-top:16px; width:100%; padding:11px; background:#3A2414; color:white; border:none; border-radius:10px; font-size:14px; font-family:inherit; cursor:pointer;">ปิด</button>
       </div>
     </div>
@@ -2321,32 +2323,49 @@ function openRoomBadgePopup(trackId) {
   const info = tracks[trackId];
   if (!info) return;
   const earned = getEarnedBadges();
-  const state = earned[trackId] || 'else';
-  const data = badgeData[trackId];
+  const state  = earned[trackId] || 'else';
+  const data   = badgeData[trackId];
   const resourceText = (data && data[state]) ? data[state] : ((info.summary && info.summary.closingText) || '');
-  const imgEl = document.getElementById('room-badge-img');
-  if (imgEl) {
-    const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].includes(Number(trackId));
-    imgEl.innerHTML = hasImg
-      ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
-      : `<span style="font-size:44px;">🏅</span>`;
-  }
-  document.getElementById('room-badge-title').textContent = (data && data.roomTitle) ? data.roomTitle : ('บทที่ ' + trackId + ' — ' + info.protagonist);
-  document.getElementById('room-badge-sub').textContent = info.title;
-  document.getElementById('room-badge-note').textContent = (data && data.roomNote) ? data.roomNote : resourceText;
 
-  // Share card button: hidden pending html2canvas fix
-  const shareBtnWrap = document.getElementById('room-share-btn-wrap');
-  const shareBtn = document.getElementById('room-share-card-btn');
-  if (shareBtnWrap && shareBtn) {
+  const imgEl   = document.getElementById('room-badge-img');
+  const titleEl = document.getElementById('room-badge-title');
+  const subEl   = document.getElementById('room-badge-sub');
+
+  if (info.shareCard) {
+    // ── Quote card preview (DOM only, no export) ────────────────────────────
     const b4State = getB4State(trackId);
-    const hasShareCard = !!(info.shareCard && b4State);
-    shareBtnWrap.style.display = 'none'; // hidden until html2canvas fix
-    if (hasShareCard) shareBtn.dataset.trackId = String(trackId);
+    const quote   = b4State ? (info.shareCard.lines[b4State] || null) : null;
+    const emoji   = info.shareCard.emoji  || '✦';
+    const footer  = info.shareCard.footer || '— Minna Journey';
+    const titleTx = info.title || '';
+
+    if (imgEl) {
+      imgEl.innerHTML =
+        '<div style="background:#FFF8F0;border:1.5px solid #EDD9C0;border-radius:14px;padding:20px 16px;text-align:center;margin-bottom:4px;">' +
+          `<div style="font-size:40px;line-height:1;margin-bottom:10px;">${emoji}</div>` +
+          `<div style="font-size:12px;font-weight:700;color:#9B7555;letter-spacing:0.5px;${quote ? 'margin-bottom:14px;' : ''}">${titleTx}</div>` +
+          (quote ? `<div style="font-size:14px;line-height:1.75;color:#3A2414;margin-bottom:12px;">${quote}</div>` : '') +
+          `<div style="font-size:12px;color:#C4895A;letter-spacing:0.5px;">${footer}</div>` +
+        '</div>';
+    }
+    // Title and sub are already inside the card — hide the separate fields
+    if (titleEl) titleEl.style.display = 'none';
+    if (subEl)   subEl.style.display   = 'none';
+  } else {
+    // ── Fallback: badge image (no shareCard data on this track) ─────────────
+    console.warn('[ShareCard] No shareCard data for track', trackId, '— fallback to badge image');
+    if (imgEl) {
+      const hasImg = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].includes(Number(trackId));
+      imgEl.innerHTML = hasImg
+        ? `<img src="${badgePath(trackId, state)}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;" alt="">`
+        : `<span style="font-size:44px;">🏅</span>`;
+    }
+    if (titleEl) { titleEl.style.display = ''; titleEl.textContent = (data && data.roomTitle) ? data.roomTitle : ('บทที่ ' + trackId + ' — ' + info.protagonist); }
+    if (subEl)   { subEl.style.display   = ''; subEl.textContent   = info.title; }
   }
 
-  const popup = document.getElementById('room-badge-popup');
-  popup.style.display = 'flex';
+  document.getElementById('room-badge-note').textContent = (data && data.roomNote) ? data.roomNote : resourceText;
+  document.getElementById('room-badge-popup').style.display = 'flex';
 }
 
 function closeRoomBadgePopup() {
@@ -2655,75 +2674,15 @@ function getB4State(trackId) {
 }
 
 function generateShareCard(trackId, b4State) {
-  const track = tracks[trackId];
-  if (!track || !track.shareCard) {
-    console.warn('[ShareCard] No shareCard data for track', trackId);
+  // Export/share disabled — live mode not implemented yet
+  if (SHARE_CARD_MODE !== 'live') {
+    console.warn('[ShareCard] generateShareCard() called but SHARE_CARD_MODE is', SHARE_CARD_MODE);
     return;
   }
-  if (!b4State) {
-    console.warn('[ShareCard] b4State is null for track', trackId);
-    return;
-  }
-  const quote = track.shareCard.lines[b4State];
-  if (!quote) {
-    console.warn('[ShareCard] No quote for b4State', b4State, 'track', trackId);
-    return;
-  }
-  const emoji  = track.shareCard.emoji  || '✦';
-  const footer = track.shareCard.footer || '— Minna Journey';
-  const title  = track.title            || '';
-
-  const el = document.createElement('div');
-  el.style.cssText = [
-    'position:fixed', 'left:-9999px', 'top:0',
-    'width:340px', 'padding:44px 32px',
-    'background:#FFF8F0',
-    "font-family:'Sarabun',sans-serif",
-    'border:2px solid #EDD9C0',
-    'border-radius:24px',
-    'box-sizing:border-box',
-    'text-align:center'
-  ].join(';');
-  el.innerHTML =
-    `<div style="font-size:54px;line-height:1;margin-bottom:16px;">${emoji}</div>` +
-    `<div style="font-size:12px;font-weight:700;color:#9B7555;letter-spacing:0.8px;margin-bottom:20px;text-transform:uppercase;">${title}</div>` +
-    `<div style="font-size:16px;line-height:1.85;color:#3A2414;padding:0 4px;margin-bottom:32px;">${quote}</div>` +
-    `<div style="font-size:13px;color:#C4895A;letter-spacing:0.5px;">${footer}</div>`;
-  document.body.appendChild(el);
-
-  html2canvas(el, {
-    backgroundColor: '#FFF8F0',
-    scale: 2,
-    useCORS: true,
-    width: 340,
-    height: el.offsetHeight,
-    logging: false
-  }).then(canvas => {
-    el.remove();
-    const dataUrl = canvas.toDataURL('image/png');
-    // Try Web Share API with file first, fall back to download
-    canvas.toBlob(blob => {
-      const file = new File([blob], 'minna-journey.png', { type: 'image/png' });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'Minna Journey' }).catch(() => _downloadPng(dataUrl));
-      } else {
-        _downloadPng(dataUrl);
-      }
-    }, 'image/png');
-  }).catch(err => {
-    el.remove();
-    console.error('[ShareCard] Canvas render error', err);
-  });
-}
-
-function _downloadPng(dataUrl) {
-  const a = document.createElement('a');
-  a.download = 'minna-journey.png';
-  a.href = dataUrl;
-  a.click();
 }
 
 function onSummaryShareCardClick() {
+  if (SHARE_CARD_MODE === 'off') return;
   if (!playerChoices || playerChoices.length < 4) {
     console.warn('[ShareCard] playerChoices incomplete');
     return;
@@ -2734,6 +2693,7 @@ function onSummaryShareCardClick() {
 }
 
 function onRoomShareCardClick(trackIdStr) {
+  if (SHARE_CARD_MODE === 'off') return;
   const trackId = Number(trackIdStr);
   if (!trackId) return;
   const b4State = getB4State(trackId);
