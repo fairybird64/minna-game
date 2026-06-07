@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แบบคัดกรองการใช้สารเสพติด (บคก.กสธ. V2) | น้องฮัก</title>
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:   #27AE60;
+      --amber:   #D97706;
+      --red:     #C0392B;
+      --teal:    #0E7490;
+      --line:    #06C755;
+      --bg:      #F8F6F2;
+      --card:    #FFFFFF;
+      --text:    #1A1A2E;
+      --muted:   #6B7280;
+      --border:  #E5E7EB;
+      --radius:  12px;
+      --shadow:  0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    /* ─── Layout ─── */
+    .screen {
+      width: 100%;
+      max-width: 480px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .screen.active { display: flex; }
+
+    /* ─── Header ─── */
+    .header {
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+    .header .logo {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--teal);
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ─── Card ─── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    /* ─── Progress ─── */
+    .progress-wrap {
+      background: var(--border);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--teal);
+      border-radius: 99px;
+      transition: width 0.3s ease;
+    }
+    .progress-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* ─── Typography ─── */
+    h2 { font-size: 18px; font-weight: 700; line-height: 1.4; }
+    h3 { font-size: 15px; font-weight: 700; }
+    p  { font-size: 14px; line-height: 1.6; }
+    .question-text { font-size: 15px; font-weight: 600; line-height: 1.5; }
+    .question-sub  { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ─── Substance grid ─── */
+    .substance-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .substance-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .substance-chip input[type="checkbox"] { display: none; }
+    .substance-chip.checked {
+      border-color: var(--teal);
+      background: #EFF9FC;
+      font-weight: 600;
+    }
+    .substance-chip .cb-box {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .substance-chip.checked .cb-box {
+      border-color: var(--teal);
+      background: var(--teal);
+      color: #fff;
+      font-size: 11px;
+    }
+    .substance-chip.full-row { grid-column: span 2; }
+
+    #other-substance-input {
+      margin-top: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      display: none;
+    }
+    #other-substance-input:focus { outline: none; border-color: var(--teal); }
+
+    /* ─── Radio choices ─── */
+    .choices { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .choice-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.4;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .choice-item input[type="radio"] { display: none; }
+    .choice-item .radio-dot {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+      transition: border-color 0.15s;
+    }
+    .choice-item.selected {
+      border-color: var(--teal);
+      background: #EFF9FC;
+    }
+    .choice-item.selected .radio-dot {
+      border-color: var(--teal);
+      background: var(--teal);
+      box-shadow: inset 0 0 0 3px #fff;
+    }
+
+    /* ─── Injection sub-question ─── */
+    .sub-question {
+      margin-top: 12px;
+      padding: 12px;
+      background: #F0FDFA;
+      border-radius: 8px;
+      border: 1px solid #CCFBF1;
+    }
+    .sub-question p { font-size: 13px; color: var(--teal); font-weight: 600; margin-bottom: 8px; }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border-radius: 99px;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--teal); color: #fff; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-outline {
+      background: transparent;
+      color: var(--teal);
+      border: 2px solid var(--teal);
+    }
+    .btn-back {
+      background: transparent;
+      color: var(--muted);
+      border: 2px solid var(--border);
+      font-size: 13px;
+      padding: 10px;
+    }
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn-back { flex: 0 0 80px; }
+    .btn-row .btn-primary { flex: 1; }
+
+    /* ─── Result tier badge ─── */
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .tier-0 { background: #ECFDF5; color: var(--green); }
+    .tier-1 { background: #ECFDF5; color: var(--green); }
+    .tier-2 { background: #FFFBEB; color: var(--amber); }
+    .tier-3 { background: #FEF2F2; color: var(--red); }
+
+    .score-circle {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      border: 4px solid;
+    }
+    .score-circle .num { font-size: 26px; font-weight: 700; line-height: 1; }
+    .score-circle .lbl { font-size: 10px; }
+    .score-0 { border-color: var(--green); color: var(--green); }
+    .score-1 { border-color: var(--green); color: var(--green); }
+    .score-2 { border-color: var(--amber); color: var(--amber); }
+    .score-3 { border-color: var(--red);   color: var(--red); }
+
+    /* ─── Action list ─── */
+    .action-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .action-item {
+      display: flex; gap: 10px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .action-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .num-green { background: var(--green); }
+    .num-amber { background: var(--amber); }
+    .num-red   { background: var(--red); }
+    .num-teal  { background: var(--teal); }
+
+    /* ─── Harm Reduction ─── */
+    .harm-alert {
+      background: #F0FDFA;
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .harm-alert-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--teal);
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 8px;
+    }
+    .harm-alert p { font-size: 12px; color: #0F7390; }
+    .harm-services {
+      display: flex; flex-direction: column; gap: 6px; margin-top: 10px;
+    }
+    .harm-service {
+      display: flex; gap: 8px;
+      font-size: 12px; line-height: 1.5;
+      padding: 8px; background: #fff; border-radius: 6px;
+    }
+    .harm-service .sn {
+      width: 20px; height: 20px;
+      background: var(--teal); color: #fff;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* ─── Hotlines ─── */
+    .hotline-list { display: flex; flex-direction: column; gap: 8px; }
+    .hotline-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; background: var(--bg); border-radius: 8px;
+    }
+    .hotline-num {
+      font-size: 18px; font-weight: 700;
+      color: var(--teal); min-width: 50px;
+    }
+    .hotline-info { flex: 1; }
+    .hotline-info .name { font-size: 13px; font-weight: 600; }
+    .hotline-info .note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .hotline-urgent { background: #FEF2F2; }
+    .hotline-urgent .hotline-num { color: var(--red); }
+
+    .btn-line {
+      background: var(--line);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px;
+      border-radius: 99px;
+      border: none;
+      font-size: 15px; font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      width: 100%;
+      text-decoration: none;
+    }
+
+    /* ─── Primary selection (pick main substance) ─── */
+    .primary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .primary-chip {
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .primary-chip.selected {
+      border-color: var(--teal);
+      background: #EFF9FC;
+      font-weight: 600;
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+    }
+
+    /* ─── Info box ─── */
+    .info-box {
+      background: #F0F9FF;
+      border-left: 4px solid #0EA5E9;
+      border-radius: 0 8px 8px 0;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #0C4A6E;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 1: Welcome
+═══════════════════════════════════════════════════════ -->
+<div id="screen-welcome" class="screen active">
+  <div class="header">
+    <div class="logo">น้องฮัก 🤗</div>
+    <div class="subtitle">แบบคัดกรองการใช้สารเสพติด บคก.กสธ. V2</div>
+  </div>
+
+  <div class="card">
+    <h2>แบบประเมินนี้คืออะไร?</h2>
+    <p style="margin-top:10px">แบบคัดกรองการใช้สารเสพติด (บคก.กสธ.) ช่วยให้คุณเข้าใจความสัมพันธ์กับสารที่ใช้อยู่ และรับข้อมูลเพื่อดูแลตัวเองได้ดีขึ้น</p>
+    <div class="info-box" style="margin-top:12px">
+      🔒 ข้อมูลของคุณไม่ถูกบันทึกหรือส่งออกไปที่ใด — ทุกอย่างอยู่แค่ในหน้านี้เท่านั้น
+    </div>
+    <p style="margin-top:12px; color: var(--muted); font-size:13px">ใช้เวลาประมาณ 3–5 นาที · ตอบตามความจริง ไม่มีคำตอบที่ถูกหรือผิด</p>
+  </div>
+
+  <button class="btn btn-primary" onclick="startScreening()">เริ่มแบบประเมิน</button>
+  <a href="index.html" class="btn btn-outline" style="text-align:center; text-decoration:none">กลับหน้าหลัก</a>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 2: Substance Selection
+═══════════════════════════════════════════════════════ -->
+<div id="screen-substance" class="screen">
+  <div class="header">
+    <div class="logo">น้องฮัก 🤗</div>
+    <div class="subtitle">ขั้นตอนที่ 1 / 3 · เลือกสารเสพติด</div>
+  </div>
+
+  <div class="card">
+    <h2>คุณเคยใช้สารเสพติดประเภทใดบ้าง?</h2>
+    <p class="question-sub">เลือกได้มากกว่าหนึ่งประเภท</p>
+
+    <div class="substance-grid" id="substance-grid">
+      <!-- chips rendered by JS -->
+    </div>
+
+    <input type="text" id="other-substance-input" placeholder="ระบุสารที่ใช้..." maxlength="50" />
+  </div>
+
+  <button class="btn btn-primary" id="btn-substance-next" onclick="goToPrimary()" disabled>ถัดไป</button>
+  <button class="btn btn-back" onclick="showScreen('screen-welcome')">← ย้อนกลับ</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 3: Primary Substance (shown only if >1 selected)
+═══════════════════════════════════════════════════════ -->
+<div id="screen-primary" class="screen">
+  <div class="header">
+    <div class="logo">น้องฮัก 🤗</div>
+    <div class="subtitle">ขั้นตอนที่ 1 / 3 · เลือกสารหลัก</div>
+  </div>
+
+  <div class="card">
+    <h2>สารใดที่คุณใช้บ่อยที่สุด?</h2>
+    <p class="question-sub">เลือก 1 อย่างเพื่อใช้ในการประเมินครั้งนี้</p>
+    <div class="primary-grid" id="primary-grid"></div>
+  </div>
+
+  <button class="btn btn-primary" id="btn-primary-next" onclick="startQuestions()" disabled>ถัดไป</button>
+  <button class="btn btn-back" onclick="showScreen('screen-substance')">← ย้อนกลับ</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 4: Questions 1–6
+═══════════════════════════════════════════════════════ -->
+<div id="screen-question" class="screen">
+  <div class="header">
+    <div class="logo">น้องฮัก 🤗</div>
+    <div class="subtitle" id="q-subtitle">ขั้นตอนที่ 2 / 3 · คำถาม</div>
+  </div>
+
+  <div>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="q-progress-bar" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="q-progress-label">ข้อ 1 / 6</div>
+  </div>
+
+  <div class="card">
+    <p class="question-text" id="q-text"></p>
+    <p class="question-sub" id="q-sub"></p>
+    <div class="choices" id="q-choices"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" id="btn-q-back" onclick="qBack()">← กลับ</button>
+    <button class="btn btn-primary" id="btn-q-next" onclick="qNext()" disabled>ถัดไป</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 5: Injection Question
+═══════════════════════════════════════════════════════ -->
+<div id="screen-injection" class="screen">
+  <div class="header">
+    <div class="logo">น้องฮัก 🤗</div>
+    <div class="subtitle">ขั้นตอนที่ 2 / 3 · คำถามเพิ่มเติม</div>
+  </div>
+
+  <div class="card">
+    <p class="question-text">คุณเคยใช้สารเสพติดชนิดฉีดหรือไม่?</p>
+    <p class="question-sub">การฉีดสารเข้าเส้น หรือฉีดเข้ากล้ามเนื้อ</p>
+    <div class="choices" id="inj-choices">
+      <label class="choice-item" onclick="selectInjection(this, 'no')">
+        <span class="radio-dot"></span>ไม่เคย
+      </label>
+      <label class="choice-item" onclick="selectInjection(this, 'yes')">
+        <span class="radio-dot"></span>เคย
+      </label>
+    </div>
+
+    <div id="inj-freq-wrap" class="sub-question" style="display:none">
+      <p>ภายใน 3 เดือนที่ผ่านมา คุณใช้บ่อยเพียงใด</p>
+      <div class="choices">
+        <label class="choice-item" onclick="selectInjFreq(this, 'low')">
+          <span class="radio-dot"></span>1 ครั้งต่อสัปดาห์หรือน้อยกว่า / น้อยกว่า 3 วันติดต่อกัน
+        </label>
+        <label class="choice-item" onclick="selectInjFreq(this, 'high')">
+          <span class="radio-dot"></span>มากกว่า 1 ครั้งต่อสัปดาห์ หรือมากกว่า 3 วันติดต่อกัน
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="showScreen('screen-question'); renderQuestion(5)">← กลับ</button>
+    <button class="btn btn-primary" id="btn-inj-next" onclick="submitScreening()" disabled>ดูผลการประเมิน</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 6: Result
+═══════════════════════════════════════════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="header">
+    <div class="logo">น้องฮัก 🤗</div>
+    <div class="subtitle">ขั้นตอนที่ 3 / 3 · ผลการประเมิน</div>
+  </div>
+
+  <!-- Score summary -->
+  <div class="card" style="text-align:center">
+    <div id="result-score-circle" class="score-circle score-0">
+      <span class="num" id="result-score-num">0</span>
+      <span class="lbl">คะแนน</span>
+    </div>
+    <div id="result-tier-badge" class="tier-badge tier-0" style="margin:0 auto 8px">
+      <span id="result-tier-icon">✅</span>
+      <span id="result-tier-label">ไม่พบการใช้</span>
+    </div>
+    <p id="result-substance-label" style="font-size:12px; color:var(--muted)"></p>
+  </div>
+
+  <!-- Action Guide -->
+  <div class="card" id="result-action-card">
+    <h3 id="result-action-title">แนวทางสำหรับคุณ</h3>
+    <p id="result-action-meaning" style="margin-top:8px; font-size:13px; color:var(--muted)"></p>
+    <div class="action-list" id="result-action-list"></div>
+    <div id="result-recommendation" style="margin-top:12px; padding:10px; background:var(--bg); border-radius:8px; font-size:12px; color:var(--muted)"></div>
+  </div>
+
+  <!-- Harm Reduction (conditional) -->
+  <div id="result-harm" style="display:none">
+    <div class="harm-alert">
+      <div class="harm-alert-title">⚠️ ข้อมูลสำคัญ — การใช้สารชนิดฉีด</div>
+      <p>การใช้ยาชนิดฉีดเพิ่มความเสี่ยงต่อ HIV, วัณโรค, ตับอักเสบ B/C — ควรแจ้งผู้ดูแลสุขภาพทันที</p>
+      <div class="harm-services" id="harm-services-list"></div>
+    </div>
+  </div>
+
+  <!-- Hotlines -->
+  <div class="card">
+    <h3 style="margin-bottom:12px">📞 สายด่วนที่ช่วยได้</h3>
+    <div class="hotline-list">
+      <div class="hotline-item">
+        <div class="hotline-num">1165</div>
+        <div class="hotline-info">
+          <div class="name">สายด่วนบำบัดยาเสพติด</div>
+          <div class="note">โทรฟรี 24 ชม. · LINE: @1165huangyai</div>
+        </div>
+      </div>
+      <div class="hotline-item">
+        <div class="hotline-num">1386</div>
+        <div class="hotline-info">
+          <div class="name">สายด่วน ป.ป.ส.</div>
+          <div class="note">รับแจ้งเบาะแส + นำเข้าบำบัดสมัครใจ (ปลอดภัย/เป็นความลับ)</div>
+        </div>
+      </div>
+      <div class="hotline-item">
+        <div class="hotline-num">1567</div>
+        <div class="hotline-info">
+          <div class="name">ศูนย์ดำรงธรรม</div>
+          <div class="note">ประสานงานช่วยเหลือระดับพื้นที่</div>
+        </div>
+      </div>
+      <div class="hotline-item hotline-urgent">
+        <div class="hotline-num">1669/191</div>
+        <div class="hotline-info">
+          <div class="name">กรณีฉุกเฉิน (คลุ้มคลั่ง/ลงแดง)</div>
+          <div class="note">โทรทันที! อย่ารอ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINE OA button -->
+  <a href="https://line.me/R/ti/p/@nonghug" class="btn-line">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+    พูดคุยกับน้องฮัก (LINE OA)
+  </a>
+
+  <button class="btn btn-outline" onclick="restartScreening()">ทำแบบประเมินใหม่อีกครั้ง</button>
+  <a href="index.html" class="btn btn-outline" style="text-align:center; text-decoration:none">กลับหน้าหลัก</a>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCORING + APP LOGIC
+═══════════════════════════════════════════ -->
+<script src="assets/js/drug-screening/scoring.js"></script>
+<script>
+/* ── State ── */
+const state = {
+  selectedSubstances: [],    // array of substance keys
+  primarySubstance: '',      // single key used for scoring
+  primaryLabel: '',          // display name
+  answers: { q1: null, q2: null, q3: null, q4: null, q5: null, q6: null },
+  currentQ: 0,               // 0-indexed (0–5)
+  injectionUse: null,        // 'yes' | 'no'
+  injectionFrequency: null,  // 'low' | 'high'
+  result: null
+};
+
+/* ── Substance data ── */
+const SUBSTANCES = [
+  { key: 'yaba',    label: 'ยาบ้า' },
+  { key: 'ice',     label: 'ไอซ์' },
+  { key: 'yae',     label: 'ยาอี' },
+  { key: 'cannabis',label: 'กัญชา' },
+  { key: 'kratom',  label: 'กระท่อม' },
+  { key: 'solvent', label: 'สารระเหย' },
+  { key: 'heroin',  label: 'เฮโรอีน' },
+  { key: 'opium',   label: 'ฝิ่น' },
+  { key: 'other',   label: 'อื่นๆ (ระบุ)' },
+];
+
+/* ── Question definitions ── */
+const Q_TYPE_FREQ = 'freq';   // Q1–Q4
+const Q_TYPE_TIME = 'time';   // Q5–Q6
+
+const QUESTIONS = [
+  {
+    id: 'q1', type: Q_TYPE_FREQ,
+    text: (s) => `ในช่วง 3 เดือนที่ผ่านมา คุณใช้<strong>${s}</strong>บ่อยเพียงใด?`,
+    sub: 'รวมถึงการสูบ ดม กิน หรือฉีด'
+  },
+  {
+    id: 'q2', type: Q_TYPE_FREQ,
+    text: (s) => `คุณรู้สึกอยาก หรือต้องการ<strong>${s}</strong>อย่างรุนแรงบ่อยเพียงใด?`,
+    sub: 'ความอยากที่ยากจะต้านทาน'
+  },
+  {
+    id: 'q3', type: Q_TYPE_FREQ,
+    text: (s) => `การใช้<strong>${s}</strong>ทำให้คุณมีปัญหาด้านสุขภาพ ครอบครัว การเงิน กฎหมาย หรือสังคมบ่อยเพียงใด?`,
+    sub: ''
+  },
+  {
+    id: 'q4', type: Q_TYPE_FREQ,
+    text: (s) => `คุณล้มเหลวในการทำสิ่งที่คาดหวังจากตัวเอง เนื่องจากการใช้<strong>${s}</strong> บ่อยเพียงใด?`,
+    sub: 'เช่น งาน เรียน ดูแลครอบครัว'
+  },
+  {
+    id: 'q5', type: Q_TYPE_TIME,
+    text: (s) => `มีคนกังวลเกี่ยวกับการใช้<strong>${s}</strong>ของคุณ และแนะนำให้คุณหยุดหรือไม่?`,
+    sub: 'เพื่อน ครอบครัว หรือผู้ดูแล'
+  },
+  {
+    id: 'q6', type: Q_TYPE_TIME,
+    text: (s) => `คุณเคยพยายามลดหรือหยุดใช้<strong>${s}</strong> แต่ไม่สำเร็จหรือไม่?`,
+    sub: ''
+  },
+];
+
+const FREQ_OPTIONS = [
+  { val: 'never',   label: 'ไม่เคย' },
+  { val: '1-2',     label: 'เพียง 1–2 ครั้ง' },
+  { val: 'monthly', label: 'เดือนละ 1–3 ครั้ง' },
+  { val: 'weekly',  label: 'สัปดาห์ละ 1–4 ครั้ง' },
+  { val: 'daily',   label: 'เกือบทุกวัน (5–7 วัน/สัปดาห์)' },
+];
+
+const TIME_OPTIONS = [
+  { val: 'never',  label: 'ไม่เคย' },
+  { val: 'before', label: 'เคยแต่ก่อน 3 เดือนที่ผ่านมา' },
+  { val: 'recent', label: 'เคยในช่วง 3 เดือนที่ผ่านมา' },
+];
+
+/* ── Harm Reduction services ── */
+const HARM_SERVICES = [
+  'ให้ความรู้และทักษะป้องกันการติดเชื้อเอชไอวีและยาเสพติด',
+  'บำบัดรักษาด้วยสารทดแทนระยะยาว (MMT)',
+  'บริการรักษาด้านจิตเวชและให้คำปรึกษา',
+  'ให้คำปรึกษาและตรวจการติดเชื้อเอชไอวีโดยสมัครใจ',
+  'บำบัดรักษาฟื้นฟูสมรรถภาพและป้องกันการเสพติดซ้ำ',
+  'ตรวจและรักษาโรคติดต่อทางเพศสัมพันธ์',
+  'ป้องกัน วินิจฉัย และรักษาวัณโรค',
+  'แจกถุงยางอนามัย',
+  'สนับสนุนให้ใช้เข็มและอุปกรณ์ฉีดที่สะอาด',
+  'กิจกรรมกลุ่มเพื่อนช่วยเพื่อน',
+];
+
+/* ── Tier content ── */
+const TIER_CONTENT = {
+  0: {
+    icon: '✅', label: 'ไม่พบการใช้', colorClass: 'tier-0', scoreClass: 'score-0',
+    actionTitle: 'ยังดีเลย!',
+    meaning: 'ขณะนี้ยังไม่พบการใช้สารเสพติดในช่วง 3 เดือนที่ผ่านมา',
+    actions: [
+      'หากในอนาคตรู้สึกว่าต้องการความช่วยเหลือ สามารถทำแบบประเมินซ้ำได้เสมอ',
+      'พูดคุยกับน้องฮักได้ตลอดเวลา หากมีข้อสงสัยเรื่องสารเสพติดหรือสุขภาพจิต',
+    ],
+    numColor: 'num-green',
+    recommendation: ''
+  },
+  1: {
+    icon: '🟢', label: 'ผู้ใช้ · ผลกระทบต่ำ', colorClass: 'tier-1', scoreClass: 'score-1',
+    actionTitle: 'แนวทางสำหรับผู้ใช้ (ผลกระทบต่ำ)',
+    meaning: 'ยังไม่ถึงขั้นเสพติด แต่ควรระวังและรู้เท่าทัน',
+    actions: [
+      'เรียนรู้และรู้เท่าทัน — ทำความเข้าใจผลของสารต่อสมองและร่างกาย พูดคุยกับน้องฮักได้เลย',
+      'ตั้งเป้าหมายลดหรืองดการใช้ — บันทึกความรู้สึกและพฤติกรรมที่เปลี่ยนไป',
+      'หาคนไว้วางใจพูดคุย — เพื่อน พ่อแม่ หรือครูที่ไว้ใจ ไม่ต้องแบกคนเดียว',
+      'ติดตามสุขภาพจิตตัวเอง — ทำแบบประเมินซ้ำหลัง 1–2 เดือน',
+    ],
+    numColor: 'num-green',
+    recommendation: '💡 Brief Advice (BA) — พูดคุยกับครูแนะแนว ไม่ต้องบันทึกในระบบ บสต.'
+  },
+  2: {
+    icon: '🟡', label: 'ผู้เสพ · ผลกระทบปานกลาง', colorClass: 'tier-2', scoreClass: 'score-2',
+    actionTitle: 'แนวทางสำหรับผู้เสพ (ผลกระทบปานกลาง)',
+    meaning: 'การใช้สารเริ่มส่งผลต่อความรับผิดชอบ สุขภาพ หรือครอบครัว',
+    actions: [
+      'พูดคุยกับครูแนะแนวหรือครูที่ไว้วางใจ เพื่อขอความช่วยเหลือและประสานผู้เชี่ยวชาญ',
+      'เข้าร่วมกระบวนการ Brief Intervention (1–2 ครั้ง กับนักจิตวิทยาหรือนักสังคมสงเคราะห์)',
+      'แจ้งผู้ปกครองเพื่อรับการสนับสนุนที่บ้าน',
+      'นัดประเมินซ้ำหลัง 2–4 สัปดาห์ ใช้ Urge APP (ClamHarm) บนน้องฮักเพื่อจัดการความอยาก',
+    ],
+    numColor: 'num-amber',
+    recommendation: '💊 MI/CBT/Matrix (1–2 เดือน) + ยา (ถ้าจำเป็น)'
+  },
+  3: {
+    icon: '🔴', label: 'ผู้ติด · ผลกระทบสูง', colorClass: 'tier-3', scoreClass: 'score-3',
+    actionTitle: 'แนวทางสำหรับผู้ติด (ผลกระทบสูง)',
+    meaning: 'ต้องการการบำบัดอย่างเข้มข้นโดยผู้เชี่ยวชาญ — คุณไม่ได้เผชิญคนเดียว',
+    actions: [
+      'ผู้ป่วยนอก (OPD): CBT / Modified Matrix (2–4 เดือน), MET, ครอบครัวบำบัด, Satir Model',
+      'ผู้ป่วยใน (IPD): Therapeutic Community, FAST Model (4 เดือน–1 ปี)',
+      'ค่ายปรับเปลี่ยนพฤติกรรม: ค่าย 9 วัน หรือวัด/มัสยิดเป็นศูนย์สงเคราะห์ (1 เดือน)',
+    ],
+    numColor: 'num-red',
+    recommendation: '📞 ติดต่อโรงพยาบาลใกล้บ้าน หรือโทร 1165 ได้เลยทันที'
+  }
+};
+
+/* ════════════════════════════════════════════
+   UI helpers
+════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ════════════════════════════════════════════
+   SCREEN 1 → 2
+════════════════════════════════════════════ */
+function startScreening() {
+  renderSubstanceGrid();
+  showScreen('screen-substance');
+}
+
+function renderSubstanceGrid() {
+  const grid = document.getElementById('substance-grid');
+  grid.innerHTML = '';
+  SUBSTANCES.forEach(s => {
+    const chip = document.createElement('label');
+    chip.className = 'substance-chip' + (s.key === 'other' ? ' full-row' : '');
+    chip.dataset.key = s.key;
+    chip.innerHTML = `<input type="checkbox" value="${s.key}"><span class="cb-box"></span>${s.label}`;
+    chip.addEventListener('click', () => toggleSubstance(s.key));
+    grid.appendChild(chip);
+  });
+}
+
+function toggleSubstance(key) {
+  const chip = document.querySelector(`.substance-chip[data-key="${key}"]`);
+  const checked = chip.classList.toggle('checked');
+  chip.querySelector('.cb-box').textContent = checked ? '✓' : '';
+
+  if (checked) {
+    if (!state.selectedSubstances.includes(key)) state.selectedSubstances.push(key);
+  } else {
+    state.selectedSubstances = state.selectedSubstances.filter(k => k !== key);
+  }
+
+  document.getElementById('other-substance-input').style.display =
+    state.selectedSubstances.includes('other') ? 'block' : 'none';
+
+  document.getElementById('btn-substance-next').disabled = state.selectedSubstances.length === 0;
+}
+
+function goToPrimary() {
+  if (state.selectedSubstances.length === 0) return;
+  if (state.selectedSubstances.length === 1) {
+    const key = state.selectedSubstances[0];
+    state.primarySubstance = key;
+    state.primaryLabel = getSubstanceLabel(key);
+    startQuestions();
+  } else {
+    renderPrimaryGrid();
+    showScreen('screen-primary');
+  }
+}
+
+function getSubstanceLabel(key) {
+  if (key === 'other') {
+    return document.getElementById('other-substance-input').value.trim() || 'สารอื่นๆ';
+  }
+  return SUBSTANCES.find(s => s.key === key)?.label || key;
+}
+
+/* ════════════════════════════════════════════
+   SCREEN 3: Primary picker
+════════════════════════════════════════════ */
+function renderPrimaryGrid() {
+  const grid = document.getElementById('primary-grid');
+  grid.innerHTML = '';
+  state.selectedSubstances.forEach(key => {
+    const label = getSubstanceLabel(key);
+    const chip = document.createElement('div');
+    chip.className = 'primary-chip';
+    chip.textContent = label;
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.primary-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      state.primarySubstance = key;
+      state.primaryLabel = label;
+      document.getElementById('btn-primary-next').disabled = false;
+    });
+    grid.appendChild(chip);
+  });
+  document.getElementById('btn-primary-next').disabled = true;
+}
+
+/* ════════════════════════════════════════════
+   SCREEN 4: Questions
+════════════════════════════════════════════ */
+function startQuestions() {
+  state.currentQ = 0;
+  state.answers = { q1: null, q2: null, q3: null, q4: null, q5: null, q6: null };
+  renderQuestion(0);
+  showScreen('screen-question');
+}
+
+function renderQuestion(idx) {
+  state.currentQ = idx;
+  const q = QUESTIONS[idx];
+  const total = QUESTIONS.length;
+  const pct = ((idx) / total) * 100;
+
+  document.getElementById('q-subtitle').textContent = `ขั้นตอนที่ 2 / 3 · คำถาม`;
+  document.getElementById('q-progress-bar').style.width = pct + '%';
+  document.getElementById('q-progress-label').textContent = `ข้อ ${idx + 1} / ${total}`;
+  document.getElementById('q-text').innerHTML = q.text(state.primaryLabel);
+  document.getElementById('q-sub').textContent = q.sub;
+
+  const options = q.type === Q_TYPE_FREQ ? FREQ_OPTIONS : TIME_OPTIONS;
+  const choicesEl = document.getElementById('q-choices');
+  choicesEl.innerHTML = '';
+
+  const currentAnswer = state.answers[q.id];
+
+  options.forEach(opt => {
+    const label = document.createElement('label');
+    label.className = 'choice-item' + (currentAnswer === opt.val ? ' selected' : '');
+    label.innerHTML = `<span class="radio-dot"></span>${opt.label}`;
+    label.addEventListener('click', () => {
+      document.querySelectorAll('#q-choices .choice-item').forEach(c => c.classList.remove('selected'));
+      label.classList.add('selected');
+      state.answers[q.id] = opt.val;
+      document.getElementById('btn-q-next').disabled = false;
+    });
+    choicesEl.appendChild(label);
+  });
+
+  document.getElementById('btn-q-next').disabled = currentAnswer === null;
+  document.getElementById('btn-q-back').style.visibility = idx === 0 ? 'hidden' : 'visible';
+}
+
+function qBack() {
+  if (state.currentQ === 0) {
+    showScreen(state.selectedSubstances.length > 1 ? 'screen-primary' : 'screen-substance');
+  } else {
+    renderQuestion(state.currentQ - 1);
+  }
+}
+
+function qNext() {
+  if (state.currentQ < QUESTIONS.length - 1) {
+    renderQuestion(state.currentQ + 1);
+  } else {
+    showScreen('screen-injection');
+  }
+}
+
+/* ════════════════════════════════════════════
+   SCREEN 5: Injection
+════════════════════════════════════════════ */
+function selectInjection(el, val) {
+  document.querySelectorAll('#inj-choices > .choice-item').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.injectionUse = val;
+  const freqWrap = document.getElementById('inj-freq-wrap');
+  if (val === 'yes') {
+    freqWrap.style.display = 'block';
+    state.injectionFrequency = null;
+    document.getElementById('btn-inj-next').disabled = true;
+  } else {
+    freqWrap.style.display = 'none';
+    state.injectionFrequency = null;
+    document.getElementById('btn-inj-next').disabled = false;
+  }
+}
+
+function selectInjFreq(el, val) {
+  document.querySelectorAll('#inj-freq-wrap .choice-item').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.injectionFrequency = val;
+  document.getElementById('btn-inj-next').disabled = false;
+}
+
+/* ════════════════════════════════════════════
+   SCREEN 6: Result
+════════════════════════════════════════════ */
+function submitScreening() {
+  const result = buildResult(
+    state.answers,
+    state.selectedSubstances.map(k => getSubstanceLabel(k)),
+    state.primaryLabel,
+    state.injectionUse === 'yes',
+    state.injectionFrequency
+  );
+  state.result = result;
+  renderResult(result);
+  showScreen('screen-result');
+}
+
+function renderResult(result) {
+  const tier = result.tier;
+  const tc = TIER_CONTENT[tier];
+
+  // Score circle
+  const circle = document.getElementById('result-score-circle');
+  circle.className = `score-circle ${tc.scoreClass}`;
+  document.getElementById('result-score-num').textContent = result.totalScore;
+
+  // Tier badge
+  const badge = document.getElementById('result-tier-badge');
+  badge.className = `tier-badge ${tc.colorClass}`;
+  document.getElementById('result-tier-icon').textContent = tc.icon;
+  document.getElementById('result-tier-label').textContent = tc.label;
+
+  document.getElementById('result-substance-label').textContent =
+    `สารหลัก: ${result.primarySubstance} · คะแนนรวม: ${result.totalScore}`;
+
+  // Action guide
+  document.getElementById('result-action-title').textContent = tc.actionTitle;
+  document.getElementById('result-action-meaning').textContent = tc.meaning;
+
+  const actionList = document.getElementById('result-action-list');
+  actionList.innerHTML = '';
+  tc.actions.forEach((action, i) => {
+    actionList.innerHTML += `
+      <div class="action-item">
+        <span class="action-num ${tc.numColor}">${i + 1}</span>
+        <span>${action}</span>
+      </div>`;
+  });
+
+  const recEl = document.getElementById('result-recommendation');
+  recEl.textContent = tc.recommendation;
+  recEl.style.display = tc.recommendation ? 'block' : 'none';
+
+  // Harm Reduction
+  const harmWrap = document.getElementById('result-harm');
+  if (result.injectionUse) {
+    harmWrap.style.display = 'block';
+    const list = document.getElementById('harm-services-list');
+    list.innerHTML = HARM_SERVICES.map((s, i) =>
+      `<div class="harm-service"><span class="sn">${i + 1}</span><span>${s}</span></div>`
+    ).join('');
+  } else {
+    harmWrap.style.display = 'none';
+  }
+}
+
+function restartScreening() {
+  state.selectedSubstances = [];
+  state.primarySubstance = '';
+  state.primaryLabel = '';
+  state.answers = { q1: null, q2: null, q3: null, q4: null, q5: null, q6: null };
+  state.injectionUse = null;
+  state.injectionFrequency = null;
+  state.result = null;
+  showScreen('screen-welcome');
+}
+</script>
+</body>
+</html>
