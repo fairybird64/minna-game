@@ -810,10 +810,10 @@ function renderSubstanceGrid() {
   const grid = document.getElementById('substance-grid');
   grid.innerHTML = '';
   SUBSTANCES.forEach(s => {
-    const chip = document.createElement('label');
+    const chip = document.createElement('div');
     chip.className = 'substance-chip' + (s.key === 'other' ? ' full-row' : '');
     chip.dataset.key = s.key;
-    chip.innerHTML = `<input type="checkbox" value="${s.key}"><span class="cb-box"></span>${s.label}`;
+    chip.innerHTML = `<span class="cb-box"></span>${s.label}`;
     chip.addEventListener('click', () => toggleSubstance(s.key));
     grid.appendChild(chip);
   });
