@@ -689,6 +689,9 @@ function renderIntro() {
     ),
 
     h('div', { style: { flex: 1 } }),
+    h('p', {
+      style: { fontSize: '12px', color: '#888', textAlign: 'center', lineHeight: '1.6', marginBottom: '16px', padding: '0 4px' }
+    }, 'ดัดแปลงจากแบบประเมินคุณภาพการนอนหลับพิตส์เบิร์ก ฉบับภาษาไทย แปลโดย ตะวันชัย จิรประมุขพิทักษ์ และวรัญ ตันชัยสวัสดิ์ อ้างอิงโครงสร้างการให้คะแนนมาตรฐาน Pittsburgh Sleep Quality Index (Buysse et al., 1989)'),
     h('button', { className: 'btn btn-primary', onClick: goNext }, 'เริ่มประเมิน'),
     h('p', {
       style: { fontSize: '12px', color: '#94a3b8', textAlign: 'center', marginTop: '12px', lineHeight: '1.5' }
@@ -783,10 +786,7 @@ function renderResult() {
     h('p', {}, 'อยากคุยเรื่องการนอน หรือมีคำถามเพิ่มเติม?'),
     h('button', {
       className: 'btn btn-line',
-      onClick: () => {
-        const msg = `สวัสดีน้องฮัก ฉันเพิ่งทำแบบประเมินการนอน ได้คะแนน ${scores.global}/21 อยากขอคำแนะนำเพิ่มเติม`;
-        window.open('https://line.me/R/oaMessage/@nonghug/?' + encodeURIComponent(msg), '_blank');
-      },
+      onClick: () => window.open('https://line.me/R/ti/p/@nonghug', '_blank'),
     },
       '💬 คุยกับน้องฮักบน LINE',
     ),
