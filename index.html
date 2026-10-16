@@ -1374,7 +1374,7 @@ function showHome() {
     }).join('');
 
     const roomBtn = zone.room
-      ? `<button class="map-zone-room" onclick="openRoomFromMap('${zone.id}')">&#127968; ${zone.room}</button>`
+      ? `<button class="map-zone-room" onclick="openRoomTab('${zone.id}')">&#127968; ${zone.room}</button>`
       : '';
 
     return `
@@ -1408,7 +1408,7 @@ function showHome() {
       </div>
       ${zonesHTML}
       <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
-        <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
+        <button onclick="openRoomTab(getRoomTabId(currentTrack))" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
           &#127968; ${getRoomLabel(currentTrack)}
         </button>
       </div>
@@ -1447,7 +1447,7 @@ function closeMapNode() {
   if (sheet) sheet.classList.remove('open');
 }
 
-function openRoomFromMap(zoneId) {
+function openRoomTab(zoneId) {
   _currentRoomTab = zoneId;
   showBadgeRoom();
 }
@@ -2076,7 +2076,7 @@ function showSummary() {
       </div>
 
       <div id="post-animation-section" style="display:none; opacity:0; margin-top:20px;">
-        <button class="summary-btn-primary" onclick="showBadgeRoom()">&#127968; ${getRoomLabel(currentTrack)}</button>
+        <button class="summary-btn-primary" onclick="openRoomTab(getRoomTabId(currentTrack))">&#127968; ${getRoomLabel(currentTrack)}</button>
       </div>
 
       <div class="summary-buttons">
@@ -2251,7 +2251,17 @@ const _trackRoomLabel = {
   9:'ห้องใบบัว', 12:'ห้องใบบัว', 16:'ห้องใบบัว', 18:'ห้องใบบัว'
 };
 function getRoomLabel(trackId) {
-  return _trackRoomLabel[trackId] || 'ห้องของฉัน';
+  if (_trackRoomLabel[trackId]) return _trackRoomLabel[trackId];
+  const room = _charRooms.find(r => r.trackIds.includes(Number(trackId)));
+  return room ? room.name : _charRooms[0].name;
+}
+// Tab id matching the label shown by getRoomLabel(), so button text and opened tab agree
+function getRoomTabId(trackId) {
+  const label = getRoomLabel(trackId);
+  const byName = _charRooms.find(r => r.name === label);
+  if (byName) return byName.id;
+  const room = _charRooms.find(r => r.trackIds.includes(Number(trackId)));
+  return room ? room.id : _charRooms[0].id;
 }
 
 function showBadgeRoom() {
@@ -2280,7 +2290,7 @@ function showBadgeRoom() {
       <!-- Header -->
       <div style="padding:16px 16px 0; display:flex; align-items:center; gap:10px;">
         <button onclick="showHome()" style="background:rgba(255,255,255,0.65); border:1.5px solid rgba(0,0,0,0.1); border-radius:20px; padding:6px 14px; font-size:13px; font-family:inherit; cursor:pointer; color:#3A2414;">← กลับ</button>
-        <span style="font-size:15px; font-weight:700; color:#3A2414;">${getRoomLabel(currentTrack)}</span>
+        <span id="room-title" style="font-size:15px; font-weight:700; color:#3A2414;">${getRoomLabel(currentTrack)}</span>
         <span id="room-badge-count" style="margin-left:auto; font-size:12px; color:#9B7555;"></span>
       </div>
 
@@ -2376,6 +2386,8 @@ function switchRoomTab(tabId, justEarnedId) {
   _currentRoomTab = tabId;
   const room   = _charRooms.find(r => r.id === tabId);
   if (!room) return;
+  const titleEl = document.getElementById('room-title');
+  if (titleEl) titleEl.textContent = room.name;
   const earned = getEarnedBadges();
 
   // Highlight active tab
