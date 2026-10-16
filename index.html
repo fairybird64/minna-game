@@ -1123,6 +1123,91 @@
     }
     .share-card-btn:hover  { background: #F5EDE0; border-color: #C4895A; }
     .share-card-btn:active { background: #EDD9C0; }
+
+    /* ── Overworld Map (home) ── */
+    .map-wrap { padding: 24px 16px 48px; }
+    .map-zone {
+      border-radius: 18px;
+      padding: 14px 12px 6px;
+      margin-bottom: 18px;
+      background: var(--zone-bg, var(--cream-mid));
+    }
+    .map-zone-minna   { --zone-bg: #FBE9DA; --zone-ink: #C4895A; }
+    .map-zone-mone    { --zone-bg: #E4EEF7; --zone-ink: #6E8FB3; }
+    .map-zone-yok     { --zone-bg: #E7F1E2; --zone-ink: #7FA572; }
+    .map-zone-baibua  { --zone-bg: #F0E6F5; --zone-ink: #A586BA; }
+    .map-zone-special { --zone-bg: #F7EFD8; --zone-ink: #C2A158; }
+    .map-zone-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; padding: 0 4px 6px;
+    }
+    .map-zone-name  { font-size: 16px; font-weight: 700; color: var(--text-dark); }
+    .map-zone-count { font-size: 12px; color: var(--text-soft); }
+    .map-zone-room {
+      background: rgba(255,255,255,0.75); border: 1.5px solid var(--zone-ink);
+      border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+      font-family: inherit; color: var(--text-dark); cursor: pointer;
+      -webkit-tap-highlight-color: transparent; white-space: nowrap;
+    }
+    .map-path { position: relative; }
+    .map-path-line {
+      position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+    }
+    .map-path-line path {
+      fill: none; stroke: var(--zone-ink); stroke-width: 3;
+      stroke-dasharray: 2 9; stroke-linecap: round; opacity: 0.7;
+    }
+    .map-node {
+      position: absolute; transform: translate(-50%, -32px);
+      width: 120px; background: none; border: none; padding: 0;
+      font-family: inherit; text-align: center; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .map-node-dot {
+      position: relative; width: 64px; height: 64px; margin: 0 auto;
+      border-radius: 50%; background: white; border: 3px solid var(--zone-ink);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+      transition: transform 0.15s;
+    }
+    button.map-node:active .map-node-dot { transform: scale(0.94); }
+    .map-node.is-done .map-node-dot { background: var(--zone-ink); }
+    .map-node-check {
+      position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px;
+      border-radius: 50%; background: white; color: var(--zone-ink);
+      border: 2px solid var(--zone-ink); font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .map-node-label {
+      margin-top: 6px; font-size: 12px; font-weight: 600; line-height: 1.3;
+      color: var(--text-dark);
+    }
+    .map-node.is-soon { opacity: 0.55; cursor: default; }
+    .map-node.is-soon .map-node-dot {
+      background: var(--cream-dark); border-style: dashed;
+      color: var(--text-soft); font-size: 22px; box-shadow: none;
+    }
+    .map-node.is-soon .map-node-label { font-weight: 700; color: var(--text-soft); font-size: 11px; }
+    .map-node.is-soon .map-node-label span { font-weight: 400; }
+    .map-sheet {
+      position: fixed; inset: 0; z-index: 900; display: none;
+      align-items: flex-end; justify-content: center;
+      background: rgba(58,36,20,0.35);
+    }
+    .map-sheet.open { display: flex; }
+    .map-sheet-card {
+      width: 100%; max-width: 480px; background: white;
+      border-radius: 20px 20px 0 0; overflow: hidden;
+      animation: mapSheetUp 0.22s ease-out;
+    }
+    .map-sheet-cover { aspect-ratio: 16/9; background: var(--cream-mid); overflow: hidden; }
+    .map-sheet-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .map-sheet-go {
+      flex: 1; padding: 12px; border: none; border-radius: 14px;
+      background: var(--brown); color: white; font-size: 15px; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+    }
+    @keyframes mapSheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
   </style>
 </head>
 <body>
@@ -1199,118 +1284,121 @@ function toggleHeart(trackId, event) {
   if (countEl) countEl.textContent = newCount > 0 ? newCount : '';
 }
 
+// ── Overworld Map (home) ────────────────────────────────────────────────────
+// Track list, titles, protagonist grouping and node emoji come from tracks.js.
+// Only "completed or not" is shown — good/else/stuck state is never surfaced.
+const _mapZones = [
+  { id: 'minna',   name: 'มินนา',   room: 'ห้องมินนา', placeholders: ['T-มินนา'] },
+  { id: 'mone',    name: 'โมเน่',   room: 'ห้องโมเน่', placeholders: [] },
+  { id: 'yok',     name: 'หยก',     room: 'ห้องหยก',   placeholders: ['บทหยก', 'บทหยก'] },
+  { id: 'baibua',  name: 'ใบบัว',   room: 'ห้องใบบัว', placeholders: ['บทใบบัว'] },
+  { id: 'special', name: 'บทพิเศษ', room: null,        placeholders: ['T20', 'นิทาน ep1', 'นิทาน ep2'] }
+];
+
+// Display-only extras not stored in tracks.js (wording unchanged from card home)
+const _trackTaglines = {
+  1:  'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?',
+  2:  'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน',
+  4:  'เมื่อสิ่งที่ชอบถูกหัวเราะเยาะ ความรู้สึกไปไหน?',
+  5:  'บ้านคือที่ที่ปลอดภัยเสมอไหม?',
+  6:  'วันหยุดไม่ได้แปลว่าว่างเสมอไป',
+  7:  'ติดตามหยกและเพื่อนๆ ในโครงการจิตอาสา',
+  8:  'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง',
+  9:  'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง',
+  10: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป',
+  11: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้',
+  12: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่',
+  13: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว',
+  14: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?',
+  15: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',
+  16: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',
+  17: 'เมื่อสอบพลาด — แต่ก็ยังรู้ว่าจะเริ่มจากตรงไหน',
+  18: 'วันที่ใบบัวหยุดดิ้นรน'
+};
+
+const _MAP_ROW_H = 118;
+const _MAP_X = [22, 50, 78, 50]; // zig-zag column positions (%)
+
+function getMapZoneTracks(zoneId) {
+  const known = _mapZones.map(z => z.id);
+  return Object.keys(tracks)
+    .map(Number)
+    .filter(id => !tracks[id].hidden)
+    .filter(id => {
+      const c = tracks[id].character;
+      return zoneId === 'special' ? (c === 'special' || !known.includes(c)) : c === zoneId;
+    })
+    .sort((a, b) => a - b);
+}
+
 function showHome() {
   if (_autoAdvanceTimer) { clearTimeout(_autoAdvanceTimer); _autoAdvanceTimer = null; }
   document.getElementById('progress-fill').style.width = '0%';
 
-  const allTrackData = {
-    1:  { emoji: '&#128049;', title: 'มินนากับมะม่วง',           tagline: 'เมื่อแมวไม่แยแส ความรู้สึกจะบอกอะไร?' },
-    2:  { emoji: '&#127800;', title: 'มิตรภาพใหม่',               tagline: 'เมื่อกลัวการปฏิเสธ แต่ยังอยากรู้จักกัน' },
-    4:  { emoji: '&#128153;', title: 'วันที่เพื่อนล้อ',          tagline: 'เมื่อสิ่งที่ชอบถูกหัวเราะเยาะ ความรู้สึกไปไหน?' },
-    5:  { emoji: '&#127968;', title: 'ความสัมพันธ์ในครอบครัว',   tagline: 'บ้านคือที่ที่ปลอดภัยเสมอไหม?' },
-    6:  { emoji: '&#127807;', title: 'โมเน่กับวันเสาร์ที่บ้าน',  tagline: 'วันหยุดไม่ได้แปลว่าว่างเสมอไป' },
-    7:  { emoji: '&#128153;', title: 'หมอน้อย',                   tagline: 'ติดตามหยกและเพื่อนๆ ในโครงการจิตอาสา' },
-    8:  { emoji: '&#129293;', title: 'มินนากับวันหลังจากนั้น',    tagline: 'เมื่อวานพูดพลาด — วันนี้จะเริ่มยังไง' },
-    9:  { emoji: '&#127183;', title: 'ใบบัวกับไพ่ที่วางไม่ลง',   tagline: 'เมื่อความกังวลวนซ้ำ — วางลงได้ยังไง' },
-    10: { emoji: '&#127769;', title: 'ห้องของมินนา',              tagline: 'คืนก่อนเปิดเทอม มินนามองย้อนกลับไป' },
-    11: { emoji: '&#129293;', title: 'วันที่โมเน่นั่งเงียบ',       tagline: 'เมื่อรู้จักตัวเองดีแล้ว — แต่โลกข้างนอกยังไม่รู้',       cover: 'story11_b1.jpg' },
-    12: { emoji: '&#127807;', title: 'ใบบัวกับฟีดที่ไม่มีวันหมด', tagline: 'เมื่อทุกคนดูเหมือนมีชีวิตอยู่ — และเราแค่ดูอยู่',        cover: 'story12_b1.jpg' },
-    13: { emoji: '&#129719;', title: 'วันที่หยกต้องสมบูรณ์แบบ',   tagline: 'เมื่อความสมบูรณ์แบบไม่ได้มาจากความขยัน แต่มาจากความกลัว', cover: 'story13_b1.jpg' },
-    14: { emoji: '&#127819;', title: 'วันที่หยกรับคำชมไม่ได้',    tagline: 'เมื่อคำชมทำให้รู้สึกไม่สบาย — มันบอกอะไรเกี่ยวกับตัวเรา?', cover: 'story14_b1.jpg' },
-    15: { emoji: '&#127968;', title: 'คืนที่บ้านมินนา',           tagline: 'เมื่อกตัญญูคือความกลัวแฝง หรือสิ่งที่ส่งต่อด้วยใจ?',       cover: 'story15_b1.jpg' },
-    16: { emoji: '&#128221;', title: 'ใบบัวกับเสียงในใจ',          tagline: 'เมื่อเสียงในหัวบอกว่าอย่าทำ — แต่ใบบัวทำไปแล้ว',            cover: 'story16_b1.jpg' },
-    17: { emoji: '&#128095;', title: 'วันที่โมเน่รู้แล้ว',          tagline: 'เมื่อสอบพลาด — แต่ก็ยังรู้ว่าจะเริ่มจากตรงไหน',             cover: 'story17_b1.jpg' },
-    18: { emoji: '&#127861;', title: 'เช้าที่ใบบัวเห็นยาย',         tagline: 'วันที่ใบบัวหยุดดิ้นรน',                                       cover: 'story18_b1.jpg' },
-  };
+  function buildZone(zone) {
+    const ids = getMapZoneTracks(zone.id);
+    const nodes = ids.map(id => ({ id }))
+      .concat(zone.placeholders.map(label => ({ placeholder: label })));
+    if (!nodes.length) return '';
 
-  const characterSections = [
-    {
-      id: 'minna', name: 'มินนา',
-      trackIds: [1, 2, 8, 10],
-      placeholders: [{ label: 'T-มินนา' }]
-    },
-    {
-      id: 'mone', name: 'โมเน่',
-      trackIds: [4, 6, 11, 17],
-      placeholders: []
-    },
-    {
-      id: 'yok', name: 'หยก',
-      trackIds: [7, 13, 14],
-      placeholders: [{ label: 'บทหยก' }, { label: 'บทหยก' }]
-    },
-    {
-      id: 'baibua', name: 'ใบบัว',
-      trackIds: [9, 12, 16, 18],
-      placeholders: [{ label: 'บทใบบัว' }]
-    },
-    {
-      id: 'special', name: 'บทพิเศษ',
-      trackIds: [5, 15],
-      placeholders: [{ label: 'T20' }, { label: 'นิทาน ep1' }, { label: 'นิทาน ep2' }]
-    }
-  ];
+    const doneCount = ids.filter(id => hasEarnedBadge(id)).length;
+    const height = nodes.length * _MAP_ROW_H;
+    const pts = nodes.map((_, i) => [_MAP_X[i % _MAP_X.length], i * _MAP_ROW_H + 40]);
 
-  function buildTrackCard(id) {
-    const t = allTrackData[id];
-    if (!t || (tracks[id] && tracks[id].hidden)) return '';
-    const heartCount = parseInt(localStorage.getItem('heart_' + id) || '0');
-    const liked = localStorage.getItem('heart_liked_' + id) === '1';
+    let d = '';
+    pts.forEach(([x, y], i) => {
+      if (i === 0) { d += `M ${x} ${y}`; return; }
+      const [px, py] = pts[i - 1];
+      const my = (py + y) / 2;
+      d += ` C ${px} ${my}, ${x} ${my}, ${x} ${y}`;
+    });
+
+    const nodesHTML = nodes.map((n, i) => {
+      const [x, y] = pts[i];
+      const pos = `left:${x}%; top:${y}px;`;
+      if (n.placeholder) {
+        return `
+        <div class="map-node is-soon" style="${pos}">
+          <div class="map-node-dot">?</div>
+          <div class="map-node-label">เร็วๆนี้<br><span>${n.placeholder}</span></div>
+        </div>`;
+      }
+      const t = tracks[n.id];
+      const done = hasEarnedBadge(n.id);
+      const emoji = (t.shareCard && t.shareCard.emoji) || '&#127793;';
+      return `
+        <button class="map-node${done ? ' is-done' : ''}" style="${pos}" onclick="openMapNode(${n.id})" aria-label="${t.title}">
+          <div class="map-node-dot">${emoji}${done ? '<span class="map-node-check">&#10003;</span>' : ''}</div>
+          <div class="map-node-label">${t.title}</div>
+        </button>`;
+    }).join('');
+
+    const roomBtn = zone.room
+      ? `<button class="map-zone-room" onclick="openRoomFromMap('${zone.id}')">&#127968; ${zone.room}</button>`
+      : '';
+
     return `
-    <div style="background:white; border:1.5px solid var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;">
-      <div onclick="selectTrack(${id})" style="cursor:pointer; -webkit-tap-highlight-color:transparent;">
-        <div style="aspect-ratio:16/9; overflow:hidden; background:var(--cream-mid);">
-          <img src="${t.cover || ('story' + id + '_b1.jpg')}" alt="${t.title}" style="width:100%; height:100%; object-fit:cover; display:block;"
-               onerror="this.style.display='none'">
+    <section class="map-zone map-zone-${zone.id}">
+      <div class="map-zone-head">
+        <div>
+          <div class="map-zone-name">${zone.name}</div>
+          <div class="map-zone-count">${doneCount}/${ids.length} เรื่อง</div>
         </div>
-        <div style="padding:10px 12px 6px;">
-          <div style="font-size:22px; margin-bottom:4px;">${t.emoji}</div>
-          <div style="font-size:13px; font-weight:600; color:var(--text-dark); margin-bottom:3px; line-height:1.3;">${t.title}</div>
-          <div style="font-size:11px; color:var(--text-soft); line-height:1.5;">${t.tagline}</div>
-        </div>
+        ${roomBtn}
       </div>
-      <div style="padding:4px 12px 10px; display:flex; justify-content:flex-end;">
-        <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${id}" onclick="toggleHeart(${id}, event)">
-          ${liked ? '♥' : '♡'} <span id="heart-count-${id}">${heartCount > 0 ? heartCount : ''}</span>
-        </button>
+      <div class="map-path" style="height:${height - _MAP_ROW_H + 100}px;">
+        <svg class="map-path-line" viewBox="0 0 100 ${height}" preserveAspectRatio="none" aria-hidden="true">
+          <path d="${d}" vector-effect="non-scaling-stroke"/>
+        </svg>
+        ${nodesHTML}
       </div>
-    </div>`;
+    </section>`;
   }
 
-  function buildPlaceholder(label) {
-    return `
-    <div style="background:var(--cream-mid); border:1.5px dashed var(--tan); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; opacity:0.6;">
-      <div style="aspect-ratio:16/9; background:var(--cream-dark); display:flex; align-items:center; justify-content:center;">
-        <span style="font-size:28px; color:var(--text-soft);">?</span>
-      </div>
-      <div style="padding:10px 12px 12px;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-soft); margin-bottom:4px;">เร็วๆนี้</div>
-        <div style="font-size:12px; color:var(--text-soft); line-height:1.4;">${label}</div>
-      </div>
-    </div>`;
-  }
-
-  function buildSection(sec) {
-    const open = sec.id === 'minna';
-    const cards = sec.trackIds.map(id => buildTrackCard(id)).join('');
-    const placeholders = sec.placeholders.map(p => buildPlaceholder(p.label)).join('');
-    return `
-    <div style="margin-bottom:20px;">
-      <div onclick="toggleCharSection('${sec.id}')"
-           style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--cream-mid); border-radius:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; margin-bottom:10px;">
-        <span style="font-size:15px; font-weight:700; color:var(--text-dark);">${sec.name}</span>
-        <span id="char-arrow-${sec.id}" style="font-size:11px; color:var(--text-soft); transition:transform 0.2s;${open ? '' : ' transform:rotate(-90deg);'}">&#9660;</span>
-      </div>
-      <div id="char-body-${sec.id}" style="display:${open ? 'grid' : 'none'}; grid-template-columns:1fr 1fr; gap:12px;">
-        ${cards}${placeholders}
-      </div>
-    </div>`;
-  }
-
-  const sectionsHTML = characterSections.map(buildSection).join('');
+  const zonesHTML = _mapZones.map(buildZone).join('');
 
   document.getElementById('scene-container').innerHTML = `
-    <div style="padding:24px 16px 48px;">
+    <div class="map-wrap">
       <div style="text-align:center; margin-bottom:20px;">
         <div style="font-size:12px; font-weight:700; letter-spacing:2px; color:var(--text-soft); margin-bottom:6px;">MINNA JOURNEY</div>
         <h1 style="font-size:24px; font-weight:700; color:var(--text-dark); line-height:1.4;">มินนา — เส้นทางของใจ</h1>
@@ -1318,14 +1406,50 @@ function showHome() {
       <div style="background:var(--cream-mid); border-radius:14px; padding:16px 18px; margin-bottom:24px; text-align:center; line-height:1.9; font-size:14px; color:var(--text-mid);">
         บางวันง่าย บางวันยาก — ทุกวันมีเรื่องเล่า<br>มินนาและเพื่อนๆ อยู่ที่นี่เสมอ &#127793;
       </div>
-      ${sectionsHTML}
+      ${zonesHTML}
       <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--cream-dark);">
         <button onclick="showBadgeRoom()" style="width:100%; padding:14px; background:white; border:1.5px solid var(--tan); border-radius:14px; font-size:15px; font-weight:600; font-family:inherit; color:var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
           &#127968; ${getRoomLabel(currentTrack)}
         </button>
       </div>
     </div>
+    <div id="map-sheet" class="map-sheet" onclick="closeMapNode()"></div>
   `;
+}
+
+function openMapNode(id) {
+  const t = tracks[id];
+  const sheet = document.getElementById('map-sheet');
+  if (!t || !sheet) return;
+  const heartCount = parseInt(localStorage.getItem('heart_' + id) || '0');
+  const liked = localStorage.getItem('heart_liked_' + id) === '1';
+  const cover = 'story' + id + '_b1.jpg';
+  sheet.innerHTML = `
+    <div class="map-sheet-card" onclick="event.stopPropagation()">
+      <div class="map-sheet-cover"><img src="${cover}" alt="${t.title}" onerror="this.style.display='none'"></div>
+      <div style="padding:14px 18px 18px;">
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:2px;">${t.protagonist || ''}</div>
+        <div style="font-size:18px; font-weight:700; color:var(--text-dark); line-height:1.35; margin-bottom:6px;">${(t.shareCard && t.shareCard.emoji) || ''} ${t.title}</div>
+        <div style="font-size:13px; color:var(--text-mid); line-height:1.6; margin-bottom:16px;">${_trackTaglines[id] || ''}</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="track-heart-btn${liked ? ' liked' : ''}" id="heart-btn-${id}" onclick="toggleHeart(${id}, event)">
+            ${liked ? '♥' : '♡'} <span id="heart-count-${id}">${heartCount > 0 ? heartCount : ''}</span>
+          </button>
+          <button class="map-sheet-go" onclick="selectTrack(${id})">เริ่มเลย</button>
+        </div>
+      </div>
+    </div>`;
+  sheet.classList.add('open');
+}
+
+function closeMapNode() {
+  const sheet = document.getElementById('map-sheet');
+  if (sheet) sheet.classList.remove('open');
+}
+
+function openRoomFromMap(zoneId) {
+  _currentRoomTab = zoneId;
+  showBadgeRoom();
 }
 
 function toggleCharSection(id) {
