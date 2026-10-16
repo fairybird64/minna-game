@@ -1124,6 +1124,47 @@
     .share-card-btn:hover  { background: #F5EDE0; border-color: #C4895A; }
     .share-card-btn:active { background: #EDD9C0; }
 
+    /* ── Scene Mini-game (prototype, ?mini=1) ── */
+    .mg-stage {
+      position: relative; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden;
+      background: linear-gradient(#F6E9D8 0 58%, #E9D3B6 58% 100%);
+      border: 1.5px solid var(--tan); margin-bottom: 10px; touch-action: none;
+      user-select: none; -webkit-user-select: none;
+    }
+    .mg-prop {
+      position: absolute; transform: translate(-50%, -50%);
+      line-height: 1; pointer-events: none;
+    }
+    .mg-zone {
+      position: absolute; transform: translate(-50%, -50%);
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 2px dashed var(--brown-light); background: rgba(255,255,255,0.55);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-family: inherit; padding: 0;
+      transition: transform 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mg-zone-icon { font-size: 28px; line-height: 1; }
+    .mg-zone.mg-hover { transform: translate(-50%, -50%) scale(1.12); background: rgba(255,255,255,0.9); }
+    .mg-zone.mg-picked { border-style: solid; border-color: var(--brown); background: white; }
+    .mg-done .mg-zone:not(.mg-picked) { opacity: 0.35; }
+    .mg-token {
+      position: absolute; transform: translate(-50%, -50%); z-index: 2;
+      width: 56px; height: 56px; border-radius: 50%; background: white;
+      border: 3px solid var(--brown); box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; cursor: grab; touch-action: none;
+      transition: left 0.25s ease, top 0.25s ease;
+    }
+    .mg-token.mg-dragging { cursor: grabbing; transition: none; transform: translate(-50%, -50%) scale(1.1); }
+    .mg-token.mg-settled { cursor: default; transform: translate(-50%, -70%); }
+    .mg-captions {
+      list-style: none; padding: 0; margin: 0 0 4px;
+      font-size: 13px; color: var(--text-mid); line-height: 1.5;
+    }
+    .mg-captions li { display: flex; gap: 8px; align-items: flex-start; padding: 3px 0; }
+    .mg-captions li span { flex: 0 0 22px; text-align: center; }
+
     /* ── Overworld Map (home) ── */
     .map-wrap { padding: 24px 16px 48px; }
     .map-zone {
@@ -1240,6 +1281,29 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRIKhQ6LsVWcF4
 // 'preview' → show quote card preview in room popup (DOM only, no export)
 // 'live'    → enable export/share (not implemented yet)
 const SHARE_CARD_MODE = 'off';
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Scene Mini-game Prototype (Action-as-Choice) ─────────────────────────────
+// Enabled only with ?mini=1. Each drop zone maps 1:1 to an existing choice by
+// its internal type, so outcome / badge / summary logic is unchanged.
+// No timing, accuracy or score — the result comes from *what* the player
+// chooses to do, never from how well they perform it.
+const MINI_MODE = new URLSearchParams(location.search).get('mini') === '1';
+const _sceneMiniGames = {
+  '1:B1': {
+    prompt: 'ลากมินนาไปที่ไหนดี?',
+    token: '&#128103;',
+    start: { x: 12, y: 78 },
+    props: [
+      { icon: '&#128715;', x: 72, y: 56, size: 58 }
+    ],
+    zones: [
+      { type: 'good',  icon: '&#9203;', x: 44, y: 74 },
+      { type: 'ok',    icon: '&#128241;', x: 22, y: 28 },
+      { type: 'stuck', icon: '&#128049;', x: 84, y: 26 }
+    ]
+  }
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Hide share UI immediately when mode is 'off' (DOM is ready; script is at end of body)
@@ -1655,12 +1719,13 @@ function renderScene(index) {
     `<button class="choice-btn" data-index="${i}" onclick="selectChoice(${i})">${c.text}</button>`
   ).join('');
 
+  const mini = (!isNarrative && MINI_MODE) ? _sceneMiniGames[currentTrack + ':' + s.id] : null;
   const interactionHTML = isNarrative
     ? `<button class="narrative-skip-btn" id="narrative-skip">ข้าม ›</button>`
-    : `<div class="choices-section">
+    : `${mini ? buildMiniGameHTML(mini, s) : `<div class="choices-section">
          <div class="choices-label">เลือกสักทาง</div>
          <div class="choices">${choicesHTML}</div>
-       </div>
+       </div>`}
        <div class="outcome" id="outcome">
          <div class="outcome-arrow">&#x25B6; ผลที่ตามมา</div>
          <div class="outcome-text" id="outcome-text"></div>
@@ -1699,6 +1764,7 @@ function renderScene(index) {
 
   document.getElementById('scene-container').innerHTML = html;
   window.scrollTo({ top: 0 });
+  if (mini) initMiniGame(mini, s);
 
   if (isNarrative) {
     const skipBtn = document.getElementById('narrative-skip');
@@ -1715,6 +1781,94 @@ function renderScene(index) {
       nextScene();
     }, 3000);
   }
+}
+
+function buildMiniGameHTML(mini, s) {
+  const props = mini.props.map(p =>
+    `<div class="mg-prop" style="left:${p.x}%; top:${p.y}%; font-size:${p.size}px;">${p.icon}</div>`
+  ).join('');
+  const zones = mini.zones.map((z, zi) => {
+    const ci = s.choices.findIndex(c => c.type === z.type);
+    if (ci < 0) return '';
+    return `
+      <button class="mg-zone" data-choice="${ci}" style="left:${z.x}%; top:${z.y}%;"
+              aria-label="${s.choices[ci].text}">
+        <span class="mg-zone-icon">${z.icon}</span>
+      </button>`;
+  }).join('');
+  const captions = mini.zones.map(z => {
+    const c = s.choices.find(c => c.type === z.type);
+    return c ? `<li><span>${z.icon}</span>${c.text}</li>` : '';
+  }).join('');
+  return `
+    <div class="choices-section">
+      <div class="choices-label">${mini.prompt}</div>
+      <div class="mg-stage" id="mg-stage">
+        ${props}
+        ${zones}
+        <div class="mg-token" id="mg-token" style="left:${mini.start.x}%; top:${mini.start.y}%;">${mini.token}</div>
+      </div>
+      <ul class="mg-captions">${captions}</ul>
+    </div>`;
+}
+
+function initMiniGame(mini, s) {
+  const stage = document.getElementById('mg-stage');
+  const token = document.getElementById('mg-token');
+  if (!stage || !token) return;
+  const zones = Array.from(stage.querySelectorAll('.mg-zone'));
+  let done = false, dragging = false;
+
+  function moveTokenTo(xPct, yPct) {
+    token.style.left = xPct + '%';
+    token.style.top  = yPct + '%';
+  }
+  function zoneAt(clientX, clientY) {
+    return zones.find(z => {
+      const r = z.getBoundingClientRect();
+      const pad = 18;
+      return clientX >= r.left - pad && clientX <= r.right + pad &&
+             clientY >= r.top - pad  && clientY <= r.bottom + pad;
+    });
+  }
+  function commit(zone) {
+    if (done || !zone) return;
+    done = true;
+    moveTokenTo(parseFloat(zone.style.left), parseFloat(zone.style.top));
+    token.classList.add('mg-settled');
+    zones.forEach(z => { z.disabled = true; z.classList.toggle('mg-picked', z === zone); });
+    stage.classList.add('mg-done');
+    selectChoice(Number(zone.dataset.choice));
+  }
+
+  // Tap / keyboard: choosing a zone directly is always available
+  zones.forEach(z => z.addEventListener('click', () => commit(z)));
+
+  token.addEventListener('pointerdown', e => {
+    if (done) return;
+    dragging = true;
+    token.setPointerCapture(e.pointerId);
+    token.classList.add('mg-dragging');
+  });
+  token.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const r = stage.getBoundingClientRect();
+    const x = Math.min(100, Math.max(0, (e.clientX - r.left) / r.width * 100));
+    const y = Math.min(100, Math.max(0, (e.clientY - r.top) / r.height * 100));
+    moveTokenTo(x, y);
+    zones.forEach(z => z.classList.toggle('mg-hover', z === zoneAt(e.clientX, e.clientY)));
+  });
+  const end = e => {
+    if (!dragging) return;
+    dragging = false;
+    token.classList.remove('mg-dragging');
+    zones.forEach(z => z.classList.remove('mg-hover'));
+    const hit = zoneAt(e.clientX, e.clientY);
+    if (hit) commit(hit);
+    else moveTokenTo(mini.start.x, mini.start.y);
+  };
+  token.addEventListener('pointerup', end);
+  token.addEventListener('pointercancel', end);
 }
 
 function selectChoice(index) {
